@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,13 +25,20 @@ namespace MomomaAssets.AssetProcessor
         {
             var entries = new List<SearchTreeEntry>();
             entries.Add(new SearchTreeGroupEntry(new GUIContent("Create Node")));
-            entries.Add(new SearchTreeEntry(new GUIContent("Test")) { level = 1, userData = typeof(NodeGUI) });
+            foreach (var ctor in NodeUtility.Constructors)
+            {
+                var node = ctor();
+                entries.Add(new SearchTreeEntry(new GUIContent(node.Title)) { level = 1, userData = ctor });
+            }
             return entries;
         }
 
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
-            var graphElement = Activator.CreateInstance(SearchTreeEntry.userData as Type, true) as GraphElement;
+            var iNode = (SearchTreeEntry.userData as Func<INode>)?.Invoke();
+            if (iNode == null)
+                return false;
+            var graphElement = new NodeGUI(iNode);
             if (graphElement == null)
                 return false;
             addGraphElement?.Invoke(graphElement);

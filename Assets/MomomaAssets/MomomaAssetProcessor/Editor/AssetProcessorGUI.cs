@@ -15,7 +15,7 @@ namespace MomomaAssets.AssetProcessor
 
         void OnEnable()
         {
-            rootVisualElement.Add(new AssetProcessorGraph(this));
+            new NodeGraph<AssetProcessorGraph>(this, new AssetProcessorGraph());
         }
     }
 }

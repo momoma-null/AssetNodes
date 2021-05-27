@@ -1,40 +1,37 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
-using static UnityEngine.Object;
-using static UnityEngine.ScriptableObject;
 
 #nullable enable
 
 namespace MomomaAssets.AssetProcessor
 {
-    sealed class AssetProcessorGraph : GraphView, IDisposable
+    sealed class AssetProcessorGraph : GraphView
     {
-        readonly EditorWindow m_Window;
-        readonly SearchWindowProvider m_SearchWindowProvider;
+        public AssetProcessorGraph() { }
 
-        public AssetProcessorGraph(EditorWindow window)
+        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
-            m_Window = window;
-            style.flexGrow = 1;
-            this.AddManipulator(new ContentZoomer());
-            this.AddManipulator(new ContentDragger());
-            this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
-            Insert(0, new GridBackground() { style = { alignItems = Align.Center, justifyContent = Justify.Center } });
-            Add(new MiniMap());
-            viewDataKey = Guid.NewGuid().ToString();
-            m_SearchWindowProvider = CreateInstance<SearchWindowProvider>();
-            m_SearchWindowProvider.addGraphElement += AddElement;
-            nodeCreationRequest = context => SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_SearchWindowProvider);
+            var linkedPorts = new HashSet<Port>();
+            CollectLinkedPorts(startPort, linkedPorts);
+            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p));
         }
 
-        public void Dispose()
+        static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)
         {
-            DestroyImmediate(m_SearchWindowProvider);
+            var ports = startPort.direction == Direction.Input ? startPort.node.outputContainer.Query<Port>() : startPort.node.inputContainer.Query<Port>();
+            ports.ForEach(p =>
+            {
+                foreach (var e in p.connections)
+                {
+                    var pair = startPort.direction == Direction.Input ? e.input : e.output;
+                    CollectLinkedPorts(pair, linkedPorts);
+                }
+            });
         }
     }
 }
