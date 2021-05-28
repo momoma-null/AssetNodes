@@ -1,9 +1,7 @@
 {
-    "name": "MomomaAssets.MomomaAssetProcessor.Editor",
+    "name": "MomomaAssets.Extensions",
     "rootNamespace": "",
-    "references": [
-        "GUID:025cbc9cf40919e4287de87075aabce6"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

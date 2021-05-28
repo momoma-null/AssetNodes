@@ -8,9 +8,9 @@ using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView
 {
-    sealed class NodeGUI : Node
+    sealed class NodeGUI : Node, IFieldHolder
     {
         readonly INode m_Node;
 
@@ -22,31 +22,36 @@ namespace MomomaAssets.AssetProcessor
             title = m_Node.Title;
             foreach (var data in m_Node.InputPorts)
             {
-                var port = Port.Create<Edge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
+                var port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
                 if (!string.IsNullOrEmpty(data.PortName))
                     port.portName = data.PortName;
                 inputContainer.Add(port);
             }
             foreach (var data in m_Node.OutputPorts)
             {
-                var port = Port.Create<Edge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
+                var port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
                 if (!string.IsNullOrEmpty(data.PortName))
                     port.portName = data.PortName;
                 inputContainer.Add(port);
             }
             RefreshPorts();
+        }
+
+        public void RegisterFields(IFieldRegister fieldRegister)
+        {
             foreach (var prop in m_Node.GetProperties())
             {
-                VisualElement field = prop switch
+                switch (prop)
                 {
-                    PropertyValue<UnityObjectWrapper> i => new ObjectField() { value = i.Value.Target, objectType = i.Value.ObjectType },
-                    PropertyValue<string> i => new TextField() { value = i.Value },
-                    PropertyValue<float> i => new FloatField() { value = i.Value },
-                    _ => throw new InvalidOperationException()
+                    case PropertyValue<UnityObjectWrapper> i:
+                        fieldRegister.RegisterFields(new ObjectField() { value = i.Value.Target, objectType = i.Value.ObjectType }); break;
+                    case PropertyValue<string> i:
+                        fieldRegister.RegisterFields(new TextField() { value = i.Value }); break;
+                    case PropertyValue<float> i:
+                        fieldRegister.RegisterFields(new FloatField() { value = i.Value }); break;
+                    default: throw new InvalidOperationException();
                 };
-                extensionContainer.Add(field);
             }
-            RefreshExpandedState();
         }
     }
 }

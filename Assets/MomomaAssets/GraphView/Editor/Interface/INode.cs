@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView
 {
-    interface INode
+    public interface INode
     {
         string Title { get; }
         IEnumerable<PortData> InputPorts { get; }
@@ -13,7 +13,7 @@ namespace MomomaAssets.AssetProcessor
         IEnumerable<PropertyValue> GetProperties();
     }
 
-    static class NodeUtility
+    public static class NodeUtility
     {
         static Dictionary<Type, Func<INode>> s_Constructors = new Dictionary<Type, Func<INode>>();
 

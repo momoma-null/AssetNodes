@@ -1,12 +1,12 @@
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView
 {
-    abstract class PropertyValue
+    public abstract class PropertyValue
     {
         public static PropertyValue<T> Create<T>(T defaultValue = default(T)) => new PropertyValue<T>() { Value = defaultValue };
     }
 
-    sealed class PropertyValue<T> : PropertyValue
+    public sealed class PropertyValue<T> : PropertyValue
     {
         public T Value { get; set; }
     }

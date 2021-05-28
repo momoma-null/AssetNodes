@@ -7,7 +7,7 @@ using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     sealed class LoadAssetsNode : INode

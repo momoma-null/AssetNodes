@@ -2,9 +2,9 @@ using System;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView
 {
-    sealed class PortData
+    public sealed class PortData
     {
         public Type PortType { get; }
         public string PortName { get; }

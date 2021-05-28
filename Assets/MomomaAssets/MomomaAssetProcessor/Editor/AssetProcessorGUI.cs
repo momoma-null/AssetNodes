@@ -3,7 +3,7 @@ using UnityEditor;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView.AssetProcessor
 {
     sealed class AssetProcessorGUI : EditorWindow
     {
@@ -13,9 +13,17 @@ namespace MomomaAssets.AssetProcessor
             EditorWindow.GetWindow<AssetProcessorGUI>("MomomaAssetProcessor");
         }
 
+        NodeGraph<AssetProcessorGraph, AdvancedEdge>? m_NodeGraph;
+
         void OnEnable()
         {
-            new NodeGraph<AssetProcessorGraph>(this, new AssetProcessorGraph());
+            m_NodeGraph = new NodeGraph<AssetProcessorGraph, AdvancedEdge>(this, new AssetProcessorGraph());
+        }
+
+        void OnDisable()
+        {
+            m_NodeGraph?.Dispose();
+            m_NodeGraph = null;
         }
     }
 }

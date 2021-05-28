@@ -4,9 +4,9 @@ using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView
 {
-    sealed class UnityObjectWrapper
+    public sealed class UnityObjectWrapper
     {
         public static UnityObjectWrapper Create<T>(T? target = null) where T : UnityObject
         {

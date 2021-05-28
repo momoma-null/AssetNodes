@@ -8,11 +8,17 @@ using UnityEditor.Experimental.GraphView;
 
 #nullable enable
 
-namespace MomomaAssets.AssetProcessor
+namespace MomomaAssets.GraphView.AssetProcessor
 {
-    sealed class AssetProcessorGraph : GraphView
+    using GraphView = UnityEditor.Experimental.GraphView.GraphView;
+
+    sealed class AssetProcessorGraph : GraphView, IGraphViewCallback
     {
         public AssetProcessorGraph() { }
+
+        public void Initialize() { }
+
+        public void OnValueChanged(VisualElement visualElement) { }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
