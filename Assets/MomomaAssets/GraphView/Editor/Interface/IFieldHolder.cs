@@ -1,7 +1,12 @@
-﻿namespace MomomaAssets.GraphView
+﻿using UnityEditor;
+
+#nullable enable
+
+namespace MomomaAssets.GraphView
 {
     public interface IFieldHolder
     {
-        void RegisterFields(IFieldRegister fieldRegister);
+        IGraphElementData GraphElementData { get; }
+        void Bind(SerializedObject serializedObject);
     }
 }

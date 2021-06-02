@@ -3,16 +3,18 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
+#nullable enable
+
 namespace MomomaAssets.GraphView
 {
-    public sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
+    sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
     {
         [SerializeField]
         string m_GraphViewTypeName = "";
         [SerializeField]
         GraphElementObject[] m_SerializedGraphElements = new GraphElementObject[0];
 
-        public Type GraphViewType { get; private set; }
+        public Type? GraphViewType { get; private set; }
         public IList<ISerializedGraphElement> SerializedGraphElements { get; private set; } = new List<ISerializedGraphElement>();
         public IReadOnlyDictionary<string, int> GuidToIndices { get; private set; } = new Dictionary<string, int>();
 

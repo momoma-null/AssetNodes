@@ -320,12 +320,14 @@ namespace MomomaAssets.GraphView
                 element.Serialize(serializedGraphElement, m_GraphView);
                 serializedGraphView.SerializedGraphElements.Add(serializedGraphElement);
             }
-            return JsonUtility.ToJson(serializedGraphView);
+            return EditorJsonUtility.ToJson(serializedGraphView);
         }
 
         void UnserializeAndPaste(string operationName, string data)
         {
-            var serializedGraphElements = JsonUtility.FromJson<SerializedGraphView>(data).SerializedGraphElements;
+            var serializedGraphView = new SerializedGraphView();
+            EditorJsonUtility.FromJsonOverwrite(data, serializedGraphView);
+            var serializedGraphElements = serializedGraphView.SerializedGraphElements;
             var guidsToReplace = new Dictionary<string, string>();
             foreach (var serializedGraphElement in serializedGraphElements)
             {
@@ -476,6 +478,8 @@ namespace MomomaAssets.GraphView
             if (m_GraphView.Contains(graphElement))
                 throw new UnityException($"{m_GraphView} has already contained {graphElement}.");
             m_GraphView.AddElement(graphElement);
+            if (graphElement is ISelectableCallback selectableCallback)
+                selectableCallback.onSelected += OnSelectedGraphElement;
             var position = Rect.zero;
             var root = m_EditorWindow.rootVisualElement;
             position.center = m_GraphView.contentViewContainer.WorldToLocal(root.ChangeCoordinatesTo(root.parent ?? root, screenMousePosition - m_EditorWindow.position.position));
@@ -493,6 +497,13 @@ namespace MomomaAssets.GraphView
             if (!withoutUndo)
                 Undo.RegisterCreatedObjectUndo(graphElementObject, $"Create {graphElement.GetType().Name}");
             return graphElementObject;
+        }
+
+        void OnSelectedGraphElement(GraphElement element)
+        {
+            var index = m_GraphViewObjectHandler.GraphViewObject.GuidToIndices[element.viewDataKey];
+            var graphElementObject = m_GraphViewObjectHandler.GetGraphElementObjectAtIndex(index);
+            Selection.activeObject = graphElementObject;
         }
     }
 }

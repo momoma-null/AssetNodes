@@ -4,19 +4,22 @@ using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
-using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
 namespace MomomaAssets.GraphView
 {
-    sealed class NodeGUI : Node, IFieldHolder
+    sealed class NodeGUI : Node, IFieldHolder, ISelectableCallback
     {
-        readonly INode m_Node;
+        readonly INodeData m_Node;
 
-        public NodeGUI(INode iNode)
+        public IGraphElementData GraphElementData => m_Node;
+
+        public event Action<GraphElement>? onSelected;
+
+        public NodeGUI(INodeData nodeData)
         {
-            m_Node = iNode;
+            m_Node = nodeData;
             style.minWidth = 150f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             title = m_Node.Title;
@@ -35,23 +38,36 @@ namespace MomomaAssets.GraphView
                 inputContainer.Add(port);
             }
             RefreshPorts();
+            RefreshExpandedState();
         }
 
-        public void RegisterFields(IFieldRegister fieldRegister)
+        public override void OnSelected()
         {
-            foreach (var prop in m_Node.GetProperties())
+            base.OnSelected();
+            onSelected?.Invoke(this);
+        }
+
+        public void Bind(SerializedObject serializedObject)
+        {
+            using (var parentProperty = serializedObject.FindProperty("m_GraphElementData"))
             {
-                switch (prop)
+                foreach (var prop in m_Node.GetProperties())
                 {
-                    case PropertyValue<UnityObjectWrapper> i:
-                        fieldRegister.RegisterFields(new ObjectField() { value = i.Value.Target, objectType = i.Value.ObjectType }); break;
-                    case PropertyValue<string> i:
-                        fieldRegister.RegisterFields(new TextField() { value = i.Value }); break;
-                    case PropertyValue<float> i:
-                        fieldRegister.RegisterFields(new FloatField() { value = i.Value }); break;
-                    default: throw new InvalidOperationException();
-                };
+                    IBindable field = prop switch
+                    {
+                        PropertyValue<UnityObjectWrapper> i => new ObjectField() { value = i.Value.Target, objectType = i.Value.ObjectType },
+                        PropertyValue<string> i => new TextField() { value = i.Value },
+                        PropertyValue<float> i => new FloatField() { value = i.Value },
+                        PropertyValue<int> i => new IntegerField() { value = i.Value },
+                        PropertyValueList i => new ListView() { itemsSource = i.Value },
+                        _ => throw new ArgumentOutOfRangeException(nameof(prop))
+                    };
+                    extensionContainer.Add(field as VisualElement);
+                    var sp = parentProperty.FindPropertyRelative(prop.FieldName);
+                    field.BindProperty(sp);
+                }
             }
+            RefreshExpandedState();
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -10,22 +9,25 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
-    sealed class LoadAssetsNode : INode
+    [Serializable]
+    sealed class LoadAssetsNode : INodeData
     {
         static LoadAssetsNode()
         {
-            NodeUtility.AddConstructor(() => new LoadAssetsNode());
+            INodeDataUtility.AddConstructor(() => new LoadAssetsNode());
         }
 
         public string Title => "Load Assets";
+        public string MenuPath => "Import/Load Assets";
         public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
         public IEnumerable<PortData> OutputPorts => new[] { new PortData(typeof(UnityObject)) };
 
+        [SerializeField]
         DefaultAsset? m_Folder;
 
         public IEnumerable<PropertyValue> GetProperties()
         {
-            yield return PropertyValue.Create(UnityObjectWrapper.Create(m_Folder));
+            yield return PropertyValue.Create(nameof(m_Folder), UnityObjectWrapper.Create(m_Folder));
         }
     }
 }

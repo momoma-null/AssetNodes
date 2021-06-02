@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
+#nullable enable
+
 namespace MomomaAssets.GraphView
 {
     public interface ISerializedGraphView
