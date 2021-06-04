@@ -8,11 +8,13 @@ namespace MomomaAssets.GraphView
     {
         public Type PortType { get; }
         public string PortName { get; }
+        public string Id { get; }
 
-        public PortData(Type type, string name = "")
+        public PortData(Type type, string name = "", string? id = null)
         {
             PortType = type;
             PortName = name;
+            Id = id ?? Guid.NewGuid().ToString();
         }
     }
 }

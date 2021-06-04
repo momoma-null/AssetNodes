@@ -18,3 +18,7 @@ ObjectField > ObjectFieldDisplay{
 ObjectField > ObjectFieldDisplay > Label.textElement{
  flex-shrink:1;
 }
+
+ListView{
+ flex-grow:1;
+}

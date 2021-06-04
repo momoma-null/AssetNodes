@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reflection;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,20 +17,18 @@ namespace MomomaAssets.GraphView
         string Guid { get; set; }
         string TypeName { get; set; }
         Rect Position { get; set; }
-        IList<string> ReferenceGuids { get; }
+        IReadOnlyList<string> ReferenceGuids { get; set; }
         IGraphElementData? GraphElementData { get; set; }
     }
 
     public static class SerializedGraphElementExtensions
     {
-        static readonly Dictionary<string, ConstructorInfo> s_ConstructorInfos = new Dictionary<string, ConstructorInfo>();
-
-        public static void Serialize<T, TGraphView>(this GraphElement graphElement, T serializedGraphElement, TGraphView graphView) where T : ISerializedGraphElement where TGraphView : GraphView, IGraphViewCallback
+        public static void Serialize<T>(this GraphElement graphElement, T serializedGraphElement) where T : ISerializedGraphElement
         {
             serializedGraphElement.Guid = graphElement.viewDataKey;
             serializedGraphElement.TypeName = graphElement.GetType().AssemblyQualifiedName;
             serializedGraphElement.Position = graphElement.GetPosition();
-            var referenceGuids = serializedGraphElement.ReferenceGuids;
+            var referenceGuids = new List<string>();
             switch (graphElement)
             {
                 case Node node:
@@ -41,6 +39,7 @@ namespace MomomaAssets.GraphView
                     referenceGuids.Add(edge.output.viewDataKey);
                     break;
             }
+            serializedGraphElement.ReferenceGuids = referenceGuids;
             if (graphElement is IFieldHolder fieldHolder)
             {
                 serializedGraphElement.GraphElementData = fieldHolder.GraphElementData;
@@ -60,6 +59,13 @@ namespace MomomaAssets.GraphView
                     _ => throw new ArgumentOutOfRangeException(nameof(serializedGraphElement.GraphElementData))
                 };
                 graphView.AddElement(graphElement);
+                switch (graphElement)
+                {
+                    case Node node:
+                        var portCount = 0;
+                        node.Query<Port>().ForEach(port => port.viewDataKey = serializedGraphElement.ReferenceGuids[portCount++]);
+                        break;
+                }
                 if (serializedGraphElement is ScriptableObject scriptableObject && graphElement is IFieldHolder fieldHolder)
                 {
                     var so = new SerializedObject(scriptableObject);

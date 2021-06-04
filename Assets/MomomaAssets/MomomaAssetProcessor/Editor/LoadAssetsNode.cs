@@ -20,7 +20,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public string Title => "Load Assets";
         public string MenuPath => "Import/Load Assets";
         public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
-        public IEnumerable<PortData> OutputPorts => new[] { new PortData(typeof(UnityObject)) };
+        public IEnumerable<PortData> OutputPorts => m_OutPorts;
+
+        PortData[] m_OutPorts = new[] { new PortData(typeof(UnityObject)) };
 
         [SerializeField]
         DefaultAsset? m_Folder;

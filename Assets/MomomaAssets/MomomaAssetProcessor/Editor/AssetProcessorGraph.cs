@@ -16,6 +16,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         public AssetProcessorGraph() { }
 
+        public event Action<List<ISelectable>>? onSelectionChanged;
+
         public void Initialize() { }
 
         public void OnValueChanged(VisualElement visualElement) { }
@@ -38,6 +40,24 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     CollectLinkedPorts(pair, linkedPorts);
                 }
             });
+        }
+
+        public override void AddToSelection(ISelectable selectable)
+        {
+            base.AddToSelection(selectable);
+            onSelectionChanged?.Invoke(selection);
+        }
+
+        public override void ClearSelection()
+        {
+            base.ClearSelection();
+            onSelectionChanged?.Invoke(selection);
+        }
+
+        public override void RemoveFromSelection(ISelectable selectable)
+        {
+            base.RemoveFromSelection(selectable);
+            onSelectionChanged?.Invoke(selection);
         }
     }
 }

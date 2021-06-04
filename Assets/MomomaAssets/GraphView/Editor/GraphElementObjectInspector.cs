@@ -16,7 +16,9 @@ namespace MomomaAssets.GraphView
 
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
             EditorGUILayout.PropertyField(m_GraphElementData, true);
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }
