@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using UnityEditor;
 
 #nullable enable
 
@@ -7,17 +8,22 @@ namespace MomomaAssets.GraphView
     [CustomEditor(typeof(GraphElementObject))]
     sealed class GraphElementObjectInspector : Editor
     {
-        SerializedProperty? m_GraphElementData;
-
-        void OnEnable()
-        {
-            m_GraphElementData = serializedObject.FindProperty(nameof(m_GraphElementData));
-        }
-
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(m_GraphElementData, true);
+            using (var dataProperty = serializedObject.FindProperty("m_GraphElementData"))
+            using (var endProperty = dataProperty.GetEndProperty(false))
+            {
+                dataProperty.NextVisible(true);
+                while (true)
+                {
+                    if (SerializedProperty.EqualContents(endProperty, dataProperty))
+                        break;
+                    EditorGUILayout.PropertyField(dataProperty.Copy(), true);
+                    if (dataProperty.NextVisible(false))
+                        break;
+                }
+            }
             serializedObject.ApplyModifiedProperties();
         }
     }

@@ -42,7 +42,7 @@ namespace MomomaAssets.GraphView
             public bool CanFullReload => GraphViewObject != null && (m_SerializedObject?.UpdateIfRequiredOrScript() ?? false);
             public GraphViewObject GraphViewObject
             {
-                get => m_GraphViewObject ?? throw new NullReferenceException();
+                get => m_GraphViewObject ?? throw new NullReferenceException("GraphViewObject is null");
                 set
                 {
                     if (m_GraphViewObject != value)
@@ -109,7 +109,7 @@ namespace MomomaAssets.GraphView
             {
                 CheckObjectExistence();
                 if (m_SerializedGraphElementsProperty == null)
-                    return;
+                    throw new NullReferenceException("GraphViewObjectHandler has been disposed");
                 graphElementObject.hideFlags &= ~HideFlags.DontSaveInEditor;
                 AssetDatabase.AddObjectToAsset(graphElementObject, AssetDatabase.GetAssetPath(GraphViewObject));
                 graphElementObject.hideFlags |= HideFlags.DontSaveInEditor;
@@ -122,7 +122,7 @@ namespace MomomaAssets.GraphView
             {
                 CheckObjectExistence();
                 if (m_SerializedGraphElementsProperty == null)
-                    throw new NullReferenceException();
+                    throw new NullReferenceException("GraphViewObjectHandler has been disposed");
                 using (var sp = m_SerializedGraphElementsProperty.GetArrayElementAtIndex(index))
                 {
                     var obj = sp.objectReferenceValue;
@@ -138,7 +138,7 @@ namespace MomomaAssets.GraphView
             {
                 CheckObjectExistence();
                 if (m_SerializedGraphElementsProperty == null)
-                    throw new NullReferenceException();
+                    throw new NullReferenceException("GraphViewObjectHandler has been disposed");
                 using (var sp = m_SerializedGraphElementsProperty.GetArrayElementAtIndex(index))
                 {
                     if (sp.objectReferenceValue is GraphElementObject graphElementObject)
@@ -530,6 +530,8 @@ namespace MomomaAssets.GraphView
             var element = m_GraphView.GetElementByGuid(guid);
             if (m_GraphViewObjectHandler.GraphViewObject.GuidToIndices.TryGetValue(guid, out var index))
             {
+                if (element is IFieldHolder fieldHolder)
+                    fieldHolder.OnValueChanged();
                 element.Serialize(m_GraphViewObjectHandler.GetGraphElementObjectAtIndex(index));
             }
             m_GraphView.OnValueChanged(element);

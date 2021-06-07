@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,7 +15,6 @@ namespace MomomaAssets.GraphView
         readonly INodeData m_Node;
         readonly Dictionary<string, VisualElement> m_BoundElements = new Dictionary<string, VisualElement>();
 
-        public event Action<GraphElement>? onValueChanged;
         public IGraphElementData GraphElementData => m_Node;
 
         public NodeGUI(INodeData nodeData) : base()
@@ -32,26 +30,37 @@ namespace MomomaAssets.GraphView
         public void Bind(SerializedObject serializedObject)
         {
             var toRemoveElements = new HashSet<VisualElement>(m_BoundElements.Values);
-            using (var parentProperty = serializedObject.FindProperty("m_GraphElementData"))
+            using (var dataProperty = serializedObject.FindProperty("m_GraphElementData"))
+            using (var endProperty = dataProperty.GetEndProperty(false))
             {
-                foreach (var prop in m_Node.GetProperties())
+                dataProperty.NextVisible(true);
+                while (true)
                 {
-                    var sp = parentProperty.FindPropertyRelative(prop.FieldName);
-                    if (!m_BoundElements.ContainsKey(sp.propertyPath))
+                    if (SerializedProperty.EqualContents(endProperty, dataProperty))
+                        break;
+                    var key = dataProperty.propertyPath;
+                    if (!m_BoundElements.ContainsKey(key))
                     {
+                        var sp = dataProperty.Copy();
                         var field = new PropertyField(sp);
                         extensionContainer.Add(field);
                         RefreshExpandedState();
                         field.BindProperty(sp);
-                        field.Query<PropertyField>().ForEach(i => i.RegisterValueChangeCallback(e => RefreshPorts()));
-                        m_BoundElements.Add(sp.propertyPath, field);
+                        m_BoundElements.Add(key, field);
                     }
-                    toRemoveElements.Remove(m_BoundElements[sp.propertyPath]);
+                    toRemoveElements.Remove(m_BoundElements[key]);
+                    if (dataProperty.NextVisible(false))
+                        break;
                 }
             }
             foreach (var element in toRemoveElements)
                 extensionContainer.Remove(element);
             RefreshExpandedState();
+        }
+
+        public void OnValueChanged()
+        {
+            RefreshPorts();
         }
 
         new void RefreshPorts()
@@ -60,16 +69,24 @@ namespace MomomaAssets.GraphView
             var portCount = 0;
             foreach (var data in m_Node.InputPorts)
             {
-                if (!ports.Remove(data.Id))
+                if (ports.TryGetValue(data.Id, out var port))
                 {
-                    var port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
-                    if (!string.IsNullOrEmpty(data.PortName))
-                        port.portName = data.PortName;
+                    ports.Remove(data.Id);
+                    if (port.portType != data.PortType)
+                    {
+                        port.portName = "";
+                        port.portType = data.PortType;
+                    }
+                }
+                else
+                {
+                    port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
-                    inputContainer.Insert(portCount, port);
                 }
-                ++portCount;
+                if (!string.IsNullOrEmpty(data.PortName))
+                    port.portName = data.PortName;
+                inputContainer.Insert(portCount++, port);
             }
             foreach (var port in ports.Values)
                 inputContainer.Remove(port);
@@ -77,21 +94,28 @@ namespace MomomaAssets.GraphView
             portCount = 0;
             foreach (var data in m_Node.OutputPorts)
             {
-                if (!ports.Remove(data.Id))
+                if (ports.TryGetValue(data.Id, out var port))
                 {
-                    var port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
-                    if (!string.IsNullOrEmpty(data.PortName))
-                        port.portName = data.PortName;
+                    ports.Remove(data.Id);
+                    if (port.portType != data.PortType)
+                    {
+                        port.portName = "";
+                        port.portType = data.PortType;
+                    }
+                }
+                else
+                {
+                    port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
-                    outputContainer.Insert(portCount, port);
                 }
-                ++portCount;
+                if (!string.IsNullOrEmpty(data.PortName))
+                    port.portName = data.PortName;
+                outputContainer.Insert(portCount++, port);
             }
             foreach (var port in ports.Values)
                 outputContainer.Remove(port);
             base.RefreshPorts();
-            onValueChanged?.Invoke(this);
         }
     }
 }
