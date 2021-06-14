@@ -42,8 +42,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             public string regex = "";
             public string guid = "";
 
-            TypeGroup() { }
-
             void ISerializationCallbackReceiver.OnAfterDeserialize()
             {
                 if (string.IsNullOrEmpty(guid))
@@ -81,11 +79,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         List<TypeGroup> m_TypeGroups = new List<TypeGroup>();
-
-        public IEnumerable<PropertyValue> GetProperties()
-        {
-            yield return new PropertyValueList(nameof(m_TypeGroups), m_TypeGroups);
-        }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {

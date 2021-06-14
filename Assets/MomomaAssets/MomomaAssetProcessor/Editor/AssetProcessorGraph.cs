@@ -31,15 +31,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)
         {
-            var ports = startPort.direction == Direction.Input ? startPort.node.outputContainer.Query<Port>() : startPort.node.inputContainer.Query<Port>();
-            ports.ForEach(p =>
+            var ports = startPort.direction == Direction.Input ? startPort.node.outputContainer.Query<Port>().ToList() : startPort.node.inputContainer.Query<Port>().ToList();
+            linkedPorts.UnionWith(ports);
+            foreach (var port in ports)
             {
-                foreach (var e in p.connections)
+                foreach (var e in port.connections)
                 {
                     var pair = startPort.direction == Direction.Input ? e.input : e.output;
                     CollectLinkedPorts(pair, linkedPorts);
                 }
-            });
+            }
         }
 
         public override void AddToSelection(ISelectable selectable)

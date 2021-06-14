@@ -8,6 +8,6 @@ namespace MomomaAssets.GraphView
     {
         IGraphElementData GraphElementData { get; }
         void Bind(SerializedObject serializedObject);
-        void OnValueChanged();
+        void Update();
     }
 }

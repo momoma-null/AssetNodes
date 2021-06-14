@@ -15,18 +15,24 @@ namespace MomomaAssets.GraphView
         GraphElementObject[] m_SerializedGraphElements = new GraphElementObject[0];
 
         public Type? GraphViewType { get; private set; }
-        public IList<ISerializedGraphElement> SerializedGraphElements { get; private set; } = new List<ISerializedGraphElement>();
+        public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
         public IReadOnlyDictionary<string, int> GuidToIndices { get; private set; } = new Dictionary<string, int>();
+        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements { get; private set; } = new Dictionary<string, ISerializedGraphElement>();
+        public event Action? onValueChanged;
 
         void Awake()
         {
-            hideFlags = HideFlags.DontSave;
+            hideFlags = HideFlags.DontSave & ~ HideFlags.DontSaveInEditor;
+        }
+
+        void OnValidate()
+        {
+            onValueChanged?.Invoke();
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             GraphViewType = Type.GetType(m_GraphViewTypeName);
-            SerializedGraphElements = m_SerializedGraphElements.Cast<ISerializedGraphElement>().ToList();
             var dict = new Dictionary<string, int>();
             var index = 0;
             foreach (var element in m_SerializedGraphElements)
@@ -35,6 +41,7 @@ namespace MomomaAssets.GraphView
                 ++index;
             }
             GuidToIndices = dict;
+            GuidToSerializedGraphElements = m_SerializedGraphElements.ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }

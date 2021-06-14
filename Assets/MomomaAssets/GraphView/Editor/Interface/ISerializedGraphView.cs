@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,25 +8,17 @@ namespace MomomaAssets.GraphView
 {
     public interface ISerializedGraphView
     {
-        IList<ISerializedGraphElement> SerializedGraphElements { get; }
+        IEnumerable<ISerializedGraphElement> SerializedGraphElements { get; }
     }
 
     [Serializable]
-    public sealed class SerializedGraphView : ISerializedGraphView, ISerializationCallbackReceiver
+    public sealed class SerializedGraphView : ISerializedGraphView
     {
+        public SerializedGraphView(List<SerializedGraphElement> serializedGraphElements) => m_SerializedGraphElements = serializedGraphElements;
+
         [SerializeField]
-        List<SerializedGraphElement> m_SerializedGraphElements = new List<SerializedGraphElement>();
+        List<SerializedGraphElement> m_SerializedGraphElements;
 
-        public IList<ISerializedGraphElement> SerializedGraphElements { get; private set; } = new List<ISerializedGraphElement>();
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            SerializedGraphElements = m_SerializedGraphElements.ConvertAll(element => element as ISerializedGraphElement);
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            m_SerializedGraphElements = SerializedGraphElements.Cast<SerializedGraphElement>().ToList();
-        }
+        public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
     }
 }

@@ -41,7 +41,7 @@ namespace MomomaAssets.GraphView
                 {
                     m_SerializedObject?.Update();
                     m_GuidProperty!.stringValue = value;
-                    m_SerializedObject?.ApplyModifiedProperties();
+                    m_SerializedObject?.ApplyModifiedPropertiesWithoutUndo();
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace MomomaAssets.GraphView
 
         void Awake()
         {
-            hideFlags = HideFlags.DontSave;
+            hideFlags = HideFlags.DontSave & ~ HideFlags.DontSaveInEditor;
         }
 
         void OnEnable()

@@ -26,10 +26,5 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         DefaultAsset? m_Folder;
-
-        public IEnumerable<PropertyValue> GetProperties()
-        {
-            yield return PropertyValue.Create(nameof(m_Folder), UnityObjectWrapper.Create(m_Folder));
-        }
     }
 }
