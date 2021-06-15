@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 
 #nullable enable
 
@@ -20,7 +19,7 @@ namespace MomomaAssets.GraphView
                     if (SerializedProperty.EqualContents(endProperty, dataProperty))
                         break;
                     EditorGUILayout.PropertyField(dataProperty.Copy(), true);
-                    if (dataProperty.NextVisible(false))
+                    if (!dataProperty.NextVisible(false))
                         break;
                 }
             }

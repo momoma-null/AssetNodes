@@ -36,19 +36,23 @@ namespace MomomaAssets.GraphView
                         graphElementObject.onValueChanged += m_OnGraphElementChanged;
                     }
                 }
-                graphViewObject.onValueChanged += onGraphViewChanged;
+                m_OnGraphViewChanged = onGraphViewChanged;
+                m_GraphViewObject.onValueChanged += RegisterAllValueChangedEvents;
+                m_GraphViewObject.onValueChanged += m_OnGraphViewChanged;
             }
 
             ~GraphViewObjectHandler() => Dispose();
 
             readonly Action<string> m_OnGraphElementChanged;
-
-            public bool IsValid => m_GraphViewObject != null;
-            public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidToSerializedGraphElements;
+            readonly Action m_OnGraphViewChanged;
 
             SerializedObject m_SerializedObject;
             SerializedProperty m_SerializedGraphElementsProperty;
             GraphViewObject m_GraphViewObject;
+            int m_ScopeDepth = 0;
+
+            public bool IsValid => m_GraphViewObject != null;
+            public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidToSerializedGraphElements;
 
             public void Dispose()
             {
@@ -61,6 +65,8 @@ namespace MomomaAssets.GraphView
                             graphElementObject.onValueChanged -= m_OnGraphElementChanged;
                         }
                     }
+                    m_GraphViewObject.onValueChanged -= RegisterAllValueChangedEvents;
+                    m_GraphViewObject.onValueChanged -= m_OnGraphViewChanged;
                 }
                 m_SerializedGraphElementsProperty.Dispose();
                 m_SerializedObject.Dispose();
@@ -76,6 +82,18 @@ namespace MomomaAssets.GraphView
                 AssetDatabase.CreateAsset(m_GraphViewObject, pathName);
             }
 
+            void RegisterAllValueChangedEvents()
+            {
+                foreach (var element in m_GraphViewObject.SerializedGraphElements)
+                {
+                    if (element is GraphElementObject graphElementObject)
+                    {
+                        graphElementObject.onValueChanged -= m_OnGraphElementChanged;
+                        graphElementObject.onValueChanged += m_OnGraphElementChanged;
+                    }
+                }
+            }
+
             public sealed class GetScope : IDisposable
             {
                 readonly GraphViewObjectHandler m_Handler;
@@ -83,12 +101,14 @@ namespace MomomaAssets.GraphView
                 public GetScope(GraphViewObjectHandler handler)
                 {
                     m_Handler = handler;
-                    m_Handler.m_SerializedObject.Update();
+                    if (m_Handler.m_ScopeDepth == 0)
+                        m_Handler.m_SerializedObject.Update();
+                    ++m_Handler.m_ScopeDepth;
                 }
 
                 void IDisposable.Dispose()
                 {
-
+                    --m_Handler.m_ScopeDepth;
                 }
 
                 public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
@@ -115,28 +135,40 @@ namespace MomomaAssets.GraphView
                 {
                     m_Handler = handler;
                     m_WithoutUndo = withoutUndo;
-                    m_Handler.m_SerializedObject.Update();
+                    if (m_Handler.m_ScopeDepth == 0)
+                        m_Handler.m_SerializedObject.Update();
+                    ++m_Handler.m_ScopeDepth;
                 }
 
                 void IDisposable.Dispose()
                 {
+                    --m_Handler.m_ScopeDepth;
+                    var doReimport = m_ToDeleteAssets.Count > 0;
                     if (m_WithoutUndo)
                     {
-                        m_Handler.m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
+                        doReimport |= m_Handler.m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
                         foreach (var i in m_ToDeleteAssets)
                             DestroyImmediate(i, true);
                     }
                     else
                     {
-                        m_Handler.m_SerializedObject.ApplyModifiedProperties();
+                        doReimport |= m_Handler.m_SerializedObject.ApplyModifiedProperties();
                         foreach (var i in m_ToDeleteAssets)
                             Undo.DestroyObjectImmediate(i);
+                    }
+                    if (doReimport)
+                    {
+                        var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
+                        if (!string.IsNullOrEmpty(path))
+                            AssetDatabase.ImportAsset(path);
                     }
                 }
 
                 public void AddGraphElementObject(GraphElementObject graphElementObject)
                 {
-                    AssetDatabase.AddObjectToAsset(graphElementObject, AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject));
+                    var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
+                    graphElementObject.hideFlags &= ~HideFlags.DontSaveInEditor;
+                    AssetDatabase.AddObjectToAsset(graphElementObject, path);
                     graphElementObject.onValueChanged += m_Handler.m_OnGraphElementChanged;
                     ++m_Handler.m_SerializedGraphElementsProperty.arraySize;
                     using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(m_Handler.m_SerializedGraphElementsProperty.arraySize - 1))
@@ -329,9 +361,11 @@ namespace MomomaAssets.GraphView
                         if (edge is IEdgeCallback edgeCallback)
                         {
                             var graphElementObject = CreateGraphElementObject(edge);
+                            if (edge.input != null && edge.output != null)
+                                graphElementObject.GraphElementData = new DefaultEdgeData(edge.input.viewDataKey, edge.output.viewDataKey);
                             setScope.AddGraphElementObject(graphElementObject);
                             edgeCallback.onPortChanged += OnPortChanged;
-                            OnPortChanged(edge);
+                            m_GraphView.AddElement(edge);
                             m_GraphView.OnValueChanged(edge);
                         }
                         edge.AddManipulator(new ContextualMenuManipulator(context => context.menu.AppendAction("Add Token", action => AddToken(edge, action), action => DropdownMenuAction.Status.Normal)));
@@ -343,6 +377,8 @@ namespace MomomaAssets.GraphView
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
                     setScope.DeleteGraphElementObjects(graphViewChange.elementsToRemove.Select(i => i.viewDataKey));
+                    foreach (IEdgeCallback e in graphViewChange.elementsToRemove.Where(e => e is IEdgeCallback))
+                        e.onPortChanged -= OnPortChanged;
                 }
             }
             if (graphViewChange.movedElements != null)

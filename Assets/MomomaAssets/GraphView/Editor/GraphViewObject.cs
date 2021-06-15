@@ -20,11 +20,6 @@ namespace MomomaAssets.GraphView
         public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements { get; private set; } = new Dictionary<string, ISerializedGraphElement>();
         public event Action? onValueChanged;
 
-        void Awake()
-        {
-            hideFlags = HideFlags.DontSave & ~ HideFlags.DontSaveInEditor;
-        }
-
         void OnValidate()
         {
             onValueChanged?.Invoke();
@@ -37,11 +32,12 @@ namespace MomomaAssets.GraphView
             var index = 0;
             foreach (var element in m_SerializedGraphElements)
             {
-                dict[element.Guid] = index;
+                if (element != null)
+                    dict[element.Guid] = index;
                 ++index;
             }
             GuidToIndices = dict;
-            GuidToSerializedGraphElements = m_SerializedGraphElements.ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
+            GuidToSerializedGraphElements = m_SerializedGraphElements.Where(i => i != null).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }

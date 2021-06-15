@@ -75,6 +75,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public IEnumerable<PortData> InputPorts => m_InputPorts;
         public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => new PortData(i.Type, id: i.guid));
 
+        [SerializeField]
+        [HideInInspector]
         PortData[] m_InputPorts = new[] { new PortData(typeof(UnityObject)) };
 
         [SerializeField]

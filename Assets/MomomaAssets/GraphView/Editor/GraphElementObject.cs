@@ -112,7 +112,9 @@ namespace MomomaAssets.GraphView
 
         void Awake()
         {
-            hideFlags = HideFlags.DontSave & ~ HideFlags.DontSaveInEditor;
+            //hideFlags = HideFlags.HideInHierarchy;
+            if (!EditorUtility.IsPersistent(this))
+                hideFlags |= HideFlags.DontSaveInEditor;
         }
 
         void OnEnable()
