@@ -49,7 +49,6 @@ namespace MomomaAssets.GraphView
             SerializedObject m_SerializedObject;
             SerializedProperty m_SerializedGraphElementsProperty;
             GraphViewObject m_GraphViewObject;
-            int m_ScopeDepth = 0;
 
             public bool IsValid => m_GraphViewObject != null;
             public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidToSerializedGraphElements;
@@ -101,15 +100,11 @@ namespace MomomaAssets.GraphView
                 public GetScope(GraphViewObjectHandler handler)
                 {
                     m_Handler = handler;
-                    if (m_Handler.m_ScopeDepth == 0)
-                        m_Handler.m_SerializedObject.Update();
-                    ++m_Handler.m_ScopeDepth;
+                    if (!m_Handler.m_SerializedObject.hasModifiedProperties)
+                        m_Handler.m_SerializedObject.UpdateIfRequiredOrScript();
                 }
 
-                void IDisposable.Dispose()
-                {
-                    --m_Handler.m_ScopeDepth;
-                }
+                void IDisposable.Dispose() { }
 
                 public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
                 {
@@ -130,37 +125,51 @@ namespace MomomaAssets.GraphView
                 readonly GraphViewObjectHandler m_Handler;
                 readonly bool m_WithoutUndo;
                 readonly HashSet<UnityObject> m_ToDeleteAssets = new HashSet<UnityObject>();
+                readonly bool m_IsModifying;
 
                 public SetScope(GraphViewObjectHandler handler, bool withoutUndo = false)
                 {
                     m_Handler = handler;
                     m_WithoutUndo = withoutUndo;
-                    if (m_Handler.m_ScopeDepth == 0)
-                        m_Handler.m_SerializedObject.Update();
-                    ++m_Handler.m_ScopeDepth;
+                    m_IsModifying = m_Handler.m_SerializedObject.hasModifiedProperties;
+                    if (!m_IsModifying)
+                        m_Handler.m_SerializedObject.UpdateIfRequiredOrScript();
                 }
 
                 void IDisposable.Dispose()
                 {
-                    --m_Handler.m_ScopeDepth;
-                    var doReimport = m_ToDeleteAssets.Count > 0;
+                    EditorApplication.delayCall += DelayDispose;
+                    if (!m_IsModifying && m_Handler.m_SerializedObject.hasModifiedProperties)
+                    {
+                        if (m_WithoutUndo)
+                        {
+                            m_Handler.m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
+                        }
+                        else
+                        {
+                            m_Handler.m_SerializedObject.ApplyModifiedProperties();
+                        }
+                    }
+                }
+
+                void DelayDispose()
+                {
+                    EditorApplication.delayCall -= DelayDispose;
                     if (m_WithoutUndo)
                     {
-                        doReimport |= m_Handler.m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
                         foreach (var i in m_ToDeleteAssets)
                             DestroyImmediate(i, true);
                     }
                     else
                     {
-                        doReimport |= m_Handler.m_SerializedObject.ApplyModifiedProperties();
                         foreach (var i in m_ToDeleteAssets)
                             Undo.DestroyObjectImmediate(i);
                     }
-                    if (doReimport)
+                    var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
-                        if (!string.IsNullOrEmpty(path))
-                            AssetDatabase.ImportAsset(path);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.ImportAsset(path);
                     }
                 }
 
@@ -169,6 +178,8 @@ namespace MomomaAssets.GraphView
                     var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
                     graphElementObject.hideFlags &= ~HideFlags.DontSaveInEditor;
                     AssetDatabase.AddObjectToAsset(graphElementObject, path);
+                    if (!m_WithoutUndo)
+                        Undo.RegisterCreatedObjectUndo(graphElementObject, $"Create {nameof(GraphElementObject)}");
                     graphElementObject.onValueChanged += m_Handler.m_OnGraphElementChanged;
                     ++m_Handler.m_SerializedGraphElementsProperty.arraySize;
                     using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(m_Handler.m_SerializedGraphElementsProperty.arraySize - 1))
@@ -328,7 +339,7 @@ namespace MomomaAssets.GraphView
                 {
                     foreach (var graphElement in m_GraphView.graphElements.ToList())
                     {
-                        var graphElementObject = CreateGraphElementObject(graphElement, true);
+                        var graphElementObject = CreateGraphElementObject(graphElement);
                         setScope.AddGraphElementObject(graphElementObject);
                     }
                 }
@@ -337,7 +348,7 @@ namespace MomomaAssets.GraphView
             {
                 AssetDatabase.StopAssetEditing();
             }
-            AssetDatabase.ImportAsset(path);
+            AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
             ProjectWindowUtil.ShowCreatedAsset(AssetDatabase.LoadMainAssetAtPath(path));
         }
@@ -352,7 +363,7 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler == null)
                 return graphViewChange;
-            if (graphViewChange.edgesToCreate != null)
+            if (graphViewChange.edgesToCreate != null && graphViewChange.edgesToCreate.Count > 0)
             {
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
@@ -372,7 +383,7 @@ namespace MomomaAssets.GraphView
                     }
                 }
             }
-            if (graphViewChange.elementsToRemove != null)
+            if (graphViewChange.elementsToRemove != null && graphViewChange.elementsToRemove.Count > 0)
             {
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
@@ -381,7 +392,7 @@ namespace MomomaAssets.GraphView
                         e.onPortChanged -= OnPortChanged;
                 }
             }
-            if (graphViewChange.movedElements != null)
+            if (graphViewChange.movedElements != null && graphViewChange.movedElements.Count > 0)
             {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
                 {
@@ -457,18 +468,17 @@ namespace MomomaAssets.GraphView
                 rect.position += offset;
                 serializedGraphElement.Position = rect;
             }
-            var guids = new Dictionary<string, GraphElement>();
-            foreach (var serializedGraphElement in serializedGraphElements)
-            {
-                var graphElement = serializedGraphElement.Deserialize(m_GraphView);
-                graphElement.Query<GraphElement>().ForEach(e => guids[e.viewDataKey] = e);
-            }
+            foreach (var serializedGraphElement in serializedGraphElements.Where(i => !(i.GraphElementData is IEdgeData)))
+                serializedGraphElement.Deserialize(m_GraphView);
+            foreach (var serializedGraphElement in serializedGraphElements.Where(i => i is IEdgeData))
+                serializedGraphElement.Deserialize(m_GraphView);
             if (m_GraphViewObjectHandler != null)
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
+                    var guids = new Dictionary<string, GraphElement>();
+                    m_GraphView.graphElements.ForEach(i => guids.Add(i.viewDataKey, i));
                     foreach (var serializedGraphElement in serializedGraphElements)
                     {
-                        PostDeserialize(serializedGraphElement, guids);
                         if (guids.TryGetValue(serializedGraphElement.Guid, out var graphElement))
                         {
                             var graphElementObject = CreateGraphElementObject(graphElement, serializedGraphElement.Position);
@@ -487,17 +497,19 @@ namespace MomomaAssets.GraphView
             elementsToRemove.RemoveWhere(element => serializedGraphElements.ContainsKey(element.viewDataKey));
             m_GraphView.DeleteElements(elementsToRemove);
             var guids = m_GraphView.graphElements.ToList().ToDictionary(element => element.viewDataKey, element => element);
-            foreach (var serializedGraphElement in serializedGraphElements)
+            foreach (var serializedGraphElement in serializedGraphElements.Where(i => !(i.Value.GraphElementData is IEdgeData)))
             {
                 if (guids.TryGetValue(serializedGraphElement.Key, out var graphElement))
-                    serializedGraphElement.Value.Deserialize(graphElement);
+                    serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);
                 else
-                    graphElement = serializedGraphElement.Value.Deserialize(m_GraphView);
-                graphElement.Query<GraphElement>().ForEach(e => guids[e.viewDataKey] = e);
+                    serializedGraphElement.Value.Deserialize(m_GraphView);
             }
-            foreach (var serializedGraphElement in serializedGraphElements)
+            foreach (var serializedGraphElement in serializedGraphElements.Where(i => i.Value.GraphElementData is IEdgeData))
             {
-                PostDeserialize(serializedGraphElement.Value, guids);
+                if (guids.TryGetValue(serializedGraphElement.Key, out var graphElement))
+                    serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);
+                else
+                    serializedGraphElement.Value.Deserialize(m_GraphView);
             }
         }
 
@@ -529,39 +541,6 @@ namespace MomomaAssets.GraphView
             edge.input = inputPort;
         }
 
-        public void PostDeserialize(ISerializedGraphElement serializedGraphElement, Dictionary<string, GraphElement> guids)
-        {
-            var graphElement = guids[serializedGraphElement.Guid];
-            if (graphElement is Edge edge)
-            {
-                guids.TryGetValue(serializedGraphElement.ReferenceGuids[0], out var inputPort);
-                guids.TryGetValue(serializedGraphElement.ReferenceGuids[1], out var outputPort);
-                var changed = false;
-                if (edge.input != inputPort && inputPort is Port ip)
-                {
-                    edge.input?.Disconnect(edge);
-                    edge.input = ip;
-                    edge.input.Connect(edge);
-                    changed = true;
-                }
-                if (edge.output != outputPort && outputPort is Port op)
-                {
-                    edge.output?.Disconnect(edge);
-                    edge.output = op;
-                    edge.output.Connect(edge);
-                    changed = true;
-                }
-                if (edge.output == null || edge.input == null)
-                {
-                    guids.Remove(edge.viewDataKey);
-                    m_GraphView.RemoveElement(edge);
-                    changed = true;
-                }
-                if (changed)
-                    m_GraphView.OnValueChanged(edge);
-            }
-        }
-
         public void AddElement(GraphElement graphElement, Vector2 screenMousePosition)
         {
             if (m_GraphView.Contains(graphElement))
@@ -580,17 +559,15 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        GraphElementObject CreateGraphElementObject(GraphElement graphElement, bool withoutUndo = false)
+        GraphElementObject CreateGraphElementObject(GraphElement graphElement)
         {
-            return CreateGraphElementObject(graphElement, graphElement.GetPosition(), withoutUndo);
+            return CreateGraphElementObject(graphElement, graphElement.GetPosition());
         }
 
-        GraphElementObject CreateGraphElementObject(GraphElement graphElement, Rect position, bool withoutUndo = false)
+        GraphElementObject CreateGraphElementObject(GraphElement graphElement, Rect position)
         {
             var graphElementObject = ScriptableObject.CreateInstance<GraphElementObject>();
             graphElement.Serialize(graphElementObject, position);
-            if (!withoutUndo)
-                Undo.RegisterCreatedObjectUndo(graphElementObject, $"Create {graphElement.GetType().Name}");
             return graphElementObject;
         }
 
@@ -625,7 +602,7 @@ namespace MomomaAssets.GraphView
                 {
                     var graphElementObject = getScope.TryGetGraphElementObjectByGuid(guid);
                     if (graphElementObject != null)
-                        graphElementObject.Deserialize(element);
+                        graphElementObject.Deserialize(element, m_GraphView);
                 }
             m_GraphView.OnValueChanged(element);
         }

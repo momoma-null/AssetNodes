@@ -15,7 +15,6 @@ namespace MomomaAssets.GraphView
     public interface ISerializedGraphElement
     {
         string Guid { get; set; }
-        string TypeName { get; set; }
         Rect Position { get; set; }
         IReadOnlyList<string> ReferenceGuids { get; set; }
         IGraphElementData? GraphElementData { get; set; }
@@ -35,7 +34,6 @@ namespace MomomaAssets.GraphView
                 }
             }
             serializedGraphElement.Guid = graphElement.viewDataKey;
-            serializedGraphElement.TypeName = graphElement.GetType().AssemblyQualifiedName;
             serializedGraphElement.Position = position;
             serializedGraphElement.RebindReferenceGuids();
         }
@@ -61,16 +59,17 @@ namespace MomomaAssets.GraphView
                 var so = new SerializedObject(scriptableObject);
                 fieldHolder.Bind(so);
             }
-            serializedGraphElement.Deserialize(graphElement);
+            serializedGraphElement.Deserialize(graphElement, graphView);
             return graphElement;
         }
 
-        public static void Deserialize(this ISerializedGraphElement serializedGraphElement, GraphElement graphElement)
+        public static void Deserialize<TGraphView>(this ISerializedGraphElement serializedGraphElement, GraphElement graphElement, TGraphView graphView) where TGraphView : GraphView, IGraphViewCallback
         {
             graphElement.viewDataKey = serializedGraphElement.Guid;
             graphElement.SetPosition(serializedGraphElement.Position);
             if (serializedGraphElement.GraphElementData is INodeData nodeData && graphElement is Node node)
             {
+                var toDeleteElements = new HashSet<GraphElement>();
                 var ports = node.inputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
                 var portCount = 0;
                 foreach (var data in nodeData.InputPorts)
@@ -95,7 +94,10 @@ namespace MomomaAssets.GraphView
                     node.inputContainer.Insert(portCount++, port);
                 }
                 foreach (var port in ports.Values)
+                {
+                    toDeleteElements.UnionWith(port.connections);
                     node.inputContainer.Remove(port);
+                }
                 ports = node.outputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
                 portCount = 0;
                 foreach (var data in nodeData.OutputPorts)
@@ -120,8 +122,33 @@ namespace MomomaAssets.GraphView
                     node.outputContainer.Insert(portCount++, port);
                 }
                 foreach (var port in ports.Values)
+                {
+                    toDeleteElements.UnionWith(port.connections);
                     node.outputContainer.Remove(port);
+                }
                 node.RefreshPorts();
+                graphView.DeleteElements(toDeleteElements);
+            }
+            else if (serializedGraphElement.GraphElementData is IEdgeData edgeData && graphElement is Edge edge)
+            {
+                var inputPort = graphView.GetPortByGuid(edgeData.InputPortGuid);
+                if (edge.input != inputPort)
+                {
+                    edge.input?.Disconnect(edge);
+                    edge.input = inputPort;
+                    edge.input.Connect(edge);
+                }
+                var outputPort = graphView.GetPortByGuid(edgeData.OutputPortGuid);
+                if (edge.output != outputPort)
+                {
+                    edge.output?.Disconnect(edge);
+                    edge.output = outputPort;
+                    edge.output.Connect(edge);
+                }
+                if (edge.output == null || edge.input == null)
+                {
+                    graphView.RemoveElement(edge);
+                }
             }
             serializedGraphElement.RebindReferenceGuids();
         }
