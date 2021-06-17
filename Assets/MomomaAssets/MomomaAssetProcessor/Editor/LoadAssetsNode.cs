@@ -10,7 +10,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class LoadAssetsNode : INodeData, IBeginNode
+    sealed class LoadAssetsNode : IBeginNode
     {
         static LoadAssetsNode()
         {
@@ -29,8 +29,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         DefaultAsset? m_Folder;
 
-        void IBeginNode.ProcessStart(ProcessingDataContainer container)
+        ProcessingDataContainer IBeginNode.BeginProcess()
         {
+            var container = new ProcessingDataContainer();
             var assetGroup = new AssetGroup();
             if (m_Folder != null)
             {
@@ -40,6 +41,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 assetGroup = new AssetGroup(assets);
             }
             container.Set(m_OutPorts[0].Id, assetGroup);
+            return container;
         }
     }
 }

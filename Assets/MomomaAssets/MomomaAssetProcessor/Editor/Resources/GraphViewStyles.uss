@@ -6,17 +6,12 @@ GridBackground{
  --thick-lines:10;
 }
 
-ObjectField{
- right:0;
- left:0;
+.unity-object-field__object{
+ width:100px;
 }
 
-ObjectField > ObjectFieldDisplay{
- flex-shrink:1;
-}
-
-ObjectField > ObjectFieldDisplay > Label.textElement{
- flex-shrink:1;
+.unity-property-field__label{
+ min-width:100px;
 }
 
 ListView{

@@ -23,7 +23,8 @@ namespace MomomaAssets.GraphView
                         break;
                 }
             }
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.hasModifiedProperties)
+                serializedObject.ApplyModifiedProperties();
         }
     }
 }

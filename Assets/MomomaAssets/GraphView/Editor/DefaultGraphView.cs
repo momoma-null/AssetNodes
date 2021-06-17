@@ -1,32 +1,28 @@
-using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 
 #nullable enable
 
-namespace MomomaAssets.GraphView.AssetProcessor
+namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
-    sealed class AssetProcessorGraph : GraphView, IGraphViewCallback
+    sealed class DefaultGraphView : GraphView
     {
-        public AssetProcessorGraph() { }
+        readonly ISelection m_Selection;
 
-        public event Action<List<ISelectable>>? onSelectionChanged;
-
-        public void Initialize() { }
-
-        public void OnValueChanged(VisualElement visualElement) { }
+        public DefaultGraphView(ISelection selection)
+        {
+            m_Selection = selection;
+            Add(new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } });
+        }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             var linkedPorts = new HashSet<Port>();
             CollectLinkedPorts(startPort, linkedPorts);
-            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p));
+            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && startPort.direction == Direction.Input ? startPort.portType.IsAssignableFrom(p.portType) : p.portType.IsAssignableFrom(startPort.portType));
         }
 
         static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)
@@ -46,19 +42,24 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public override void AddToSelection(ISelectable selectable)
         {
             base.AddToSelection(selectable);
-            onSelectionChanged?.Invoke(selection);
+            m_Selection.AddToSelection(selectable);
         }
 
         public override void ClearSelection()
         {
             base.ClearSelection();
-            onSelectionChanged?.Invoke(selection);
+            m_Selection.ClearSelection();
         }
 
         public override void RemoveFromSelection(ISelectable selectable)
         {
             base.RemoveFromSelection(selectable);
-            onSelectionChanged?.Invoke(selection);
+            m_Selection.RemoveFromSelection(selectable);
+        }
+
+        void StartProcess()
+        {
+
         }
     }
 }

@@ -38,7 +38,7 @@ namespace MomomaAssets.GraphView
             serializedGraphElement.RebindReferenceGuids();
         }
 
-        public static GraphElement Deserialize<TGraphView>(this ISerializedGraphElement serializedGraphElement, TGraphView graphView) where TGraphView : GraphView, IGraphViewCallback
+        public static GraphElement Deserialize(this ISerializedGraphElement serializedGraphElement, GraphView graphView)
         {
             GraphElement graphElement = serializedGraphElement.GraphElementData switch
             {
@@ -63,7 +63,7 @@ namespace MomomaAssets.GraphView
             return graphElement;
         }
 
-        public static void Deserialize<TGraphView>(this ISerializedGraphElement serializedGraphElement, GraphElement graphElement, TGraphView graphView) where TGraphView : GraphView, IGraphViewCallback
+        public static void Deserialize(this ISerializedGraphElement serializedGraphElement, GraphElement graphElement, GraphView graphView)
         {
             graphElement.viewDataKey = serializedGraphElement.Guid;
             graphElement.SetPosition(serializedGraphElement.Position);

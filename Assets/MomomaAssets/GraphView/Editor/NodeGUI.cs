@@ -51,7 +51,7 @@ namespace MomomaAssets.GraphView
                         m_BoundElements.Add(key, field);
                     }
                     toRemoveElements.Remove(m_BoundElements[key]);
-                    if (dataProperty.NextVisible(false))
+                    if (!dataProperty.NextVisible(false))
                         break;
                 }
             }

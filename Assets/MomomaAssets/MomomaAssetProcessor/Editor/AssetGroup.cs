@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityObject = UnityEngine.Object;
 
@@ -5,7 +6,7 @@ using UnityObject = UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    sealed class AssetGroup
+    sealed class AssetGroup : IEnumerable<UnityObject>
     {
         readonly List<UnityObject> m_Assets = new List<UnityObject>();
 
@@ -15,6 +16,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public AssetGroup() { }
+
+        IEnumerator<UnityObject> IEnumerable<UnityObject>.GetEnumerator() => m_Assets.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => m_Assets.GetEnumerator();
 
         public void Add(AssetGroup x)
         {

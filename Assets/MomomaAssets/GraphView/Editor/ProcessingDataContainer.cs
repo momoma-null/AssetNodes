@@ -15,14 +15,14 @@ namespace MomomaAssets.GraphView
             m_Functions[id] = func;
         }
 
-        public T? Get<T>(string id) where T : class
+        public T Get<T>(string id, Func<T> defaultValue) where T : class
         {
             if (m_Functions.TryGetValue(id, out var func))
             {
                 if (func is Func<T> ret)
                     return ret();
             }
-            return default(T);
+            return defaultValue();
         }
     }
 }

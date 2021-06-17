@@ -1,8 +1,8 @@
 ﻿
 namespace MomomaAssets.GraphView
 {
-    public interface IBeginNode
+    public interface IBeginNode : INodeData
     {
-        void ProcessStart(ProcessingDataContainer container);
+        ProcessingDataContainer BeginProcess();
     }
 }

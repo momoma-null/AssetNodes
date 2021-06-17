@@ -13,11 +13,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             EditorWindow.GetWindow<AssetProcessorGUI>("MomomaAssetProcessor");
         }
 
-        NodeGraph<AssetProcessorGraph, AdvancedEdge>? m_NodeGraph;
+        NodeGraph<AdvancedEdge>? m_NodeGraph;
 
         void OnEnable()
         {
-            m_NodeGraph = new NodeGraph<AssetProcessorGraph, AdvancedEdge>(this, new AssetProcessorGraph());
+            m_NodeGraph = new NodeGraph<AdvancedEdge>(this);
         }
 
         void OnDisable()
