@@ -31,7 +31,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         ProcessingDataContainer IBeginNode.BeginProcess()
         {
-            var container = new ProcessingDataContainer();
+            var container = new ProcessingDataContainer((id, container) => { });
             var assetGroup = new AssetGroup();
             if (m_Folder != null)
             {

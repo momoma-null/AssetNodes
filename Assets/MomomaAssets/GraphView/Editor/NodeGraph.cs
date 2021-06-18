@@ -276,6 +276,7 @@ namespace MomomaAssets.GraphView
         void ISelection.AddToSelection(ISelectable selectable)
         {
             if (m_GraphViewObjectHandler != null)
+            {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
                 {
                     if (selectable is GraphElement element)
@@ -290,6 +291,7 @@ namespace MomomaAssets.GraphView
                         }
                     }
                 }
+            }
         }
 
         void ISelection.ClearSelection()
@@ -300,6 +302,7 @@ namespace MomomaAssets.GraphView
         void ISelection.RemoveFromSelection(ISelectable selectable)
         {
             if (m_GraphViewObjectHandler != null)
+            {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
                 {
                     if (selectable is GraphElement element)
@@ -315,6 +318,7 @@ namespace MomomaAssets.GraphView
                         }
                     }
                 }
+            }
         }
 
         void SetGraphViewObjectHandler(GraphViewObjectHandler? graphViewObjectHandler)
@@ -520,6 +524,7 @@ namespace MomomaAssets.GraphView
             foreach (var serializedGraphElement in serializedGraphElements.Where(i => i is IEdgeData))
                 serializedGraphElement.Deserialize(m_GraphView);
             if (m_GraphViewObjectHandler != null)
+            {
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
                     var guids = new Dictionary<string, GraphElement>();
@@ -533,6 +538,7 @@ namespace MomomaAssets.GraphView
                         }
                     }
                 }
+            }
         }
 
         void FullReload()
@@ -645,12 +651,14 @@ namespace MomomaAssets.GraphView
             if (element is IFieldHolder fieldHolder)
                 fieldHolder.Update();
             if (m_GraphViewObjectHandler != null)
+            {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
                 {
                     var graphElementObject = getScope.TryGetGraphElementObjectByGuid(guid);
                     if (graphElementObject != null)
                         graphElementObject.Deserialize(element, m_GraphView);
                 }
+            }
             //m_GraphView.OnValueChanged(element);
         }
 
@@ -658,16 +666,38 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler == null)
                 return;
+            var connections = new Dictionary<string, HashSet<string>>();
+            foreach (var i in m_GraphViewObjectHandler.GuidToSerializedGraphElements.Values)
+            {
+                if (i.GraphElementData is IEdgeData edgeData)
+                {
+                    if (!connections.TryGetValue(edgeData.InputPortGuid, out var outputs))
+                    {
+                        outputs = new HashSet<string>();
+                        connections.Add(edgeData.InputPortGuid, outputs);
+                    }
+                    outputs.Add(edgeData.OutputPortGuid);
+                    if (!connections.TryGetValue(edgeData.OutputPortGuid, out var inputs))
+                    {
+                        inputs = new HashSet<string>();
+                        connections.Add(edgeData.OutputPortGuid, inputs);
+                    }
+                    inputs.Add(edgeData.InputPortGuid);
+                }
+            }
             foreach (var b in m_GraphViewObjectHandler.BeginNodes)
             {
                 var container = b.BeginProcess();
-                foreach(var port in b.OutputPorts)
+                foreach (var port in b.OutputPorts)
                 {
-                    if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[port.Id].GraphElementData is IEdgeData edgeData)
+                    if (connections.TryGetValue(port.Id, out var pairPorts))
                     {
-                        if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[edgeData.OutputPortGuid].GraphElementData is IFunctionNode functionNode)
+                        foreach (var pairPort in pairPorts)
                         {
-                            functionNode.Process(container);
+                            if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[pairPort].GraphElementData is IFunctionNode functionNode)
+                            {
+                                functionNode.Process(container);
+                            }
                         }
                     }
                 }

@@ -22,8 +22,6 @@ namespace MomomaAssets.GraphView
         IGraphElementData? m_GraphElementData;
 
         SerializedObject? m_SerializedObject;
-        SerializedProperty? m_PositionProperty;
-        SerializedProperty? m_ReferenceGuidsProperty;
 
         public event Action<string>? onValueChanged;
 
@@ -49,10 +47,11 @@ namespace MomomaAssets.GraphView
             get => m_Position;
             set
             {
-                if (m_Position != value)
+                if (m_Position != value && m_SerializedObject != null)
                 {
-                    m_SerializedObject?.Update();
-                    m_PositionProperty!.rectValue = value;
+                    m_SerializedObject.Update();
+                    using (var sp = m_SerializedObject.FindProperty(nameof(m_Position)))
+                        sp.rectValue = value;
                     m_SerializedObject?.ApplyModifiedProperties();
                 }
             }
@@ -63,14 +62,17 @@ namespace MomomaAssets.GraphView
             get => m_ReferenceGuids;
             set
             {
-                if (m_ReferenceGuids.Count != value.Count || !m_ReferenceGuids.SequenceEqual(value))
+                if ((m_ReferenceGuids.Count != value.Count || !m_ReferenceGuids.SequenceEqual(value)) && m_SerializedObject != null)
                 {
-                    m_SerializedObject?.Update();
-                    m_ReferenceGuidsProperty!.ClearArray();
-                    m_ReferenceGuidsProperty.arraySize = value.Count;
-                    for (var i = 0; i < value.Count; ++i)
-                        m_ReferenceGuidsProperty.GetArrayElementAtIndex(i).stringValue = value[i];
-                    m_SerializedObject?.ApplyModifiedProperties();
+                    m_SerializedObject.Update();
+                    using (var referenceGuids = m_SerializedObject.FindProperty(nameof(m_ReferenceGuids)))
+                    {
+                        referenceGuids.ClearArray();
+                        referenceGuids.arraySize = value.Count;
+                        for (var i = 0; i < value.Count; ++i)
+                            referenceGuids.GetArrayElementAtIndex(i).stringValue = value[i];
+                    }
+                    m_SerializedObject.ApplyModifiedProperties();
                 }
             }
         }
@@ -105,17 +107,11 @@ namespace MomomaAssets.GraphView
         void OnEnable()
         {
             m_SerializedObject = new SerializedObject(this);
-            m_PositionProperty = m_SerializedObject.FindProperty(nameof(m_Position));
-            m_ReferenceGuidsProperty = m_SerializedObject.FindProperty(nameof(m_ReferenceGuids));
         }
 
         void OnDisable()
         {
-            m_PositionProperty?.Dispose();
-            m_ReferenceGuidsProperty?.Dispose();
             m_SerializedObject?.Dispose();
-            m_PositionProperty = null;
-            m_ReferenceGuidsProperty = null;
             m_SerializedObject = null;
         }
     }
