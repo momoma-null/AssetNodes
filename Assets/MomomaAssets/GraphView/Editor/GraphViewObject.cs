@@ -18,7 +18,6 @@ namespace MomomaAssets.GraphView
         public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
         public IReadOnlyDictionary<string, int> GuidToIndices { get; private set; } = new Dictionary<string, int>();
         public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements { get; private set; } = new Dictionary<string, ISerializedGraphElement>();
-        public IReadOnlyCollection<IBeginNode> BeginNodes { get; private set; } = new IBeginNode[0];
         public event Action? onValueChanged;
 
         void OnValidate()
@@ -31,20 +30,16 @@ namespace MomomaAssets.GraphView
             GraphViewType = Type.GetType(m_GraphViewTypeName);
             var dict = new Dictionary<string, int>();
             var index = 0;
-            var beginNodes = new List<IBeginNode>();
             foreach (var element in m_SerializedGraphElements)
             {
                 if (element != null)
                 {
                     dict[element.Guid] = index;
-                    if (element.GraphElementData is IBeginNode beginNode)
-                        beginNodes.Add(beginNode);
                 }
                 ++index;
             }
             GuidToIndices = dict;
             GuidToSerializedGraphElements = m_SerializedGraphElements.Where(i => i != null).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
-            BeginNodes = beginNodes;
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }

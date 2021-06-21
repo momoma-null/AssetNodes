@@ -14,7 +14,7 @@ namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
-    public sealed class NodeGraph<TEdge> : IDisposable, ISelection
+    public sealed class NodeGraph<TEdge> : IDisposable, ISelection, IProcessor
         where TEdge : Edge, IEdgeCallback, new()
     {
         sealed class GraphViewObjectHandler : IDisposable, IEquatable<GraphViewObjectHandler>
@@ -51,7 +51,6 @@ namespace MomomaAssets.GraphView
 
             public bool IsValid => m_GraphViewObject != null;
             public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidToSerializedGraphElements;
-            public IReadOnlyCollection<IBeginNode> BeginNodes => m_GraphViewObject.BeginNodes;
 
             public void Dispose()
             {
@@ -229,7 +228,7 @@ namespace MomomaAssets.GraphView
                 throw new ArgumentNullException("editorWindow");
             m_EditorWindow = editorWindow;
             m_NodeGraphType = m_EditorWindow.GetType();
-            m_GraphView = new DefaultGraphView(this);
+            m_GraphView = new DefaultGraphView(this, this);
             m_GraphView.style.flexGrow = 1;
             m_EditorWindow.rootVisualElement.Add(m_GraphView);
             m_GraphView.serializeGraphElements = SerializeGraphElements;
@@ -666,7 +665,19 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler == null)
                 return;
+            var portToNode = new Dictionary<string, string>();
+            foreach (var i in m_GraphViewObjectHandler.GuidToSerializedGraphElements.Values)
+            {
+                if (i.GraphElementData is INodeData nodeData)
+                {
+                    foreach (var port in nodeData.OutputPorts)
+                    {
+                        portToNode[port.Id] = i.Guid;
+                    }
+                }
+            }
             var connections = new Dictionary<string, HashSet<string>>();
+            var connectedOutputPorts = new HashSet<string>();
             foreach (var i in m_GraphViewObjectHandler.GuidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is IEdgeData edgeData)
@@ -676,29 +687,49 @@ namespace MomomaAssets.GraphView
                         outputs = new HashSet<string>();
                         connections.Add(edgeData.InputPortGuid, outputs);
                     }
-                    outputs.Add(edgeData.OutputPortGuid);
-                    if (!connections.TryGetValue(edgeData.OutputPortGuid, out var inputs))
-                    {
-                        inputs = new HashSet<string>();
-                        connections.Add(edgeData.OutputPortGuid, inputs);
-                    }
-                    inputs.Add(edgeData.InputPortGuid);
+                    outputs.Add(portToNode[edgeData.OutputPortGuid]);
+                    connectedOutputPorts.Add(edgeData.OutputPortGuid);
                 }
             }
-            foreach (var b in m_GraphViewObjectHandler.BeginNodes)
+            var endNodes = new HashSet<string>();
+            foreach (var i in m_GraphViewObjectHandler.GuidToSerializedGraphElements.Values)
             {
-                var container = b.BeginProcess();
-                foreach (var port in b.OutputPorts)
+                if (i.GraphElementData is INodeData nodeData)
                 {
-                    if (connections.TryGetValue(port.Id, out var pairPorts))
+                    var isEndNode = true;
+                    foreach (var port in nodeData.OutputPorts)
                     {
-                        foreach (var pairPort in pairPorts)
+                        if (connectedOutputPorts.Contains(port.Id))
                         {
-                            if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[pairPort].GraphElementData is IFunctionNode functionNode)
-                            {
-                                functionNode.Process(container);
-                            }
+                            isEndNode = false;
+                            break;
                         }
+                    }
+                    if (isEndNode)
+                        endNodes.Add(i.Guid);
+                }
+            }
+            var container = new ProcessingDataContainer((x, y) => GetData(x, y, connections));
+            foreach (var nordId in endNodes)
+            {
+                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[nordId].GraphElementData is INodeData nodeData)
+                {
+                    nodeData.Process(container);
+                }
+            }
+        }
+
+        void GetData(string id, ProcessingDataContainer container, Dictionary<string, HashSet<string>> connections)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            if (connections.TryGetValue(id, out var pairIds))
+            {
+                foreach (var pairId in pairIds)
+                {
+                    if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[pairId].GraphElementData is INodeData nodeData)
+                    {
+                        nodeData.Process(container);
                     }
                 }
             }

@@ -11,6 +11,7 @@ namespace MomomaAssets.GraphView
         string MenuPath { get; }
         IEnumerable<PortData> InputPorts { get; }
         IEnumerable<PortData> OutputPorts { get; }
+        void Process(ProcessingDataContainer container);
     }
 
     public static class INodeDataUtility

@@ -9,7 +9,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class GameObjectModifierNode : INodeData, IFunctionNode
+    sealed class GameObjectModifierNode : INodeData
     {
         static GameObjectModifierNode()
         {
@@ -119,7 +119,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
-        void IFunctionNode.Process(ProcessingDataContainer container)
+        public void Process(ProcessingDataContainer container)
         {
             var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
             foreach (var asset in assets)

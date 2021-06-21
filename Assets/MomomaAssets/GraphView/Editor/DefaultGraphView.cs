@@ -11,10 +11,12 @@ namespace MomomaAssets.GraphView
     sealed class DefaultGraphView : GraphView
     {
         readonly ISelection m_Selection;
+        readonly IProcessor m_Processor;
 
-        public DefaultGraphView(ISelection selection)
+        public DefaultGraphView(ISelection selection, IProcessor processor)
         {
             m_Selection = selection;
+            m_Processor = processor;
             Add(new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } });
         }
 
@@ -22,7 +24,7 @@ namespace MomomaAssets.GraphView
         {
             var linkedPorts = new HashSet<Port>();
             CollectLinkedPorts(startPort, linkedPorts);
-            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && startPort.direction == Direction.Input ? startPort.portType.IsAssignableFrom(p.portType) : p.portType.IsAssignableFrom(startPort.portType));
+            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && (startPort.direction == Direction.Input ? startPort.portType.IsAssignableFrom(p.portType) : p.portType.IsAssignableFrom(startPort.portType)));
         }
 
         static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)
@@ -59,7 +61,7 @@ namespace MomomaAssets.GraphView
 
         void StartProcess()
         {
-
+            m_Processor.StartProcess();
         }
     }
 }

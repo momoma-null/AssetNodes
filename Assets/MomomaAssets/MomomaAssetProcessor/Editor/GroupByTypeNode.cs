@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -12,31 +14,48 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [InitializeOnLoad]
     sealed class GroupByTypeNode : INodeData, ISerializationCallbackReceiver
     {
+        sealed class AssetTypeData
+        {
+            public static AssetTypeData Create<T>() => new AssetTypeData(i => i is T, typeof(T));
+            public static AssetTypeData Create<T1, T2>() => new AssetTypeData(i => i is T1 || i is T2, typeof(T1));
+
+            AssetTypeData(Func<UnityObject, bool> isTarget, Type targetType)
+            {
+                AssetType = targetType;
+                m_IsTarget = isTarget;
+            }
+
+            readonly Func<UnityObject, bool> m_IsTarget;
+
+            public Type AssetType { get; }
+
+            public bool IsTarget(UnityObject x) => m_IsTarget(x);
+        }
+
         [Serializable]
         sealed class TypeGroup : ISerializationCallbackReceiver
         {
-            static readonly SortedList<string, Type> s_Types = new SortedList<string, Type>() {
-                { "AnimationClip", typeof(AnimationClip) },
-                { "AudioClip", typeof(AudioClip) },
-                { "AudioMixer", typeof(UnityEngine.Audio.AudioMixer) },
-                { "ComputeShader", typeof(ComputeShader) },
-                { "Font", typeof(Font) },
-                { "GUISkin", typeof(GUISkin) },
-                { "Material", typeof(Material) },
-                { "Mesh", typeof(Mesh) },
-                { "Model", typeof(GameObject) },
-                { "PhysicMaterial", typeof(PhysicMaterial) },
-                { "Prefab", typeof(GameObject) },
-                { "Scene", typeof(SceneAsset) },
-                { "Script", typeof(MonoScript) },
-                { "Shader", typeof(Shader) },
-                { "Sprite", typeof(Sprite) },
-                { "Texture", typeof(Texture) },
-                { "VideoClip", typeof(UnityEngine.Video.VideoClip) }, };
+            static readonly SortedList<string, AssetTypeData> s_Types = new SortedList<string, AssetTypeData>() {
+                { "AnimationClip", AssetTypeData.Create<AnimationClip>() },
+                { "AudioClip", AssetTypeData.Create<AudioClip, AudioImporter>() },
+                { "AudioMixer", AssetTypeData.Create<UnityEngine.Audio.AudioMixer>() },
+                { "ComputeShader", AssetTypeData.Create<ComputeShader, ComputeShaderImporter>() },
+                { "Font", AssetTypeData.Create<Font, TrueTypeFontImporter>() },
+                { "GUISkin", AssetTypeData.Create<GUISkin>() },
+                { "Material", AssetTypeData.Create<Material>() },
+                { "Mesh", AssetTypeData.Create<Mesh>() },
+                { "Model", AssetTypeData.Create<ModelImporter>() },
+                { "PhysicMaterial", AssetTypeData.Create<PhysicMaterial>() },
+                { "Prefab", AssetTypeData.Create<GameObject>() },
+                { "Scene", AssetTypeData.Create<SceneAsset>() },
+                { "Script", AssetTypeData.Create<MonoScript, MonoImporter>() },
+                { "Shader", AssetTypeData.Create<Shader, ShaderImporter>() },
+                { "Texture", AssetTypeData.Create<Texture, TextureImporter>() },
+                { "VideoClip", AssetTypeData.Create<UnityEngine.Video.VideoClip, VideoClipImporter>() }, };
 
             public static IList<string> TypeNames => s_Types.Keys;
 
-            public Type Type => s_Types.Values[index];
+            public AssetTypeData AssetTypeData => s_Types.Values[index];
 
             public int index;
             public string regex = "";
@@ -73,7 +92,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public string Title => "Group by Type";
         public string MenuPath => "Group/Group by Type";
         public IEnumerable<PortData> InputPorts => m_InputPorts;
-        public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => new PortData(i.Type, id: i.guid));
+        public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => new PortData(i.AssetTypeData.AssetType, id: i.guid));
 
         [SerializeField]
         [HideInInspector]
@@ -81,6 +100,29 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         List<TypeGroup> m_TypeGroups = new List<TypeGroup>();
+
+        public void Process(ProcessingDataContainer container)
+        {
+            var objects = container.Get(m_InputPorts[0].Id, () => new AssetGroup());
+            foreach (var typeGroup in m_TypeGroups)
+            {
+                var result = new AssetGroup();
+                var regex = new Regex(typeGroup.regex);
+                foreach (var i in objects)
+                {
+                    var path = AssetDatabase.GetAssetPath(i);
+                    var importer = AssetImporter.GetAtPath(path);
+                    if ((importer != null && typeGroup.AssetTypeData.IsTarget(importer)) || typeGroup.AssetTypeData.IsTarget(i))
+                    {
+                        if (string.IsNullOrEmpty(typeGroup.regex) || regex.Match(path).Success)
+                        {
+                            result.Add(i);
+                        }
+                    }
+                }
+                container.Set(typeGroup.guid, result);
+            }
+        }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
