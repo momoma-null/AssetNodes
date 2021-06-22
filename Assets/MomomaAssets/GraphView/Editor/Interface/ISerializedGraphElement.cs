@@ -43,7 +43,7 @@ namespace MomomaAssets.GraphView
             GraphElement graphElement = serializedGraphElement.GraphElementData switch
             {
                 INodeData nodeData => new NodeGUI(nodeData),
-                IEdgeData edgeData => new AdvancedEdge(edgeData),
+                IEdgeData edgeData => new DefaultEdge(edgeData),
                 _ => throw new ArgumentOutOfRangeException(nameof(serializedGraphElement.GraphElementData))
             };
             graphView.AddElement(graphElement);
@@ -85,7 +85,7 @@ namespace MomomaAssets.GraphView
                     }
                     else
                     {
-                        port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
+                        port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
                         if (!string.IsNullOrEmpty(data.Id))
                             port.viewDataKey = data.Id;
                     }
@@ -113,7 +113,7 @@ namespace MomomaAssets.GraphView
                     }
                     else
                     {
-                        port = Port.Create<AdvancedEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
+                        port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
                         if (!string.IsNullOrEmpty(data.Id))
                             port.viewDataKey = data.Id;
                     }

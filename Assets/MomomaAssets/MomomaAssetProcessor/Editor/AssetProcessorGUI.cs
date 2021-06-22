@@ -13,11 +13,18 @@ namespace MomomaAssets.GraphView.AssetProcessor
             EditorWindow.GetWindow<AssetProcessorGUI>("MomomaAssetProcessor");
         }
 
-        NodeGraph<AdvancedEdge>? m_NodeGraph;
+        NodeGraph? m_NodeGraph;
 
         void OnEnable()
         {
-            m_NodeGraph = new NodeGraph<AdvancedEdge>(this);
+            m_NodeGraph = new NodeGraph(this);
+            m_NodeGraph.PostProcess += AssetDatabase.StartAssetEditing;
+            m_NodeGraph.PostProcess += () =>
+            {
+                AssetDatabase.StopAssetEditing();
+                AssetDatabase.Refresh();
+                AssetDatabase.SaveAssets();
+            };
         }
 
         void OnDisable()

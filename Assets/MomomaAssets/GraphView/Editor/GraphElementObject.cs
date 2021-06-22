@@ -99,7 +99,7 @@ namespace MomomaAssets.GraphView
 
         void Awake()
         {
-            //hideFlags = HideFlags.HideInHierarchy;
+            hideFlags = HideFlags.HideInHierarchy;
             if (!EditorUtility.IsPersistent(this))
                 hideFlags |= HideFlags.DontSaveInEditor;
         }

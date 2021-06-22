@@ -11,13 +11,10 @@ namespace MomomaAssets.GraphView
     sealed class DefaultGraphView : GraphView
     {
         readonly ISelection m_Selection;
-        readonly IProcessor m_Processor;
 
-        public DefaultGraphView(ISelection selection, IProcessor processor)
+        public DefaultGraphView(ISelection selection)
         {
             m_Selection = selection;
-            m_Processor = processor;
-            Add(new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } });
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -57,11 +54,6 @@ namespace MomomaAssets.GraphView
         {
             base.RemoveFromSelection(selectable);
             m_Selection.RemoveFromSelection(selectable);
-        }
-
-        void StartProcess()
-        {
-            m_Processor.StartProcess();
         }
     }
 }

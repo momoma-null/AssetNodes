@@ -6,10 +6,10 @@ using UnityEditor.Experimental.GraphView;
 
 namespace MomomaAssets.GraphView
 {
-    public sealed class AdvancedEdge : Edge, IEdgeCallback, IFieldHolder
+    public sealed class DefaultEdge : Edge, IEdgeCallback, IFieldHolder
     {
-        public AdvancedEdge() : this(new DefaultEdgeData("", "")) { }
-        public AdvancedEdge(IEdgeData edgeData) : base() => m_EdgeData = edgeData;
+        public DefaultEdge() : this(new DefaultEdgeData("", "")) { }
+        public DefaultEdge(IEdgeData edgeData) : base() => m_EdgeData = edgeData;
 
         readonly IEdgeData m_EdgeData;
 

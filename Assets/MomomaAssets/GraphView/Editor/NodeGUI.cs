@@ -26,6 +26,14 @@ namespace MomomaAssets.GraphView
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             title = m_Node.Title;
             capabilities |= Capabilities.Renamable;
+            m_CollapseButton.schedule.Execute(() =>
+            {
+                if (!m_CollapseButton.enabledInHierarchy)
+                {
+                    m_CollapseButton.SetEnabled(false);
+                    m_CollapseButton.SetEnabled(true);
+                }
+            }).Every(0);
         }
 
         public void Bind(SerializedObject serializedObject)

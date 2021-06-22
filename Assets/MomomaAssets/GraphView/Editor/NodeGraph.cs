@@ -14,8 +14,7 @@ namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
-    public sealed class NodeGraph<TEdge> : IDisposable, ISelection, IProcessor
-        where TEdge : Edge, IEdgeCallback, new()
+    public sealed class NodeGraph : IDisposable, ISelection
     {
         sealed class GraphViewObjectHandler : IDisposable, IEquatable<GraphViewObjectHandler>
         {
@@ -220,6 +219,9 @@ namespace MomomaAssets.GraphView
         GraphViewObjectHandler? m_GraphViewObjectHandler = null;
         bool isDisposed = false;
 
+        public event Action? PreProcess;
+        public event Action? PostProcess;
+
         List<ISelectable> ISelection.selection => m_GraphView.selection;
 
         public NodeGraph(EditorWindow editorWindow)
@@ -228,7 +230,7 @@ namespace MomomaAssets.GraphView
                 throw new ArgumentNullException("editorWindow");
             m_EditorWindow = editorWindow;
             m_NodeGraphType = m_EditorWindow.GetType();
-            m_GraphView = new DefaultGraphView(this, this);
+            m_GraphView = new DefaultGraphView(this);
             m_GraphView.style.flexGrow = 1;
             m_EditorWindow.rootVisualElement.Add(m_GraphView);
             m_GraphView.serializeGraphElements = SerializeGraphElements;
@@ -239,6 +241,7 @@ namespace MomomaAssets.GraphView
             var miniMap = new MiniMap();
             m_GraphView.Add(miniMap);
             miniMap.SetPosition(new Rect(0, 0, miniMap.maxWidth, miniMap.maxHeight));
+            m_GraphView.Add(new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } });
             m_GraphView.AddManipulator(new SelectionDragger());
             m_GraphView.AddManipulator(new ContentDragger());
             m_GraphView.AddManipulator(new ContentZoomer());
@@ -266,6 +269,8 @@ namespace MomomaAssets.GraphView
             isDisposed = true;
             EditorApplication.update -= Update;
             Selection.selectionChanged -= OnSelectionChanged;
+            PreProcess = null;
+            PostProcess = null;
             SetGraphViewObjectHandler(null);
             DestroyImmediate(m_SearchWindowProvider);
             if (m_GraphView is IDisposable disposable)
@@ -373,7 +378,7 @@ namespace MomomaAssets.GraphView
             endAction.OnEndNameEdit += OnEndNameEdit;
             endAction.OnCancelled += OnCreationCancelled;
             var icon = AssetPreview.GetMiniThumbnail(graphViewObject);
-            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(graphViewObject.GetInstanceID(), endAction, "NewTextureGraph.asset", icon, null);
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(graphViewObject.GetInstanceID(), endAction, "NewNodeGraph.asset", icon, null);
         }
 
         void OnEndNameEdit(string path)
@@ -583,13 +588,13 @@ namespace MomomaAssets.GraphView
 
         void AddToken(Edge edge, DropdownMenuAction action)
         {
-            var inputPort = Port.Create<TEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, edge.output.portType);
-            var outputPort = Port.Create<TEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, edge.input.portType);
-            var token = new TokenNode<TEdge>(inputPort, outputPort);
+            var inputPort = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, edge.output.portType);
+            var outputPort = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, edge.input.portType);
+            var token = new TokenNode<DefaultEdge>(inputPort, outputPort);
             AddElement(token, m_EditorWindow.position.position + action.eventInfo.mousePosition);
             edge.input.Disconnect(edge);
             inputPort.Connect(edge);
-            edge.input.ConnectTo<TEdge>(outputPort);
+            edge.input.ConnectTo<DefaultEdge>(outputPort);
             edge.input = inputPort;
         }
 
@@ -649,7 +654,7 @@ namespace MomomaAssets.GraphView
             var element = m_GraphView.GetElementByGuid(guid);
             if (element is IFieldHolder fieldHolder)
                 fieldHolder.Update();
-            if (m_GraphViewObjectHandler != null)
+            if (m_GraphViewObjectHandler != null && element != null)
             {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
                 {
@@ -676,19 +681,26 @@ namespace MomomaAssets.GraphView
                     }
                 }
             }
-            var connections = new Dictionary<string, HashSet<string>>();
+            var inputToPreNodes = new Dictionary<string, HashSet<string>>();
+            var outputToInputs = new Dictionary<string, HashSet<string>>();
             var connectedOutputPorts = new HashSet<string>();
             foreach (var i in m_GraphViewObjectHandler.GuidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is IEdgeData edgeData)
                 {
-                    if (!connections.TryGetValue(edgeData.InputPortGuid, out var outputs))
+                    if (!inputToPreNodes.TryGetValue(edgeData.InputPortGuid, out var preNodes))
                     {
-                        outputs = new HashSet<string>();
-                        connections.Add(edgeData.InputPortGuid, outputs);
+                        preNodes = new HashSet<string>();
+                        inputToPreNodes.Add(edgeData.InputPortGuid, preNodes);
                     }
-                    outputs.Add(portToNode[edgeData.OutputPortGuid]);
+                    preNodes.Add(portToNode[edgeData.OutputPortGuid]);
                     connectedOutputPorts.Add(edgeData.OutputPortGuid);
+                    if (!outputToInputs.TryGetValue(edgeData.OutputPortGuid, out var inputs))
+                    {
+                        inputs = new HashSet<string>();
+                        outputToInputs.Add(edgeData.OutputPortGuid, inputs);
+                    }
+                    inputs.Add(edgeData.InputPortGuid);
                 }
             }
             var endNodes = new HashSet<string>();
@@ -709,29 +721,20 @@ namespace MomomaAssets.GraphView
                         endNodes.Add(i.Guid);
                 }
             }
-            var container = new ProcessingDataContainer((x, y) => GetData(x, y, connections));
+            var container = new ProcessingDataContainer(GetData, inputToPreNodes, outputToInputs);
             foreach (var nordId in endNodes)
             {
-                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[nordId].GraphElementData is INodeData nodeData)
-                {
-                    nodeData.Process(container);
-                }
+                GetData(nordId, container);
             }
         }
 
-        void GetData(string id, ProcessingDataContainer container, Dictionary<string, HashSet<string>> connections)
+        void GetData(string id, ProcessingDataContainer container)
         {
-            if (m_GraphViewObjectHandler == null)
-                return;
-            if (connections.TryGetValue(id, out var pairIds))
+            if (m_GraphViewObjectHandler?.GuidToSerializedGraphElements[id].GraphElementData is INodeData nodeData)
             {
-                foreach (var pairId in pairIds)
-                {
-                    if (m_GraphViewObjectHandler.GuidToSerializedGraphElements[pairId].GraphElementData is INodeData nodeData)
-                    {
-                        nodeData.Process(container);
-                    }
-                }
+                PreProcess?.Invoke();
+                nodeData.Process(container);
+                PostProcess?.Invoke();
             }
         }
     }
