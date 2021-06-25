@@ -2,7 +2,8 @@
     "name": "MomomaAssets.MomomaAssetProcessor.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:025cbc9cf40919e4287de87075aabce6"
+        "GUID:025cbc9cf40919e4287de87075aabce6",
+        "GUID:4d4adb8c0edc4fe48bad1fa5becd3095"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
@@ -13,8 +12,6 @@ namespace MomomaAssets.GraphView
     sealed class NodeGUI : Node, IFieldHolder
     {
         readonly INodeData m_Node;
-        readonly Dictionary<string, VisualElement> m_BoundElements = new Dictionary<string, VisualElement>();
-
         SerializedObject? m_SerializedObject;
 
         public IGraphElementData GraphElementData => m_Node;
@@ -39,32 +36,11 @@ namespace MomomaAssets.GraphView
         public void Bind(SerializedObject serializedObject)
         {
             m_SerializedObject = serializedObject;
-            var toRemoveElements = new HashSet<VisualElement>(m_BoundElements.Values);
-            using (var dataProperty = serializedObject.FindProperty("m_GraphElementData"))
-            using (var endProperty = dataProperty.GetEndProperty(false))
-            {
-                dataProperty.NextVisible(true);
-                while (true)
-                {
-                    if (SerializedProperty.EqualContents(endProperty, dataProperty))
-                        break;
-                    var key = dataProperty.propertyPath;
-                    if (!m_BoundElements.ContainsKey(key))
-                    {
-                        var sp = dataProperty.Copy();
-                        var field = new PropertyField(sp);
-                        extensionContainer.Add(field);
-                        RefreshExpandedState();
-                        field.BindProperty(sp);
-                        m_BoundElements.Add(key, field);
-                    }
-                    toRemoveElements.Remove(m_BoundElements[key]);
-                    if (!dataProperty.NextVisible(false))
-                        break;
-                }
-            }
-            foreach (var element in toRemoveElements)
-                extensionContainer.Remove(element);
+            extensionContainer.Clear();
+            var dataProperty = serializedObject.FindProperty("m_GraphElementData");
+            var field = new PropertyField(dataProperty);
+            extensionContainer.Add(field);
+            field.BindProperty(dataProperty);
             RefreshExpandedState();
         }
 
