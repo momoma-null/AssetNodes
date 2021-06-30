@@ -84,6 +84,7 @@ namespace MomomaAssets.GraphView
             {
                 if (m_GraphElementData != value && m_SerializedObject != null)
                 {
+                    m_GraphElementData?.GraphElementEditor.OnDestroy();
                     m_SerializedObject.Update();
                     using (var sp = m_SerializedObject.FindProperty(nameof(m_GraphElementData)))
                         sp.managedReferenceValue = value;

@@ -210,7 +210,7 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        readonly GraphView m_GraphView;
+        readonly DefaultGraphView m_GraphView;
         readonly EditorWindow m_EditorWindow;
         readonly SearchWindowProvider m_SearchWindowProvider;
         readonly VisualElement m_CreateGraphButton;
@@ -273,8 +273,7 @@ namespace MomomaAssets.GraphView
             PostProcess = null;
             SetGraphViewObjectHandler(null);
             DestroyImmediate(m_SearchWindowProvider);
-            if (m_GraphView is IDisposable disposable)
-                disposable.Dispose();
+            m_GraphView.graphElements.ForEach(i => { if (i is IDisposable disposable) disposable.Dispose(); });
         }
 
         void ISelection.AddToSelection(ISelectable selectable)
@@ -350,6 +349,7 @@ namespace MomomaAssets.GraphView
 
         void OnSelectionChanged()
         {
+            var doClearSelection = true;
             foreach (var obj in Selection.objects)
             {
                 if (obj is GraphViewObject graphViewObject)
@@ -361,7 +361,13 @@ namespace MomomaAssets.GraphView
                         FullReload();
                     }
                 }
+                else if (obj is GraphElementObject)
+                {
+                    doClearSelection = false;
+                }
             }
+            if (doClearSelection)
+                m_GraphView.ClearSelection();
         }
 
         void CreateNode(NodeCreationContext context)

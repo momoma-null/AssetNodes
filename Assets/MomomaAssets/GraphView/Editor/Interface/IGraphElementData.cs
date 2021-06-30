@@ -3,5 +3,8 @@
 
 namespace MomomaAssets.GraphView
 {
-    public interface IGraphElementData { }
+    public interface IGraphElementData
+    {
+        IGraphElementEditor GraphElementEditor { get; }
+    }
 }

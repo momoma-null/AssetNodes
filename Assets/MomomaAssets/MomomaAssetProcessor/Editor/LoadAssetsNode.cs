@@ -17,6 +17,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new LoadAssetsNode());
         }
 
+        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string Title => "Load Assets";
         public string MenuPath => "Import/Load Assets";
         public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
