@@ -11,7 +11,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ComponentModifierNode : INodeData
+    sealed class ModifyComponentNode : INodeData
     {
         sealed class PrefabInstance : IDisposable
         {
@@ -106,7 +106,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        sealed class ComponentModifierNodeEditor : IGraphElementEditor
+        sealed class ModifyComponentNodeEditor : IGraphElementEditor
         {
             PrefabInstance? m_PrefabInstance;
             Editor? m_CachedEditor;
@@ -154,12 +154,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static ComponentModifierNode()
+        static ModifyComponentNode()
         {
-            INodeDataUtility.AddConstructor(() => new ComponentModifierNode());
+            INodeDataUtility.AddConstructor(() => new ModifyComponentNode());
         }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new ComponentModifierNodeEditor();
+        public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
         public string Title => "Modifiy Component";
         public string MenuPath => "Modify/Component";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -192,14 +192,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     if (asset is GameObject rootGO)
                     {
                         var targetComponent = rootGO.GetComponent(component.GetType());
-                        Debug.Log(targetComponent);
                         if (targetComponent == null)
                             continue;
                         using (var targetSO = new SerializedObject(targetComponent))
                         {
                             foreach (var prop in sourceProperties)
                                 targetSO.CopyFromSerializedPropertyIfDifferent(prop);
-                            Debug.Log(targetSO.hasModifiedProperties);
                             if (targetSO.hasModifiedProperties)
                                 targetSO.ApplyModifiedPropertiesWithoutUndo();
                         }

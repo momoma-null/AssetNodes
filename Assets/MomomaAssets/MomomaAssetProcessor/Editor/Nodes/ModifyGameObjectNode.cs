@@ -9,11 +9,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class GameObjectModifierNode : INodeData
+    sealed class ModifyGameObjectNode : INodeData
     {
-        static GameObjectModifierNode()
+        static ModifyGameObjectNode()
         {
-            INodeDataUtility.AddConstructor(() => new GameObjectModifierNode());
+            INodeDataUtility.AddConstructor(() => new ModifyGameObjectNode());
         }
 
         enum PropertyType

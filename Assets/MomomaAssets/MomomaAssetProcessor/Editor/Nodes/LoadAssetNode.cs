@@ -10,11 +10,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class LoadAssetsNode : INodeData
+    sealed class LoadAssetNode : INodeData
     {
-        static LoadAssetsNode()
+        static LoadAssetNode()
         {
-            INodeDataUtility.AddConstructor(() => new LoadAssetsNode());
+            INodeDataUtility.AddConstructor(() => new LoadAssetNode());
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();

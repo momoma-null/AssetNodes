@@ -9,5 +9,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         public AssetGroup() { }
         public AssetGroup(IEnumerable<UnityObject> source) : base(source) { }
+
+        public string GropuName { get; set; } = "";
     }
 }
