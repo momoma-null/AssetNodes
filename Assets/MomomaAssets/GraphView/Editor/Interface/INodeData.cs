@@ -7,7 +7,6 @@ namespace MomomaAssets.GraphView
 {
     public interface INodeData : IGraphElementData
     {
-        string Title { get; }
         string MenuPath { get; }
         IEnumerable<PortData> InputPorts { get; }
         IEnumerable<PortData> OutputPorts { get; }

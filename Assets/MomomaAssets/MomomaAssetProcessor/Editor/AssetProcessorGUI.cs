@@ -17,14 +17,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         void OnEnable()
         {
-            m_NodeGraph = new NodeGraph(this);
-            m_NodeGraph.PostProcess += AssetDatabase.StartAssetEditing;
-            m_NodeGraph.PostProcess += () =>
-            {
-                AssetDatabase.StopAssetEditing();
-                AssetDatabase.Refresh();
-                AssetDatabase.SaveAssets();
-            };
+            m_NodeGraph = new NodeGraph(this, CoreAssetProcessor.s_NodeGraphProcessor);
         }
 
         void OnDisable()

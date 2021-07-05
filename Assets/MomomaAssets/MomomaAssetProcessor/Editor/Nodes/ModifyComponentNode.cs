@@ -160,7 +160,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
-        public string Title => "Modifiy Component";
         public string MenuPath => "Modify/Component";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
@@ -181,25 +180,27 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container)
         {
             var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
-            var prefabInstance = new PrefabInstance();
-            prefabInstance.Deserialize(m_SerializedPrefabInstance);
-            var component = prefabInstance.GetComponent(m_TypeName);
-            if (component != null)
+            using (var prefabInstance = new PrefabInstance())
             {
-                var sourceProperties = prefabInstance.GetModifiedProperties(component);
-                foreach (var asset in assets)
+                prefabInstance.Deserialize(m_SerializedPrefabInstance);
+                var component = prefabInstance.GetComponent(m_TypeName);
+                if (component != null)
                 {
-                    if (asset is GameObject rootGO)
+                    var sourceProperties = prefabInstance.GetModifiedProperties(component);
+                    foreach (var asset in assets)
                     {
-                        var targetComponent = rootGO.GetComponent(component.GetType());
-                        if (targetComponent == null)
-                            continue;
-                        using (var targetSO = new SerializedObject(targetComponent))
+                        if (asset is GameObject rootGO)
                         {
-                            foreach (var prop in sourceProperties)
-                                targetSO.CopyFromSerializedPropertyIfDifferent(prop);
-                            if (targetSO.hasModifiedProperties)
-                                targetSO.ApplyModifiedPropertiesWithoutUndo();
+                            var targetComponent = rootGO.GetComponent(component.GetType());
+                            if (targetComponent == null)
+                                continue;
+                            using (var targetSO = new SerializedObject(targetComponent))
+                            {
+                                foreach (var prop in sourceProperties)
+                                    targetSO.CopyFromSerializedPropertyIfDifferent(prop);
+                                if (targetSO.hasModifiedProperties)
+                                    targetSO.ApplyModifiedPropertiesWithoutUndo();
+                            }
                         }
                     }
                 }

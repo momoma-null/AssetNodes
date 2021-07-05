@@ -264,7 +264,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; }
-        public string Title => "Modifiy Material";
         public string MenuPath => "Modify/Material";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };

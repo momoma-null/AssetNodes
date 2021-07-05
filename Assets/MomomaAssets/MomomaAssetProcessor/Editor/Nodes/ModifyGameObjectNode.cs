@@ -101,7 +101,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string Title => "Modifiy GameObject";
         public string MenuPath => "Modify/GameObject";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };

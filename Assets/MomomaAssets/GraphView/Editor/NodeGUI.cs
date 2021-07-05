@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView
             m_Node = nodeData;
             style.minWidth = 150f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
-            title = m_Node.Title;
+            title = m_Node.GetType().Name.Replace("Node", "");
             capabilities |= Capabilities.Renamable;
             m_CollapseButton.schedule.Execute(() =>
             {

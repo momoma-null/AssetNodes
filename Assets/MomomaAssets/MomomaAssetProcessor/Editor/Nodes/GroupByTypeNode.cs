@@ -90,7 +90,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string Title => "Group by Type";
         public string MenuPath => "Group/Group by Type";
         public IEnumerable<PortData> InputPorts => m_InputPorts;
         public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => new PortData(i.AssetTypeData.AssetType, id: i.guid));

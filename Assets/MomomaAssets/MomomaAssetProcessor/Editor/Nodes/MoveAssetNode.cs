@@ -20,7 +20,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string Title => "Move Asset";
         public string MenuPath => "File/Move Asset";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };

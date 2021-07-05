@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MomomaAssets.GraphView
 {
-    sealed class GraphViewObject : ScriptableObject, ISerializedGraphView
+    public sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
     {
         [SerializeField]
         string m_GraphViewTypeName = "";
@@ -22,7 +22,6 @@ namespace MomomaAssets.GraphView
 
         void OnValidate()
         {
-            GraphViewType = Type.GetType(m_GraphViewTypeName);
             var dict = new Dictionary<string, int>();
             var index = 0;
             foreach (var element in m_SerializedGraphElements)
@@ -37,5 +36,12 @@ namespace MomomaAssets.GraphView
             GuidToSerializedGraphElements = m_SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
             onValueChanged?.Invoke();
         }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            GraphViewType = Type.GetType(m_GraphViewTypeName);
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }

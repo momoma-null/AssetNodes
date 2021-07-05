@@ -1,0 +1,175 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1006 &100600000
+TextureImporter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: TextureImporter
+  m_InternalIDToNameTable: []
+  m_ExternalObjects: {}
+  m_UsedFileIDs:
+  - 2800000
+  serializedVersion: 11
+  mipmaps:
+    m_MipMapMode: 0
+    m_EnableMipMap: 1
+    m_sRGBTexture: 1
+    m_LinearTexture: 0
+    m_FadeOut: 0
+    m_BorderMipMap: 0
+    m_MipMapsPreserveCoverage: 0
+    m_AlphaTestReferenceValue: 0.5
+    m_MipMapFadeDistanceStart: 1
+    m_MipMapFadeDistanceEnd: 3
+  bumpmap:
+    m_ConvertToNormalMap: 0
+    m_ExternalNormalMap: 0
+    m_HeightScale: 0.25
+    m_NormalMapFilter: 0
+  m_IsReadable: 0
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_GrayScaleToAlpha: 0
+  m_GenerateCubemap: 6
+  m_CubemapConvolution: 0
+  m_SeamlessCubemap: 0
+  m_TextureFormat: 1
+  m_MaxTextureSize: 2048
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_NPOTScale: 1
+  m_Lightmap: 0
+  m_CompressionQuality: 50
+  m_SpriteMode: 0
+  m_SpriteExtrude: 1
+  m_SpriteMeshType: 1
+  m_Alignment: 0
+  m_SpritePivot: {x: 0.5, y: 0.5}
+  m_SpritePixelsToUnits: 100
+  m_SpriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  m_SpriteGenerateFallbackPhysicsShape: 1
+  m_AlphaUsage: 1
+  m_AlphaIsTransparency: 0
+  m_SpriteTessellationDetail: -1
+  m_TextureType: 0
+  m_TextureShape: 1
+  m_SingleChannelComponent: 0
+  m_FlipbookRows: 1
+  m_FlipbookColumns: 1
+  m_MaxTextureSizeSet: 0
+  m_CompressionQualitySet: 0
+  m_TextureFormatSet: 0
+  m_IgnorePngGamma: 0
+  m_ApplyGammaDecoding: 0
+  m_PlatformSettings:
+  - serializedVersion: 3
+    m_BuildTarget: DefaultTexturePlatform
+    m_MaxTextureSize: 2048
+    m_ResizeAlgorithm: 0
+    m_TextureFormat: -1
+    m_TextureCompression: 1
+    m_CompressionQuality: 50
+    m_CrunchedCompression: 0
+    m_AllowsAlphaSplitting: 0
+    m_Overridden: 0
+    m_AndroidETC2FallbackOverride: 0
+    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    m_BuildTarget: Standalone
+    m_MaxTextureSize: 2048
+    m_ResizeAlgorithm: 0
+    m_TextureFormat: -1
+    m_TextureCompression: 1
+    m_CompressionQuality: 50
+    m_CrunchedCompression: 0
+    m_AllowsAlphaSplitting: 0
+    m_Overridden: 0
+    m_AndroidETC2FallbackOverride: 0
+    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    m_BuildTarget: iPhone
+    m_MaxTextureSize: 2048
+    m_ResizeAlgorithm: 0
+    m_TextureFormat: -1
+    m_TextureCompression: 1
+    m_CompressionQuality: 50
+    m_CrunchedCompression: 0
+    m_AllowsAlphaSplitting: 0
+    m_Overridden: 0
+    m_AndroidETC2FallbackOverride: 0
+    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    m_BuildTarget: Android
+    m_MaxTextureSize: 2048
+    m_ResizeAlgorithm: 0
+    m_TextureFormat: -1
+    m_TextureCompression: 1
+    m_CompressionQuality: 50
+    m_CrunchedCompression: 0
+    m_AllowsAlphaSplitting: 0
+    m_Overridden: 0
+    m_AndroidETC2FallbackOverride: 0
+    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    m_BuildTarget: WebGL
+    m_MaxTextureSize: 2048
+    m_ResizeAlgorithm: 0
+    m_TextureFormat: -1
+    m_TextureCompression: 1
+    m_CompressionQuality: 50
+    m_CrunchedCompression: 0
+    m_AllowsAlphaSplitting: 0
+    m_Overridden: 0
+    m_AndroidETC2FallbackOverride: 0
+    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  m_SpriteSheet:
+    serializedVersion: 2
+    m_Sprites: []
+    m_Outline: []
+    m_PhysicsShape: []
+    m_Bones: []
+    m_SpriteID: 
+    m_InternalID: 0
+    m_Vertices: []
+    m_Indices: 
+    m_Edges: []
+    m_Weights: []
+    m_SecondaryTextures: []
+  m_SpritePackingTag: 
+  m_Output:
+    textureImportInstructions:
+      compressedFormat: 12
+      uncompressedFormat: 4
+      desiredFormat: 12
+      usageMode: 3
+      colorSpace: 0
+      androidETC2FallbackFormat: 4
+      width: 4
+      height: 4
+      depth: 0
+      cubeIntermediateSize: 0
+      cubeMode: 6
+      cubeLayout: 0
+      compressionQuality: 50
+      androidETC2FallbackDownscale: 0
+      vtOnly: 0
+    sourceTextureInformation:
+      width: 5
+      height: 3
+      doesTextureContainAlpha: 0
+      sourceWasHDR: 0
+    importInspectorWarnings: 
+  m_PSDRemoveMatte: 0
+  m_PSDShowRemoveMatteOption: 0
+  m_UserData: 
+  m_AssetBundleName: 
+  m_AssetBundleVariant: 

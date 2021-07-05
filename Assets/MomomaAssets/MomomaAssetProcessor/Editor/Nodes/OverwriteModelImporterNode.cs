@@ -11,9 +11,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class OverwriteTextureImporterNode : INodeData, IAdditionalAssetHolder
+    sealed class OverwriteModelImporterNode : INodeData, IAdditionalAssetHolder
     {
-        sealed class OverwriteTextureImporterNodeEditor : IGraphElementEditor
+        sealed class OverwriteModelImporterNodeEditor : IGraphElementEditor
         {
             Editor? m_CachedEditor;
 
@@ -38,16 +38,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         sealed class AssetData
         {
-            public static readonly TextureImporter s_DefaultImporter = Resources.Load<TextureImporter>("TextureImporter");
+            public static readonly ModelImporter s_DefaultImporter = Resources.Load<ModelImporter>("ModelImporter");
         }
 
-        static OverwriteTextureImporterNode()
+        static OverwriteModelImporterNode()
         {
-            INodeDataUtility.AddConstructor(() => new OverwriteTextureImporterNode());
+            INodeDataUtility.AddConstructor(() => new OverwriteModelImporterNode());
         }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new OverwriteTextureImporterNodeEditor();
-        public string MenuPath => "Importer/Texture";
+        public IGraphElementEditor GraphElementEditor { get; } = new OverwriteModelImporterNodeEditor();
+        public string MenuPath => "Importer/Model";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
         public IEnumerable<UnityObject> Assets
@@ -65,14 +65,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(Texture));
+        PortData m_InputPort = new PortData(typeof(GameObject));
 
         [SerializeField]
         [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(Texture));
+        PortData m_OutputPort = new PortData(typeof(GameObject));
 
         [SerializeField]
-        TextureImporter? m_Importer = null;
+        ModelImporter? m_Importer = null;
 
         public void Process(ProcessingDataContainer container)
         {
@@ -81,14 +81,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 foreach (var asset in assets)
                 {
-                    if (asset is Texture texture)
+                    if (asset is GameObject model)
                     {
-                        var path = AssetDatabase.GetAssetPath(texture);
-                        if (AssetImporter.GetAtPath(path) is TextureImporter importer)
+                        var path = AssetDatabase.GetAssetPath(model);
+                        if (AssetImporter.GetAtPath(path) is ModelImporter importer)
                         {
-                            Debug.Log(EditorUtility.IsDirty(importer));
                             EditorUtility.CopySerializedIfDifferent(m_Importer, importer);
-                            Debug.Log(EditorUtility.IsDirty(importer));
                             if (EditorUtility.IsDirty(importer))
                                 importer.SaveAndReimport();
                         }
