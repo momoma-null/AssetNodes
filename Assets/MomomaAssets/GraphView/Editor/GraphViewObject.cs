@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
+using UnityEditor.Callbacks;
 
 #nullable enable
 
@@ -9,6 +11,16 @@ namespace MomomaAssets.GraphView
 {
     public sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
     {
+        [OnOpenAsset]
+        static bool OnOpenAsset(int instanceID, int line)
+        {
+            var target = EditorUtility.InstanceIDToObject(instanceID);
+            if (!(target is GraphViewObject graphViewObject) || graphViewObject.GraphViewType == null)
+                return false;
+            EditorWindow.GetWindow(graphViewObject.GraphViewType, false, graphViewObject.GraphViewType.Name);
+            return true;
+        }
+
         [SerializeField]
         string m_GraphViewTypeName = "";
         [SerializeField]

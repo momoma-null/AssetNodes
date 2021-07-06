@@ -86,11 +86,25 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         var path = AssetDatabase.GetAssetPath(texture);
                         if (AssetImporter.GetAtPath(path) is TextureImporter importer)
                         {
-                            Debug.Log(EditorUtility.IsDirty(importer));
-                            EditorUtility.CopySerializedIfDifferent(m_Importer, importer);
-                            Debug.Log(EditorUtility.IsDirty(importer));
-                            if (EditorUtility.IsDirty(importer))
-                                importer.SaveAndReimport();
+                            using (var srcSO = new SerializedObject(m_Importer))
+                            using (var iterotor = srcSO.GetIterator())
+                            using (var dstSO = new SerializedObject(importer))
+                            {
+                                iterotor.Next(true);
+                                var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_Output" };
+                                while (true)
+                                {
+                                    if (!excludePaths.Contains(iterotor.propertyPath))
+                                        dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
+                                    if (!iterotor.Next(false))
+                                        break;
+                                }
+                                if (dstSO.hasModifiedProperties)
+                                {
+                                    dstSO.ApplyModifiedPropertiesWithoutUndo();
+                                    importer.SaveAndReimport();
+                                }
+                            }
                         }
                     }
                 }

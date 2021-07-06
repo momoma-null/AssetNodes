@@ -44,7 +44,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 { "GUISkin", AssetTypeData.Create<GUISkin>() },
                 { "Material", AssetTypeData.Create<Material>() },
                 { "Mesh", AssetTypeData.Create<Mesh>() },
-                { "Model", AssetTypeData.Create<ModelImporter>() },
                 { "PhysicMaterial", AssetTypeData.Create<PhysicMaterial>() },
                 { "Prefab", AssetTypeData.Create<GameObject>() },
                 { "Scene", AssetTypeData.Create<SceneAsset>() },

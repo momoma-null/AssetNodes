@@ -9,8 +9,7 @@ TextureImporter:
   m_Name: TextureImporter
   m_InternalIDToNameTable: []
   m_ExternalObjects: {}
-  m_UsedFileIDs:
-  - 2800000
+  m_UsedFileIDs: []
   serializedVersion: 11
   mipmaps:
     m_MipMapMode: 0

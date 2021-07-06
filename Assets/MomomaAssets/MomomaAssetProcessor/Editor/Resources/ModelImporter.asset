@@ -10,31 +10,7 @@ ModelImporter:
   m_Name: ModelImporter
   m_InternalIDToNameTable: []
   m_ExternalObjects: {}
-  m_UsedFileIDs:
-  - 4976004733732394944
-  - 4952355188592082042
-  - -1175260765720261443
-  - 7540085708043798857
-  - -8634971656262275435
-  - 100100000
-  - 8308989542899619411
-  - -2444592120883304738
-  - 919132149155446097
-  - 1008902708958973432
-  - -4139999717627085057
-  - 7104672601287901898
-  - 1049928748687988745
-  - -8984595470827443041
-  - -6606676114070866684
-  - 1992602281841726015
-  - 9000000
-  - 6864364205052522755
-  - -743189013232237084
-  - 5769484663829117588
-  - 2005229715816757442
-  - -8679921383154817045
-  - 4970496389008779584
-  - 5399181072870411341
+  m_UsedFileIDs: []
   materials:
     m_SupportsEmbeddedMaterials: 1
     m_MaterialImportMode: 2
@@ -109,8 +85,7 @@ ModelImporter:
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
   m_ImportedTakeInfos: []
-  m_ImportedRoots:
-  - {fileID: 919132149155446097, guid: f9734a84519222348957fbf066cdf2f6, type: 3}
+  m_ImportedRoots: []
   m_HasExtraRoot: 1
   m_HasEmbeddedTextures: 0
   m_ReferencedClips: []
