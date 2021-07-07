@@ -1,6 +1,6 @@
 {
     "name": "MomomaAssets.GraphView.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "MomomaAssets.GraphView",
     "references": [],
     "includePlatforms": [
         "Editor"

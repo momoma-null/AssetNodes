@@ -48,7 +48,7 @@ namespace MomomaAssets.GraphView
             GraphViewObject m_GraphViewObject;
 
             public bool IsValid => m_GraphViewObject != null;
-            public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidToSerializedGraphElements;
+            public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
             public Action StartProcess => () => { if (m_GraphViewObject != null) m_NodeGraphProcessor.StartProcess(m_GraphViewObject); };
 
             public void Dispose()
@@ -106,13 +106,9 @@ namespace MomomaAssets.GraphView
 
                 public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
                 {
-                    if (m_Handler.m_GraphViewObject.GuidToIndices.TryGetValue(guid, out var index))
-                    {
-                        using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(index))
-                        {
-                            return sp.objectReferenceValue as GraphElementObject;
-                        }
-                    }
+                    foreach (var i in m_Handler.m_GraphViewObject.SerializedGraphElements)
+                        if (i.Guid == guid)
+                            return i as GraphElementObject;
                     return null;
                 }
 
@@ -210,13 +206,15 @@ namespace MomomaAssets.GraphView
                     m_ToDeleteAssets.Remove(graphElementObject);
                 }
 
-                public void DeleteGraphElementObjects(IEnumerable<string> guids)
+                public void DeleteGraphElementObjects(HashSet<string> guids)
                 {
                     var indices = new SortedSet<int>();
-                    foreach (var guid in guids)
+                    var i = 0;
+                    foreach (var element in m_Handler.m_GraphViewObject.SerializedGraphElements)
                     {
-                        if (m_Handler.m_GraphViewObject.GuidToIndices.TryGetValue(guid, out var index))
-                            indices.Add(index);
+                        if (element != null && guids.Contains(element.Guid))
+                            indices.Add(i);
+                        ++i;
                     }
                     foreach (var index in indices.Reverse())
                     {
@@ -470,7 +468,7 @@ namespace MomomaAssets.GraphView
             {
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
-                    setScope.DeleteGraphElementObjects(graphViewChange.elementsToRemove.Select(i => i.viewDataKey));
+                    setScope.DeleteGraphElementObjects(new HashSet<string>(graphViewChange.elementsToRemove.Select(i => i.viewDataKey)));
                     foreach (IEdgeCallback e in graphViewChange.elementsToRemove.Where(e => e is IEdgeCallback))
                         e.onPortChanged -= OnPortChanged;
                 }

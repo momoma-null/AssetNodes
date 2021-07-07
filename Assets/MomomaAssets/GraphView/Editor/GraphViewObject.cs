@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -26,27 +25,18 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         GraphElementObject[] m_SerializedGraphElements = new GraphElementObject[0];
 
+        public event Action? onValueChanged;
         public Type? GraphViewType { get; private set; }
         public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
-        public IReadOnlyDictionary<string, int> GuidToIndices { get; private set; } = new Dictionary<string, int>();
-        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements { get; private set; } = new Dictionary<string, ISerializedGraphElement>();
-        public event Action? onValueChanged;
 
         void OnValidate()
         {
-            var dict = new Dictionary<string, int>();
-            var index = 0;
-            foreach (var element in m_SerializedGraphElements)
-            {
-                if (element != null)
-                {
-                    dict[element.Guid] = index;
-                }
-                ++index;
-            }
-            GuidToIndices = dict;
-            GuidToSerializedGraphElements = m_SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
             onValueChanged?.Invoke();
+        }
+
+        void OnDestroy()
+        {
+            onValueChanged = null;
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()

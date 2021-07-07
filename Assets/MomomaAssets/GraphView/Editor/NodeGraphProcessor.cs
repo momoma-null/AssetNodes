@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 #nullable enable
@@ -19,7 +20,8 @@ namespace MomomaAssets.GraphView
         public void StartProcess(GraphViewObject graphViewObject)
         {
             var portToNode = new Dictionary<string, string>();
-            foreach (var i in graphViewObject.GuidToSerializedGraphElements.Values)
+            var guidToSerializedGraphElements = graphViewObject.SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
+            foreach (var i in guidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is INodeData nodeData)
                 {
@@ -32,7 +34,7 @@ namespace MomomaAssets.GraphView
             var inputToPreNodes = new Dictionary<string, HashSet<string>>();
             var outputToInputs = new Dictionary<string, HashSet<string>>();
             var connectedOutputPorts = new HashSet<string>();
-            foreach (var i in graphViewObject.GuidToSerializedGraphElements.Values)
+            foreach (var i in guidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is IEdgeData edgeData)
                 {
@@ -52,7 +54,7 @@ namespace MomomaAssets.GraphView
                 }
             }
             var endNodes = new HashSet<string>();
-            foreach (var i in graphViewObject.GuidToSerializedGraphElements.Values)
+            foreach (var i in guidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is INodeData nodeData)
                 {
@@ -69,16 +71,16 @@ namespace MomomaAssets.GraphView
                         endNodes.Add(i.Guid);
                 }
             }
-            var container = new ProcessingDataContainer((i, j) => GetData(graphViewObject, i, j), inputToPreNodes, outputToInputs);
+            var container = new ProcessingDataContainer((i, j) => GetData(guidToSerializedGraphElements, i, j), inputToPreNodes, outputToInputs);
             foreach (var nordId in endNodes)
             {
-                GetData(graphViewObject, nordId, container);
+                GetData(guidToSerializedGraphElements, nordId, container);
             }
         }
 
-        void GetData(GraphViewObject graphViewObject, string id, ProcessingDataContainer container)
+        void GetData(Dictionary<string, ISerializedGraphElement> guidToSerializedGraphElements, string id, ProcessingDataContainer container)
         {
-            if (graphViewObject.GuidToSerializedGraphElements[id].GraphElementData is INodeData nodeData)
+            if (guidToSerializedGraphElements[id].GraphElementData is INodeData nodeData)
             {
                 PreProcess?.Invoke();
                 nodeData.Process(container);
