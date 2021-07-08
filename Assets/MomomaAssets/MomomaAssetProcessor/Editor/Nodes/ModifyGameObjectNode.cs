@@ -16,6 +16,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new ModifyGameObjectNode());
         }
 
+        ModifyGameObjectNode() { }
+
         enum PropertyType
         {
             Active,
@@ -114,65 +116,76 @@ namespace MomomaAssets.GraphView.AssetProcessor
         PortData m_OutputPort = new PortData(typeof(GameObject));
 
         [SerializeField]
-        bool m_Recursively;
-
-        [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
-            foreach (var asset in assets)
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            Action<GameObject>? process = null;
+            foreach (var setting in m_Properties)
             {
-                if (asset is GameObject target)
+                switch (setting.PropertyType)
                 {
-                    foreach (var setting in m_Properties)
-                    {
-                        switch (setting.PropertyType)
+                    case PropertyType.Active:
                         {
-                            case PropertyType.Active:
+                            if (bool.TryParse(setting.RawValue, out var boolValue))
+                            {
+                                process += go =>
                                 {
-                                    bool.TryParse(setting.RawValue, out var boolValue);
-                                    if (target.activeSelf != boolValue)
-                                        target.SetActive(boolValue);
-                                }
-                                break;
-                            case PropertyType.ContributeGI:
-                            case PropertyType.OccluderStatic:
-                            case PropertyType.BatchingStatic:
-                            case PropertyType.NavigationStatic:
-                            case PropertyType.OccludeeStatic:
-                            case PropertyType.OffMeshLinkGeneration:
-                            case PropertyType.ReflectionProbeStatic:
+                                    if (go.activeSelf != boolValue)
+                                        go.SetActive(boolValue);
+                                };
+                            }
+                            break;
+                        }
+                    case PropertyType.ContributeGI:
+                    case PropertyType.OccluderStatic:
+                    case PropertyType.BatchingStatic:
+                    case PropertyType.NavigationStatic:
+                    case PropertyType.OccludeeStatic:
+                    case PropertyType.OffMeshLinkGeneration:
+                    case PropertyType.ReflectionProbeStatic:
+                        {
+                            if (bool.TryParse(setting.RawValue, out var boolValue))
+                            {
+                                if (Enum.TryParse<StaticEditorFlags>(setting.PropertyType.ToString(), out var targetFlag))
                                 {
-                                    bool.TryParse(setting.RawValue, out var boolValue);
-                                    if (Enum.TryParse<StaticEditorFlags>(setting.PropertyType.ToString(), out var targetFlag))
+                                    process += go =>
                                     {
-                                        var flags = GameObjectUtility.GetStaticEditorFlags(target);
+                                        var flags = GameObjectUtility.GetStaticEditorFlags(go);
                                         if ((flags & targetFlag) > 0 != boolValue)
                                         {
                                             if (boolValue)
                                                 flags |= targetFlag;
                                             else
                                                 flags &= ~targetFlag;
-                                            GameObjectUtility.SetStaticEditorFlags(target, flags);
+                                            GameObjectUtility.SetStaticEditorFlags(go, flags);
                                         }
-                                    }
+                                    };
                                 }
-                                break;
-                            case PropertyType.Tag:
-                                target.tag = setting.RawValue;
-                                break;
-                            case PropertyType.Layer:
-                                int.TryParse(setting.RawValue, out var intValue);
-                                target.layer = intValue;
-                                break;
-                            default: throw new ArgumentOutOfRangeException(nameof(setting.PropertyType));
+                            }
+                            break;
                         }
+                    case PropertyType.Tag:
+                        process += go => go.tag = setting.RawValue;
+                        break;
+                    case PropertyType.Layer:
+                        if (int.TryParse(setting.RawValue, out var intValue))
+                            process += go => go.layer = intValue;
+                        break;
+                }
+            }
+            if (process != null)
+            {
+                foreach (var asset in assetGroup)
+                {
+                    foreach (var go in asset.GetAssetsFromType<GameObject>())
+                    {
+                        process(go);
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assets);
+            container.Set(m_OutputPort.Id, assetGroup);
         }
     }
 }

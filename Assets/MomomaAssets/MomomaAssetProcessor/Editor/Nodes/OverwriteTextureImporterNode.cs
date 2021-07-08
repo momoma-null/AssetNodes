@@ -46,6 +46,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new OverwriteTextureImporterNode());
         }
 
+        OverwriteTextureImporterNode() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new OverwriteTextureImporterNodeEditor();
         public string MenuPath => "Importer/Texture";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -76,40 +78,38 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             if (m_Importer != null)
             {
-                foreach (var asset in assets)
+                foreach (var assets in assetGroup)
                 {
-                    if (asset is Texture texture)
+                    var path = assets.AssetPath;
+                    if (AssetImporter.GetAtPath(path) is TextureImporter importer)
                     {
-                        var path = AssetDatabase.GetAssetPath(texture);
-                        if (AssetImporter.GetAtPath(path) is TextureImporter importer)
+                        using (var srcSO = new SerializedObject(m_Importer))
+                        using (var iterotor = srcSO.GetIterator())
+                        using (var dstSO = new SerializedObject(importer))
                         {
-                            using (var srcSO = new SerializedObject(m_Importer))
-                            using (var iterotor = srcSO.GetIterator())
-                            using (var dstSO = new SerializedObject(importer))
+                            iterotor.Next(true);
+                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_Output" };
+                            while (true)
                             {
-                                iterotor.Next(true);
-                                var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_Output" };
-                                while (true)
-                                {
-                                    if (!excludePaths.Contains(iterotor.propertyPath))
-                                        dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
-                                    if (!iterotor.Next(false))
-                                        break;
-                                }
-                                if (dstSO.hasModifiedProperties)
-                                {
-                                    dstSO.ApplyModifiedPropertiesWithoutUndo();
-                                    importer.SaveAndReimport();
-                                }
+                                if (!excludePaths.Contains(iterotor.propertyPath))
+                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
+                                if (!iterotor.Next(false))
+                                    break;
+                            }
+                            if (dstSO.hasModifiedProperties)
+                            {
+                                dstSO.ApplyModifiedPropertiesWithoutUndo();
+                                AssetDatabase.WriteImportSettingsIfDirty(path);
+                                importer.SaveAndReimport();
                             }
                         }
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assets);
+            container.Set(m_OutputPort.Id, assetGroup);
         }
     }
 }

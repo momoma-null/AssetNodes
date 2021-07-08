@@ -159,6 +159,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new ModifyComponentNode());
         }
 
+        ModifyComponentNode() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
         public string MenuPath => "Modify/Component";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -179,7 +181,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             using (var prefabInstance = new PrefabInstance())
             {
                 prefabInstance.Deserialize(m_SerializedPrefabInstance);
@@ -187,14 +189,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (component != null)
                 {
                     var sourceProperties = prefabInstance.GetModifiedProperties(component);
-                    foreach (var asset in assets)
+                    foreach (var assets in assetGroup)
                     {
-                        if (asset is GameObject rootGO)
+                        foreach (var go in assets.GetAssetsFromType<GameObject>())
                         {
-                            var targetComponent = rootGO.GetComponent(component.GetType());
-                            if (targetComponent == null)
+                            var targetComponents = go.GetComponents(component.GetType());
+                            if (targetComponents == null)
                                 continue;
-                            using (var targetSO = new SerializedObject(targetComponent))
+                            using (var targetSO = new SerializedObject(targetComponents))
                             {
                                 foreach (var prop in sourceProperties)
                                     targetSO.CopyFromSerializedPropertyIfDifferent(prop);
@@ -205,7 +207,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assets);
+            container.Set(m_OutputPort.Id, assetGroup);
         }
     }
 }

@@ -1,15 +1,37 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    sealed class AssetGroup : HashSet<UnityObject>
+    public sealed class AssetGroup : HashSet<AssetData>
     {
         public AssetGroup() { }
-        public AssetGroup(IEnumerable<UnityObject> source) : base(source) { }
+        public AssetGroup(IEnumerable<AssetData> source) : base(source) { }
 
         public string GropuName { get; set; } = "";
+    }
+
+    public sealed class AssetData
+    {
+        public UnityObject MainAsset { get; }
+        public UnityObject[] AllAssets { get; }
+        public string AssetPath { get; }
+
+        public AssetData(string path)
+        {
+            MainAsset = AssetDatabase.LoadMainAssetAtPath(path);
+            AllAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            AssetPath = path;
+        }
+
+        public IEnumerable<T> GetAssetsFromType<T>() where T : UnityObject
+        {
+            foreach (var i in AllAssets)
+                if (i is T tObj)
+                    yield return tObj;
+        }
     }
 }

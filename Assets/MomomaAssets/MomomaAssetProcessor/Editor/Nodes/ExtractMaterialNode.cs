@@ -39,38 +39,35 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
-            foreach (var asset in assets)
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            foreach (var assets in assetGroup)
             {
-                if (asset is GameObject model)
+                var path = assets.AssetPath;
+                if (AssetImporter.GetAtPath(path) is ModelImporter)
                 {
-                    var path = AssetDatabase.GetAssetPath(model);
-                    if (AssetImporter.GetAtPath(path) is ModelImporter)
+                    var directoryPath = Path.Combine(path, m_DirectoryPath);
+                    var isDirty = false;
+                    foreach (var i in AssetDatabase.LoadAllAssetsAtPath(path))
                     {
-                        var directoryPath = Path.Combine(path, m_DirectoryPath);
-                        var isDirty = false;
-                        foreach (var i in AssetDatabase.LoadAllAssetsAtPath(path))
+                        if (!(i is Material))
+                            continue;
+                        if (!Directory.Exists(directoryPath))
                         {
-                            if (!(i is Material))
-                                continue;
-                            if (!Directory.Exists(directoryPath))
-                            {
-                                Directory.CreateDirectory(directoryPath);
-                                AssetDatabase.ImportAsset(directoryPath);
-                            }
-                            var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
-                            AssetDatabase.ExtractAsset(i, dstPath);
-                            isDirty = true;
+                            Directory.CreateDirectory(directoryPath);
+                            AssetDatabase.ImportAsset(directoryPath);
                         }
-                        if (isDirty)
-                        {
-                            AssetDatabase.WriteImportSettingsIfDirty(path);
-                            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-                        }
+                        var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
+                        AssetDatabase.ExtractAsset(i, dstPath);
+                        isDirty = true;
+                    }
+                    if (isDirty)
+                    {
+                        AssetDatabase.WriteImportSettingsIfDirty(path);
+                        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assets);
+            container.Set(m_OutputPort.Id, assetGroup);
         }
     }
 }

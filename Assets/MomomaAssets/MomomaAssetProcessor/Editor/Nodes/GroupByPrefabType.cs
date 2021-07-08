@@ -33,17 +33,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();
-            foreach (var asset in assets)
+            foreach (var assets in assetGroup)
             {
-                switch (PrefabUtility.GetPrefabAssetType(asset))
+                switch (PrefabUtility.GetPrefabAssetType(assets.MainAsset))
                 {
-                    case PrefabAssetType.Regular: regulars.Add(asset); break;
-                    case PrefabAssetType.Model: models.Add(asset); break;
-                    case PrefabAssetType.Variant: variants.Add(asset); break;
+                    case PrefabAssetType.Regular: regulars.Add(assets); break;
+                    case PrefabAssetType.Model: models.Add(assets); break;
+                    case PrefabAssetType.Variant: variants.Add(assets); break;
                 }
             }
             container.Set(m_OutputPorts[0].Id, regulars);

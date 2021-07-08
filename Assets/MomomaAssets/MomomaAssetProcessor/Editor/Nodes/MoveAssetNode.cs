@@ -19,6 +19,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new MoveAssetNode());
         }
 
+        MoveAssetNode() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "File/Move Asset";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -42,9 +44,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             var regex = new Regex(m_SourcePath);
-            foreach (var asset in assetGroup)
+            foreach (var assets in assetGroup)
             {
-                var srcPath = AssetDatabase.GetAssetPath(asset);
+                var srcPath = assets.AssetPath;
                 var dstPath = regex.Replace(srcPath, m_DestinationPath);
                 var directoryPath = Path.GetDirectoryName(dstPath);
                 if (!Directory.Exists(directoryPath))

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -88,6 +87,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new GroupByTypeNode());
         }
 
+        GroupByTypeNode() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "Group/Group by Type";
         public IEnumerable<PortData> InputPorts => m_InputPorts;
@@ -102,20 +103,20 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var objects = container.Get(m_InputPorts[0].Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPorts[0].Id, () => new AssetGroup());
             foreach (var typeGroup in m_TypeGroups)
             {
                 var result = new AssetGroup();
                 var regex = new Regex(typeGroup.regex);
-                foreach (var i in objects)
+                foreach (var assets in assetGroup)
                 {
-                    var path = AssetDatabase.GetAssetPath(i);
+                    var path = assets.AssetPath;
                     var importer = AssetImporter.GetAtPath(path);
-                    if ((importer != null && typeGroup.AssetTypeData.IsTarget(importer)) || typeGroup.AssetTypeData.IsTarget(i))
+                    if ((importer != null && typeGroup.AssetTypeData.IsTarget(importer)) || typeGroup.AssetTypeData.IsTarget(assets.MainAsset))
                     {
                         if (string.IsNullOrEmpty(typeGroup.regex) || regex.Match(path).Success)
                         {
-                            result.Add(i);
+                            result.Add(assets);
                         }
                     }
                 }

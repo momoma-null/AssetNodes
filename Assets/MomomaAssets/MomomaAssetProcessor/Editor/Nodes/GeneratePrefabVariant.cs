@@ -19,6 +19,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new GeneratePrefabVariant());
         }
 
+        GeneratePrefabVariant() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "Generate/Prefab Variant";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -43,11 +45,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             var variants = new AssetGroup();
             var regex = new Regex(m_OriginalPrefabPath);
-            foreach (var asset in assetGroup)
+            foreach (var assets in assetGroup)
             {
-                if (asset is GameObject prefab)
+                if (assets.MainAsset is GameObject prefab)
                 {
-                    var srcPath = AssetDatabase.GetAssetPath(asset);
+                    var srcPath = assets.AssetPath;
                     var dstPath = regex.Replace(srcPath, m_VariantPrefabPath);
                     var directoryPath = Path.GetDirectoryName(dstPath);
                     if (!Directory.Exists(directoryPath))
@@ -68,7 +70,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             DestroyImmediate(instance);
                         }
                     }
-                    variants.Add(currentDstPrefab);
+                    variants.Add(new AssetData(dstPath));
                 }
             }
             container.Set(m_OutputPorts[0].Id, assetGroup);

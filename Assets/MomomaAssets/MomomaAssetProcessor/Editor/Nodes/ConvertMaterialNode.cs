@@ -18,6 +18,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new ConvertMaterialNode());
         }
 
+        ConvertMaterialNode() { }
+
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "Modify/Convert Material";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
@@ -39,12 +41,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assets = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
             if (m_DestinationShader != null)
             {
-                foreach (var asset in assets)
+                foreach (var assets in assetGroup)
                 {
-                    if (asset is Material material)
+                    foreach (var material in assets.GetAssetsFromType<Material>())
                     {
                         if (m_SourceShader != null && material.shader != m_SourceShader)
                             continue;
@@ -54,7 +56,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assets);
+            container.Set(m_OutputPort.Id, assetGroup);
         }
     }
 }
