@@ -177,7 +177,7 @@ namespace MomomaAssets.GraphView
                     if (!string.IsNullOrEmpty(path))
                     {
                         AssetDatabase.SaveAssets();
-                        AssetDatabase.ImportAsset(path);
+                        //AssetDatabase.ImportAsset(path);
                     }
                 }
 
