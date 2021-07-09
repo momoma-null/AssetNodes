@@ -123,9 +123,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             public void OnGUI(SerializedProperty property)
             {
+                using (var m_IncludeChildrenProperty = property.FindPropertyRelative(nameof(m_IncludeChildren)))
                 using (var m_TypeNameProperty = property.FindPropertyRelative(nameof(m_TypeName)))
                 using (var m_SerializedPrefabInstanceProperty = property.FindPropertyRelative(nameof(m_SerializedPrefabInstance)))
                 {
+                    EditorGUILayout.PropertyField(m_IncludeChildrenProperty);
                     using (var change = new EditorGUI.ChangeCheckScope())
                     {
                         var newValue = ComponentReflectionUtility.TypePopup(m_TypeNameProperty.stringValue);
@@ -146,9 +148,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         EditorGUI.BeginChangeCheck();
                         m_CachedEditor.OnInspectorGUI();
                         if (EditorGUI.EndChangeCheck())
-                        {
                             m_SerializedPrefabInstanceProperty.stringValue = m_PrefabInstance.Serialize();
-                        }
                     }
                 }
             }
@@ -173,7 +173,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [HideInInspector]
         PortData m_OutputPort = new PortData(typeof(GameObject));
         [SerializeField]
-        bool m_Recursively;
+        bool m_IncludeChildren = false;
         [SerializeField]
         string m_TypeName = "";
         [SerializeField]
@@ -189,25 +189,32 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (component != null)
                 {
                     var sourceProperties = prefabInstance.GetModifiedProperties(component);
+                    var componentType = component.GetType();
                     foreach (var assets in assetGroup)
                     {
-                        foreach (var go in assets.GetAssetsFromType<GameObject>())
-                        {
-                            var targetComponents = go.GetComponents(component.GetType());
-                            if (targetComponents == null)
-                                continue;
-                            using (var targetSO = new SerializedObject(targetComponents))
-                            {
-                                foreach (var prop in sourceProperties)
-                                    targetSO.CopyFromSerializedPropertyIfDifferent(prop);
-                                if (targetSO.hasModifiedProperties)
-                                    targetSO.ApplyModifiedPropertiesWithoutUndo();
-                            }
-                        }
+                        if (m_IncludeChildren)
+                            foreach (var go in assets.GetAssetsFromType<GameObject>())
+                                CopyComponentModifications(go, componentType, sourceProperties);
+                        else if (assets.MainAsset is GameObject root)
+                            CopyComponentModifications(root, componentType, sourceProperties);
                     }
                 }
             }
             container.Set(m_OutputPort.Id, assetGroup);
+        }
+
+        void CopyComponentModifications(GameObject go, Type componentType, List<SerializedProperty> sourceProperties)
+        {
+            var targetComponents = go.GetComponents(componentType);
+            if (targetComponents == null || targetComponents.Length == 0)
+                return;
+            using (var targetSO = new SerializedObject(targetComponents))
+            {
+                foreach (var prop in sourceProperties)
+                    targetSO.CopyFromSerializedPropertyIfDifferent(prop);
+                if (targetSO.hasModifiedProperties)
+                    targetSO.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
     }
 }

@@ -110,11 +110,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         [HideInInspector]
         PortData m_InputPort = new PortData(typeof(GameObject));
-
         [SerializeField]
         [HideInInspector]
         PortData m_OutputPort = new PortData(typeof(GameObject));
-
+        [SerializeField]
+        bool m_IncludeChildren = false;
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
@@ -177,12 +177,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             if (process != null)
             {
-                foreach (var asset in assetGroup)
+                foreach (var assets in assetGroup)
                 {
-                    foreach (var go in asset.GetAssetsFromType<GameObject>())
-                    {
-                        process(go);
-                    }
+                    if (m_IncludeChildren)
+                        foreach (var go in assets.GetAssetsFromType<GameObject>())
+                            process(go);
+                    else if (assets.MainAsset is GameObject root)
+                        process(root);
                 }
             }
             container.Set(m_OutputPort.Id, assetGroup);
