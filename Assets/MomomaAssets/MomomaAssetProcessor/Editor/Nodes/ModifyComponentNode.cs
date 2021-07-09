@@ -15,11 +15,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class PrefabInstance : IDisposable
         {
-            static readonly GameObject s_DefaultPrefab = Resources.Load<GameObject>("DefaultPrefab");
+            static readonly GameObject s_DefaultPrefab = Resources.Load<GameObject>("MomomaAssetProcessor/DefaultPrefab");
             static readonly string s_DefaultPrefabPath = AssetDatabase.GetAssetPath(s_DefaultPrefab);
-            static readonly GameObject s_ReadonlyPrefab = Resources.Load<GameObject>("ReadonlyPrefab");
+            static readonly GameObject s_ReadonlyPrefab = Resources.Load<GameObject>("MomomaAssetProcessor/ReadonlyPrefab");
             static readonly string s_ReadonlyPrefabPath = AssetDatabase.GetAssetPath(s_ReadonlyPrefab);
-            static readonly GameObject s_VariantPrefab = Resources.Load<GameObject>("VariantPrefab");
+            static readonly GameObject s_VariantPrefab = Resources.Load<GameObject>("MomomaAssetProcessor/VariantPrefab");
             static readonly string s_VariantPrefabPath = AssetDatabase.GetAssetPath(s_VariantPrefab);
 
             readonly GameObject m_PrefabContents;

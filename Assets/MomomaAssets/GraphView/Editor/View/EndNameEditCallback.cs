@@ -5,7 +5,7 @@ using UnityEditor.ProjectWindowCallback;
 
 namespace MomomaAssets.GraphView
 {
-    sealed class CreateGraphObjectEndAction : EndNameEditAction
+    sealed class EndNameEditCallback : EndNameEditAction
     {
         public event Action<string>? OnEndNameEdit;
         public event Action? OnCancelled;

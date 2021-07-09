@@ -12,14 +12,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class GeneratePrefabVariant : INodeData
+    sealed class GeneratePrefabVariantNode : INodeData
     {
-        static GeneratePrefabVariant()
+        static GeneratePrefabVariantNode()
         {
-            INodeDataUtility.AddConstructor(() => new GeneratePrefabVariant());
+            INodeDataUtility.AddConstructor(() => new GeneratePrefabVariantNode());
         }
 
-        GeneratePrefabVariant() { }
+        GeneratePrefabVariantNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "Generate/Prefab Variant";

@@ -400,11 +400,11 @@ namespace MomomaAssets.GraphView
             var graphViewObject = ScriptableObject.CreateInstance<GraphViewObject>();
             SetGraphViewObjectHandler(new GraphViewObjectHandler(graphViewObject, m_NodeGraphType, OnGraphElementChanged, FullReload, m_NodeGraphProcessor));
             m_CreateGraphButton.visible = false;
-            var endAction = ScriptableObject.CreateInstance<CreateGraphObjectEndAction>();
-            endAction.OnEndNameEdit += OnEndNameEdit;
-            endAction.OnCancelled += OnCreationCancelled;
+            var endNameEditCallback = ScriptableObject.CreateInstance<EndNameEditCallback>();
+            endNameEditCallback.OnEndNameEdit += OnEndNameEdit;
+            endNameEditCallback.OnCancelled += OnCreationCancelled;
             var icon = AssetPreview.GetMiniThumbnail(graphViewObject);
-            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(graphViewObject.GetInstanceID(), endAction, "NewNodeGraph.asset", icon, null);
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(graphViewObject.GetInstanceID(), endNameEditCallback, "NewNodeGraph.asset", icon, null);
         }
 
         void OnEndNameEdit(string path)

@@ -7,14 +7,14 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
-    sealed class GroupByPrefabType : INodeData
+    sealed class GroupByPrefabTypeNode : INodeData
     {
-        static GroupByPrefabType()
+        static GroupByPrefabTypeNode()
         {
-            INodeDataUtility.AddConstructor(() => new GroupByPrefabType());
+            INodeDataUtility.AddConstructor(() => new GroupByPrefabTypeNode());
         }
 
-        GroupByPrefabType() { }
+        GroupByPrefabTypeNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public string MenuPath => "Group/Group by PrefabType";

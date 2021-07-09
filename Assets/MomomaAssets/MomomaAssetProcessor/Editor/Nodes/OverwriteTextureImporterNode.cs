@@ -38,7 +38,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         sealed class AssetData
         {
-            public static readonly TextureImporter s_DefaultImporter = Resources.Load<TextureImporter>("TextureImporter");
+            public static readonly TextureImporter s_DefaultImporter = Resources.Load<TextureImporter>("MomomaAssetProcessor/TextureImporter");
         }
 
         static OverwriteTextureImporterNode()
