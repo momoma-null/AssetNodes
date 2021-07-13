@@ -14,6 +14,7 @@ namespace MomomaAssets.GraphView
     {
         readonly INodeData m_Node;
         SerializedObject? m_SerializedObject;
+        SerializedProperty? m_ExpandedProperty;
         Editor? m_CachedEditor;
 
         public IGraphElementData GraphElementData => m_Node;
@@ -24,7 +25,6 @@ namespace MomomaAssets.GraphView
             style.minWidth = 150f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             title = m_Node.GetType().Name.Replace("Node", "");
-            capabilities |= Capabilities.Renamable;
             m_CollapseButton.schedule.Execute(() =>
             {
                 if (!m_CollapseButton.enabledInHierarchy)
@@ -44,15 +44,28 @@ namespace MomomaAssets.GraphView
         {
             if (m_CachedEditor != null)
                 DestroyImmediate(m_CachedEditor);
+            m_SerializedObject = null;
+            m_ExpandedProperty = null;
+        }
+
+        protected override void ToggleCollapse()
+        {
+            base.ToggleCollapse();
+            if (m_SerializedObject == null || m_ExpandedProperty == null)
+                return;
+            m_SerializedObject.UpdateIfRequiredOrScript();
+            m_ExpandedProperty.boolValue = expanded;
+            m_SerializedObject.ApplyModifiedProperties();
         }
 
         public void Bind(SerializedObject serializedObject)
         {
             m_SerializedObject = serializedObject;
             extensionContainer.Clear();
+            m_ExpandedProperty = serializedObject.FindProperty("m_GraphElementData.m_Expanded");
             if (m_Node.GraphElementEditor.UseDefaultVisualElement)
             {
-                using (var iterator = serializedObject.FindProperty("m_GraphElementData"))
+                using (var iterator = serializedObject.FindProperty("m_GraphElementData.m_Processor"))
                 using (var endProperty = iterator.GetEndProperty(false))
                 {
                     iterator.NextVisible(true);

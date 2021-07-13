@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -11,7 +10,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ModifyMaterialNode : INodeData
+    [CreateElement("Modify/Material")]
+    sealed class ModifyMaterialNode : INodeProcessor
     {
         interface IPropertyValue
         {
@@ -264,7 +264,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; }
-        public string MenuPath => "Modify/Material";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 

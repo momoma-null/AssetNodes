@@ -11,7 +11,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ModifyComponentNode : INodeData
+    [CreateElement("Modify/Component")]
+    sealed class ModifyComponentNode : INodeProcessor
     {
         sealed class PrefabInstance : IDisposable
         {
@@ -162,7 +163,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ModifyComponentNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
-        public string MenuPath => "Modify/Component";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 

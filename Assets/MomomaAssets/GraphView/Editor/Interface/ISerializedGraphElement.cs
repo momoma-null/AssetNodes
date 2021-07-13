@@ -40,20 +40,10 @@ namespace MomomaAssets.GraphView
 
         public static GraphElement Deserialize(this ISerializedGraphElement serializedGraphElement, GraphView graphView)
         {
-            GraphElement graphElement = serializedGraphElement.GraphElementData switch
-            {
-                INodeData nodeData => new NodeGUI(nodeData),
-                IEdgeData edgeData => new DefaultEdge(edgeData),
-                _ => throw new ArgumentOutOfRangeException(nameof(serializedGraphElement.GraphElementData))
-            };
+            if (serializedGraphElement.GraphElementData == null)
+                throw new ArgumentNullException(nameof(serializedGraphElement.GraphElementData));
+            var graphElement = serializedGraphElement.GraphElementData.Deserialize();
             graphView.AddElement(graphElement);
-            switch (graphElement)
-            {
-                case Node node:
-                    var portCount = 0;
-                    node.Query<Port>().ForEach(port => port.viewDataKey = serializedGraphElement.ReferenceGuids[portCount++]);
-                    break;
-            }
             if (serializedGraphElement is ScriptableObject scriptableObject && graphElement is IFieldHolder fieldHolder)
             {
                 var so = new SerializedObject(scriptableObject);
@@ -67,89 +57,7 @@ namespace MomomaAssets.GraphView
         {
             graphElement.viewDataKey = serializedGraphElement.Guid;
             graphElement.SetPosition(serializedGraphElement.Position);
-            if (serializedGraphElement.GraphElementData is INodeData nodeData && graphElement is Node node)
-            {
-                var toDeleteElements = new HashSet<GraphElement>();
-                var ports = node.inputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
-                var portCount = 0;
-                foreach (var data in nodeData.InputPorts)
-                {
-                    if (ports.TryGetValue(data.Id, out var port))
-                    {
-                        ports.Remove(data.Id);
-                        if (port.portType != data.PortType)
-                        {
-                            port.portName = "";
-                            port.portType = data.PortType;
-                        }
-                    }
-                    else
-                    {
-                        port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
-                        if (!string.IsNullOrEmpty(data.Id))
-                            port.viewDataKey = data.Id;
-                    }
-                    if (!string.IsNullOrEmpty(data.PortName))
-                        port.portName = data.PortName;
-                    node.inputContainer.Insert(portCount++, port);
-                }
-                foreach (var port in ports.Values)
-                {
-                    toDeleteElements.UnionWith(port.connections);
-                    node.inputContainer.Remove(port);
-                }
-                ports = node.outputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
-                portCount = 0;
-                foreach (var data in nodeData.OutputPorts)
-                {
-                    if (ports.TryGetValue(data.Id, out var port))
-                    {
-                        ports.Remove(data.Id);
-                        if (port.portType != data.PortType)
-                        {
-                            port.portName = "";
-                            port.portType = data.PortType;
-                        }
-                    }
-                    else
-                    {
-                        port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
-                        if (!string.IsNullOrEmpty(data.Id))
-                            port.viewDataKey = data.Id;
-                    }
-                    if (!string.IsNullOrEmpty(data.PortName))
-                        port.portName = data.PortName;
-                    node.outputContainer.Insert(portCount++, port);
-                }
-                foreach (var port in ports.Values)
-                {
-                    toDeleteElements.UnionWith(port.connections);
-                    node.outputContainer.Remove(port);
-                }
-                node.RefreshPorts();
-                graphView.DeleteElements(toDeleteElements);
-            }
-            else if (serializedGraphElement.GraphElementData is IEdgeData edgeData && graphElement is Edge edge)
-            {
-                var inputPort = graphView.GetPortByGuid(edgeData.InputPortGuid);
-                if (edge.input != inputPort)
-                {
-                    edge.input?.Disconnect(edge);
-                    edge.input = inputPort;
-                    edge.input.Connect(edge);
-                }
-                var outputPort = graphView.GetPortByGuid(edgeData.OutputPortGuid);
-                if (edge.output != outputPort)
-                {
-                    edge.output?.Disconnect(edge);
-                    edge.output = outputPort;
-                    edge.output.Connect(edge);
-                }
-                if (edge.output == null || edge.input == null)
-                {
-                    graphView.RemoveElement(edge);
-                }
-            }
+            serializedGraphElement.GraphElementData?.DeserializeOverwrite(graphElement, graphView);
             serializedGraphElement.RebindReferenceGuids();
         }
 
@@ -159,8 +67,8 @@ namespace MomomaAssets.GraphView
             switch (serializedGraphElement.GraphElementData)
             {
                 case INodeData nodeData:
-                    referenceGuids.AddRange(nodeData.InputPorts.Select(i => i.Id));
-                    referenceGuids.AddRange(nodeData.OutputPorts.Select(i => i.Id));
+                    referenceGuids.AddRange(nodeData.Processor.InputPorts.Select(i => i.Id));
+                    referenceGuids.AddRange(nodeData.Processor.OutputPorts.Select(i => i.Id));
                     break;
                 case IEdgeData edgeData:
                     referenceGuids.Add(edgeData.InputPortGuid);

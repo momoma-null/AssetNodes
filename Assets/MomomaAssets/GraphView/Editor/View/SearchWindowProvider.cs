@@ -27,11 +27,17 @@ namespace MomomaAssets.GraphView
                 return m_SearchTree;
             m_SearchTree = new List<SearchTreeEntry>();
             m_SearchTree.Add(new SearchTreeGroupEntry(new GUIContent("Create Node")));
-            var nodes = new SortedList<string, Func<INodeData>>(INodeDataUtility.Constructors.Count);
+            var nodes = new SortedList<string, Func<INodeProcessor>>(INodeDataUtility.Constructors.Count);
             foreach (var ctor in INodeDataUtility.Constructors)
             {
                 var node = ctor();
-                nodes.Add(node.MenuPath, ctor);
+                foreach (var attr in node.GetType().GetCustomAttributes(typeof(CreateElementAttribute), false))
+                {
+                    if (attr is CreateElementAttribute createElement)
+                    {
+                        nodes.Add(createElement.MenuPath, ctor);
+                    }
+                }
             }
             var groupPaths = new HashSet<string>();
             foreach (var node in nodes)
@@ -54,11 +60,11 @@ namespace MomomaAssets.GraphView
 
         public bool OnSelectEntry(SearchTreeEntry entry, SearchWindowContext context)
         {
-            var ctor = entry.userData as Func<INodeData>;
-            var iNode = ctor?.Invoke();
-            if (iNode == null)
+            var ctor = entry.userData as Func<INodeProcessor>;
+            var processor = ctor?.Invoke();
+            if (processor == null)
                 return false;
-            var graphElement = new NodeGUI(iNode) as GraphElement;
+            var graphElement = new NodeGUI(new DefaultNodeData(processor)) as GraphElement;
             if (addGraphElement != null && graphElement != null)
             {
                 addGraphElement(graphElement, context.screenMousePosition);

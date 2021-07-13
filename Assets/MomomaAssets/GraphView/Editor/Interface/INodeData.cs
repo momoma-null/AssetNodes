@@ -7,21 +7,19 @@ namespace MomomaAssets.GraphView
 {
     public interface INodeData : IGraphElementData
     {
-        string MenuPath { get; }
-        IEnumerable<PortData> InputPorts { get; }
-        IEnumerable<PortData> OutputPorts { get; }
-        void Process(ProcessingDataContainer container);
+        bool Expanded { get; }
+        INodeProcessor Processor { get; }
     }
 
     public static class INodeDataUtility
     {
-        static Dictionary<Type, Func<INodeData>> s_Constructors = new Dictionary<Type, Func<INodeData>>();
+        static Dictionary<Type, Func<INodeProcessor>> s_Constructors = new Dictionary<Type, Func<INodeProcessor>>();
 
-        public static IReadOnlyCollection<Func<INodeData>> Constructors => s_Constructors.Values;
+        public static IReadOnlyCollection<Func<INodeProcessor>> Constructors => s_Constructors.Values;
 
-        public static void AddConstructor<TNode>(Func<TNode> ctor) where TNode : INodeData
+        public static void AddConstructor<TNode>(Func<TNode> ctor) where TNode : INodeProcessor
         {
-            s_Constructors[typeof(TNode)] = () => ctor() as INodeData;
+            s_Constructors[typeof(TNode)] = () => ctor();
         }
     }
 }

@@ -12,7 +12,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class MoveAssetNode : INodeData
+    [CreateElement("File/Move Asset")]
+    sealed class MoveAssetNode : INodeProcessor
     {
         static MoveAssetNode()
         {
@@ -22,7 +23,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         MoveAssetNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "File/Move Asset";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 

@@ -9,7 +9,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ModifyGameObjectNode : INodeData
+    [CreateElement("Modify/GameObject")]
+    sealed class ModifyGameObjectNode : INodeProcessor
     {
         static ModifyGameObjectNode()
         {
@@ -103,7 +104,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Modify/GameObject";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 

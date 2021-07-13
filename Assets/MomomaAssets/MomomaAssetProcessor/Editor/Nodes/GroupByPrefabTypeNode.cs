@@ -7,7 +7,7 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
-    sealed class GroupByPrefabTypeNode : INodeData
+    sealed class GroupByPrefabTypeNode : INodeProcessor
     {
         static GroupByPrefabTypeNode()
         {

@@ -25,7 +25,7 @@ namespace MomomaAssets.GraphView
             {
                 if (i.GraphElementData is INodeData nodeData)
                 {
-                    foreach (var port in nodeData.OutputPorts)
+                    foreach (var port in nodeData.Processor.OutputPorts)
                     {
                         portToNode[port.Id] = i.Guid;
                     }
@@ -59,7 +59,7 @@ namespace MomomaAssets.GraphView
                 if (i.GraphElementData is INodeData nodeData)
                 {
                     var isEndNode = true;
-                    foreach (var port in nodeData.OutputPorts)
+                    foreach (var port in nodeData.Processor.OutputPorts)
                     {
                         if (connectedOutputPorts.Contains(port.Id))
                         {
@@ -83,7 +83,7 @@ namespace MomomaAssets.GraphView
             if (guidToSerializedGraphElements[id].GraphElementData is INodeData nodeData)
             {
                 PreProcess?.Invoke();
-                nodeData.Process(container);
+                nodeData.Processor.Process(container);
                 PostProcess?.Invoke();
             }
         }

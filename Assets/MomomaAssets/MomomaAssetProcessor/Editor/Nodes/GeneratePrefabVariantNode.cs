@@ -12,7 +12,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class GeneratePrefabVariantNode : INodeData
+    [CreateElement("Generate/Prefab Variant")]
+    sealed class GeneratePrefabVariantNode : INodeProcessor
     {
         static GeneratePrefabVariantNode()
         {
@@ -22,7 +23,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GeneratePrefabVariantNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Generate/Prefab Variant";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => m_OutputPorts;
 

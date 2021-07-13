@@ -8,6 +8,8 @@ namespace MomomaAssets.GraphView
     [Serializable]
     public sealed class PortData
     {
+        public static string GetNewId() => Guid.NewGuid().ToString();
+
         [SerializeField]
         string m_PortType;
         [SerializeField]
@@ -23,7 +25,7 @@ namespace MomomaAssets.GraphView
         {
             m_PortType = type.AssemblyQualifiedName;
             m_PortName = name;
-            m_Id = id ?? Guid.NewGuid().ToString();
+            m_Id = id ?? GetNewId();
         }
     }
 }

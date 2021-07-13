@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using static UnityEngine.Object;
 
 #nullable enable
 
@@ -11,7 +9,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ConvertMaterialNode : INodeData
+    [CreateElement("Modify/Convert Material")]
+    sealed class ConvertMaterialNode : INodeProcessor
     {
         static ConvertMaterialNode()
         {
@@ -21,7 +20,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ConvertMaterialNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Modify/Convert Material";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 

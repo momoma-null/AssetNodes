@@ -11,49 +11,13 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
-    sealed class GroupByTypeNode : INodeData, ISerializationCallbackReceiver
+    [CreateElement("Group/Group by Type")]
+    sealed class GroupByTypeNode : INodeProcessor, ISerializationCallbackReceiver
     {
-        sealed class AssetTypeData
-        {
-            public static AssetTypeData Create<T>() => new AssetTypeData(i => i is T, typeof(T));
-            public static AssetTypeData Create<T1, T2>() => new AssetTypeData(i => i is T1 || i is T2, typeof(T1));
-
-            AssetTypeData(Func<UnityObject, bool> isTarget, Type targetType)
-            {
-                AssetType = targetType;
-                m_IsTarget = isTarget;
-            }
-
-            readonly Func<UnityObject, bool> m_IsTarget;
-
-            public Type AssetType { get; }
-
-            public bool IsTarget(UnityObject x) => m_IsTarget(x);
-        }
-
         [Serializable]
         sealed class TypeGroup : ISerializationCallbackReceiver
         {
-            static readonly SortedList<string, AssetTypeData> s_Types = new SortedList<string, AssetTypeData>() {
-                { "AnimationClip", AssetTypeData.Create<AnimationClip>() },
-                { "AudioClip", AssetTypeData.Create<AudioClip, AudioImporter>() },
-                { "AudioMixer", AssetTypeData.Create<UnityEngine.Audio.AudioMixer>() },
-                { "ComputeShader", AssetTypeData.Create<ComputeShader, ComputeShaderImporter>() },
-                { "Font", AssetTypeData.Create<Font, TrueTypeFontImporter>() },
-                { "GUISkin", AssetTypeData.Create<GUISkin>() },
-                { "Material", AssetTypeData.Create<Material>() },
-                { "Mesh", AssetTypeData.Create<Mesh>() },
-                { "PhysicMaterial", AssetTypeData.Create<PhysicMaterial>() },
-                { "Prefab", AssetTypeData.Create<GameObject>() },
-                { "Scene", AssetTypeData.Create<SceneAsset>() },
-                { "Script", AssetTypeData.Create<MonoScript, MonoImporter>() },
-                { "Shader", AssetTypeData.Create<Shader, ShaderImporter>() },
-                { "Texture", AssetTypeData.Create<Texture, TextureImporter>() },
-                { "VideoClip", AssetTypeData.Create<UnityEngine.Video.VideoClip, VideoClipImporter>() }, };
-
-            public static IList<string> TypeNames => s_Types.Keys;
-
-            public AssetTypeData AssetTypeData => s_Types.Values[index];
+            public AssetTypeData AssetTypeData => UnityObjectTypeUtility.GetAssetTypeData(index);
 
             public int index;
             public string regex = "";
@@ -78,7 +42,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     regexProperty.stringValue = EditorGUI.TextField(position, regexProperty.stringValue);
                 position.x += position.width;
                 using (var indexProperty = property.FindPropertyRelative(nameof(TypeGroup.index)))
-                    indexProperty.intValue = EditorGUI.Popup(position, indexProperty.intValue, TypeGroup.TypeNames.ToArray());
+                    indexProperty.intValue = EditorGUI.Popup(position, indexProperty.intValue, UnityObjectTypeUtility.TypeNames);
             }
         }
 
@@ -90,7 +54,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GroupByTypeNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Group/Group by Type";
         public IEnumerable<PortData> InputPorts => m_InputPorts;
         public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => new PortData(i.AssetTypeData.AssetType, id: i.guid));
 
@@ -103,7 +66,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPorts[0].Id, () => new AssetGroup());
+            var assetGroup = new AssetGroup(container.Get(m_InputPorts[0].Id, () => new AssetGroup()));
             foreach (var typeGroup in m_TypeGroups)
             {
                 var result = new AssetGroup();
@@ -120,6 +83,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         }
                     }
                 }
+                assetGroup.ExceptWith(result);
                 container.Set(typeGroup.guid, result);
             }
         }
@@ -128,8 +92,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             if (m_TypeGroups.Count > 1)
             {
-                if (m_TypeGroups[m_TypeGroups.Count - 1].guid == m_TypeGroups[m_TypeGroups.Count - 2].guid)
-                    m_TypeGroups[m_TypeGroups.Count - 1].guid = Guid.NewGuid().ToString();
+                var guids = new HashSet<string>();
+                foreach (var i in m_TypeGroups)
+                {
+                    if (!guids.Add(i.guid))
+                        i.guid = Guid.NewGuid().ToString();
+                }
             }
         }
 

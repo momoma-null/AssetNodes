@@ -11,7 +11,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class OverwriteTextureImporterNode : INodeData, IAdditionalAssetHolder
+    [CreateElement("Importer/Texture")]
+
+    sealed class OverwriteTextureImporterNode : INodeProcessor, IAdditionalAssetHolder
     {
         sealed class OverwriteTextureImporterNodeEditor : IGraphElementEditor
         {
@@ -49,7 +51,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         OverwriteTextureImporterNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new OverwriteTextureImporterNodeEditor();
-        public string MenuPath => "Importer/Texture";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
         public IEnumerable<UnityObject> Assets

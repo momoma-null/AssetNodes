@@ -10,7 +10,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class LoadAssetFromDirectoryNode : INodeData
+    [CreateElement("Load/From Directory")]
+    sealed class LoadAssetFromDirectoryNode : INodeProcessor
     {
         static LoadAssetFromDirectoryNode()
         {
@@ -20,7 +21,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         LoadAssetFromDirectoryNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Load/From Directory";
         public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
         public IEnumerable<PortData> OutputPorts => m_OutPorts;
 

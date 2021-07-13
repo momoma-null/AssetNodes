@@ -23,7 +23,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public AssetData(string path)
         {
             MainAsset = AssetDatabase.LoadMainAssetAtPath(path);
-            AllAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            if (MainAsset is SceneAsset)
+                AllAssets = new UnityObject[0];
+            else
+                AllAssets = AssetDatabase.LoadAllAssetsAtPath(path);
             AssetPath = path;
         }
 

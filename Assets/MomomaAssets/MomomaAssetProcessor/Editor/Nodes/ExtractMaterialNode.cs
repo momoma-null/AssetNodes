@@ -3,8 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityObject = UnityEngine.Object;
-using static UnityEngine.Object;
 
 #nullable enable
 
@@ -12,7 +10,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [InitializeOnLoad]
     [Serializable]
-    sealed class ExtractMaterialNode : INodeData
+    [CreateElement("Importer/Extract Material")]
+    sealed class ExtractMaterialNode : INodeProcessor
     {
         static ExtractMaterialNode()
         {
@@ -22,7 +21,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ExtractMaterialNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Importer/Extract Material";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 
@@ -45,7 +43,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 var path = assets.AssetPath;
                 if (AssetImporter.GetAtPath(path) is ModelImporter)
                 {
-                    var directoryPath = Path.Combine(path, m_DirectoryPath);
+                    var directoryPath = Path.Combine(Path.GetDirectoryName(path), m_DirectoryPath);
                     var isDirty = false;
                     foreach (var i in AssetDatabase.LoadAllAssetsAtPath(path))
                     {
@@ -63,7 +61,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     if (isDirty)
                     {
                         AssetDatabase.WriteImportSettingsIfDirty(path);
-                        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+                        AssetDatabase.ImportAsset(path);
                     }
                 }
             }
