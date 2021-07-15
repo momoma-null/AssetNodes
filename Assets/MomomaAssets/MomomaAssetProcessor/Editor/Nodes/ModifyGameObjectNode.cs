@@ -7,8 +7,8 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Modify/GameObject")]
     sealed class ModifyGameObjectNode : INodeProcessor
     {
@@ -120,7 +120,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             Action<GameObject>? process = null;
             foreach (var setting in m_Properties)
             {
@@ -186,7 +186,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         process(root);
                 }
             }
-            container.Set(m_OutputPort.Id, assetGroup);
+            container.Set(m_OutputPort, assetGroup);
         }
     }
 }

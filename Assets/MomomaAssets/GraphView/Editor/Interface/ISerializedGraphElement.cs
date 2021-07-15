@@ -16,7 +16,6 @@ namespace MomomaAssets.GraphView
     {
         string Guid { get; set; }
         Rect Position { get; set; }
-        IReadOnlyList<string> ReferenceGuids { get; set; }
         IGraphElementData? GraphElementData { get; set; }
     }
 
@@ -35,7 +34,6 @@ namespace MomomaAssets.GraphView
             }
             serializedGraphElement.Guid = graphElement.viewDataKey;
             serializedGraphElement.Position = position;
-            serializedGraphElement.RebindReferenceGuids();
         }
 
         public static GraphElement Deserialize(this ISerializedGraphElement serializedGraphElement, GraphView graphView)
@@ -58,24 +56,6 @@ namespace MomomaAssets.GraphView
             graphElement.viewDataKey = serializedGraphElement.Guid;
             graphElement.SetPosition(serializedGraphElement.Position);
             serializedGraphElement.GraphElementData?.DeserializeOverwrite(graphElement, graphView);
-            serializedGraphElement.RebindReferenceGuids();
-        }
-
-        static void RebindReferenceGuids(this ISerializedGraphElement serializedGraphElement)
-        {
-            var referenceGuids = new List<string>();
-            switch (serializedGraphElement.GraphElementData)
-            {
-                case INodeData nodeData:
-                    referenceGuids.AddRange(nodeData.Processor.InputPorts.Select(i => i.Id));
-                    referenceGuids.AddRange(nodeData.Processor.OutputPorts.Select(i => i.Id));
-                    break;
-                case IEdgeData edgeData:
-                    referenceGuids.Add(edgeData.InputPortGuid);
-                    referenceGuids.Add(edgeData.OutputPortGuid);
-                    break;
-            }
-            serializedGraphElement.ReferenceGuids = referenceGuids;
         }
     }
 }

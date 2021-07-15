@@ -9,8 +9,8 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Importer/Model")]
     sealed class OverwriteModelImporterNode : INodeProcessor, IAdditionalAssetHolder
     {
@@ -22,7 +22,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             public void OnDestroy()
             {
-                DestroyImmediate(m_CachedEditor);
+                if (m_CachedEditor != null)
+                    DestroyImmediate(m_CachedEditor);
             }
 
             public void OnGUI(SerializedProperty property)
@@ -78,7 +79,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             if (m_Importer != null)
             {
                 foreach (var assets in assetGroup)
@@ -109,7 +110,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assetGroup);
+            container.Set(m_OutputPort, assetGroup);
         }
     }
 }

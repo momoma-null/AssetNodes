@@ -10,8 +10,8 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Generate/Prefab Variant")]
     sealed class GeneratePrefabVariantNode : INodeProcessor
     {
@@ -42,7 +42,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             var variants = new AssetGroup();
             var regex = new Regex(m_OriginalPrefabPath);
             foreach (var assets in assetGroup)
@@ -73,8 +73,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     variants.Add(new AssetData(dstPath));
                 }
             }
-            container.Set(m_OutputPorts[0].Id, assetGroup);
-            container.Set(m_OutputPorts[1].Id, variants);
+            container.Set(m_OutputPorts[0], assetGroup);
+            container.Set(m_OutputPorts[1], variants);
         }
     }
 }

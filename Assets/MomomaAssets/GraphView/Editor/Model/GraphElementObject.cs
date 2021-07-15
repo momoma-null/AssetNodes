@@ -16,8 +16,6 @@ namespace MomomaAssets.GraphView
         string m_Guid = "";
         [SerializeField]
         Rect m_Position = Rect.zero;
-        [SerializeField]
-        List<string> m_ReferenceGuids = new List<string>();
         [SerializeReference]
         IGraphElementData? m_GraphElementData;
 
@@ -53,26 +51,6 @@ namespace MomomaAssets.GraphView
                     using (var sp = m_SerializedObject.FindProperty(nameof(m_Position)))
                         sp.rectValue = value;
                     m_SerializedObject?.ApplyModifiedProperties();
-                }
-            }
-        }
-
-        public IReadOnlyList<string> ReferenceGuids
-        {
-            get => m_ReferenceGuids;
-            set
-            {
-                if ((m_ReferenceGuids.Count != value.Count || !m_ReferenceGuids.SequenceEqual(value)) && m_SerializedObject != null)
-                {
-                    m_SerializedObject.Update();
-                    using (var referenceGuids = m_SerializedObject.FindProperty(nameof(m_ReferenceGuids)))
-                    {
-                        referenceGuids.ClearArray();
-                        referenceGuids.arraySize = value.Count;
-                        for (var i = 0; i < value.Count; ++i)
-                            referenceGuids.GetArrayElementAtIndex(i).stringValue = value[i];
-                    }
-                    m_SerializedObject.ApplyModifiedProperties();
                 }
             }
         }
@@ -124,14 +102,11 @@ namespace MomomaAssets.GraphView
         string m_Guid = "";
         [SerializeField]
         Rect m_Position;
-        [SerializeField]
-        List<string> m_ReferenceGuids = new List<string>();
         [SerializeReference]
         IGraphElementData? m_GraphElementData;
 
         public string Guid { get => m_Guid; set => m_Guid = value; }
         public Rect Position { get => m_Position; set => m_Position = value; }
-        public IReadOnlyList<string> ReferenceGuids { get => m_ReferenceGuids; set { m_ReferenceGuids.Clear(); m_ReferenceGuids.AddRange(value); } }
         public IGraphElementData? GraphElementData { get => m_GraphElementData; set => m_GraphElementData = value; }
 
         public SerializedGraphElement() { }

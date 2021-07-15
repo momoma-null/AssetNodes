@@ -7,7 +7,7 @@ namespace MomomaAssets.GraphView
 {
     public sealed class ProcessingDataContainer
     {
-        readonly Dictionary<string, Delegate> m_Functions = new Dictionary<string, Delegate>();
+        readonly Dictionary<string, IProcessingData> m_ProcessingDatas = new Dictionary<string, IProcessingData>();
         readonly Action<string, ProcessingDataContainer> m_GetAction;
         readonly IReadOnlyDictionary<string, HashSet<string>> m_InputToPreNodes;
         readonly IReadOnlyDictionary<string, HashSet<string>> m_OutputToInputs;
@@ -19,36 +19,30 @@ namespace MomomaAssets.GraphView
             m_OutputToInputs = outputToInputs;
         }
 
-        public void Set<T>(string id, T data)
+        public void Set<T>(PortData portData, T data) where T : IProcessingData
         {
-            Func<T> func = () => data;
-            m_Functions[id] = func;
+            var id = portData.Id;
+            m_ProcessingDatas[id] = data;
             if (m_OutputToInputs.TryGetValue(id, out var inputs))
             {
-                foreach (var input in inputs)
-                    m_Functions[input] = func;
+                foreach (var i in inputs)
+                    m_ProcessingDatas[i] = data;
             }
         }
 
-        public T Get<T>(string id, Func<T> defaultValue) where T : class
+        public T Get<T>(PortData portData, Func<T> defaultValue) where T : IProcessingData
         {
-            if (m_Functions.TryGetValue(id, out var func))
-            {
-                if (func is Func<T> ret)
-                    return ret();
-            }
+            var id = portData.Id;
+            if (m_ProcessingDatas.TryGetValue(id, out var data) && data is T t1)
+                return t1;
             if (m_InputToPreNodes.TryGetValue(id, out var preNodes))
-            {
                 foreach (var preNode in preNodes)
                     m_GetAction(preNode, this);
-            }
-            if (m_Functions.TryGetValue(id, out func))
-            {
-                if (func is Func<T> ret)
-                    return ret();
-            }
-            m_Functions[id] = defaultValue;
-            return defaultValue();
+            if (m_ProcessingDatas.TryGetValue(id, out data) && data is T t2)
+                return t2;
+            var t3 = defaultValue();
+            m_ProcessingDatas[id] = t3;
+            return t3;
         }
     }
 }

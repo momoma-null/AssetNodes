@@ -15,15 +15,17 @@ namespace MomomaAssets.GraphView
     [Serializable]
     sealed class DefaultNodeData : INodeData
     {
-        NodeDataEditor? m_NodeDataEditor;
-        public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.GraphElementEditor));
-        public bool Expanded => m_Expanded;
-        public INodeProcessor Processor => m_Processor;
-
         [SerializeField]
         bool m_Expanded = true;
         [SerializeReference]
         INodeProcessor m_Processor;
+
+        NodeDataEditor? m_NodeDataEditor;
+
+        public int Priority => 0;
+        public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.GraphElementEditor));
+        public bool Expanded => m_Expanded;
+        public INodeProcessor Processor => m_Processor;
 
         public DefaultNodeData(INodeProcessor processor)
         {
@@ -111,6 +113,28 @@ namespace MomomaAssets.GraphView
             using (var e2 = ports.GetEnumerator())
                 while (e1.MoveNext() && e2.MoveNext())
                     e2.Current.viewDataKey = e1.Current.Id;
+        }
+
+        public void ReplaceGuid(Dictionary<string, string> guids)
+        {
+            foreach (var i in m_Processor.InputPorts)
+            {
+                if (!guids.TryGetValue(i.Id, out var newGuid))
+                {
+                    newGuid = PortData.GetNewId();
+                    guids.Add(i.Id, newGuid);
+                }
+                i.Id = newGuid;
+            }
+            foreach (var i in m_Processor.OutputPorts)
+            {
+                if (!guids.TryGetValue(i.Id, out var newGuid))
+                {
+                    newGuid = PortData.GetNewId();
+                    guids.Add(i.Id, newGuid);
+                }
+                i.Id = newGuid;
+            }
         }
 
         sealed class NodeDataEditor : IGraphElementEditor

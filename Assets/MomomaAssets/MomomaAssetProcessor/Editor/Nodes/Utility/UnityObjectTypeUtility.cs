@@ -11,7 +11,25 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     static class UnityObjectTypeUtility
     {
-        static readonly List<AssetTypeData> s_Types = new List<AssetTypeData>() {
+        sealed class AssetTypeDatas : Dictionary<string, AssetTypeData>
+        {
+            Dictionary<string, int> indexCache = new Dictionary<string, int>();
+            string[] keyArray = new string[0];
+
+            public string this[int index] => keyArray[index];
+            public void Add(AssetTypeData assetTypeData) => Add(assetTypeData.AssetType.AssemblyQualifiedName, assetTypeData);
+            public int IndexOfKey(string key) => indexCache[key];
+            public AssetTypeDatas Initialize()
+            {
+                keyArray = Keys.ToArray();
+                indexCache = new Dictionary<string, int>(keyArray.Length);
+                for (var i = 0; i < keyArray.Length; ++i)
+                    indexCache[keyArray[i]] = i;
+                return this;
+            }
+        }
+
+        static readonly AssetTypeDatas s_Types = new AssetTypeDatas() {
                 AssetTypeData.Create<UnityObject>("Any"),
                 AssetTypeData.Create<AnimationClip>("AnimationClip"),
                 AssetTypeData.Create<AudioClip, AudioImporter>("AudioClip"),
@@ -27,11 +45,25 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 AssetTypeData.Create<MonoScript, MonoImporter>("Script"),
                 AssetTypeData.Create<Shader, ShaderImporter>("Shader"),
                 AssetTypeData.Create<Texture, TextureImporter>("Texture"),
-                AssetTypeData.Create<UnityEngine.Video.VideoClip, VideoClipImporter>("VideoClip"), };
+                AssetTypeData.Create<UnityEngine.Video.VideoClip, VideoClipImporter>("VideoClip"), }.Initialize();
 
-        public static string[] TypeNames { get; } = s_Types.Select(i => i.DisplayName).ToArray();
+        public static string[] TypeNames { get; } = s_Types.Values.Select(i => i.DisplayName).ToArray();
 
-        public static AssetTypeData GetAssetTypeData(int index) => s_Types[index];
+        public static AssetTypeData GetAssetTypeData(string type) => s_Types[type];
+
+        public static string AssetTypePopup(string type)
+        {
+            var index = s_Types.IndexOfKey(type);
+            index = EditorGUILayout.Popup(index, TypeNames);
+            return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
+        }
+
+        public static string AssetTypePopup(Rect position, string type)
+        {
+            var index = s_Types.IndexOfKey(type);
+            index = EditorGUI.Popup(position, index, TypeNames);
+            return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
+        }
     }
 
     public sealed class AssetTypeData

@@ -8,8 +8,8 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Modify/Material")]
     sealed class ModifyMaterialNode : INodeProcessor
     {
@@ -283,7 +283,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             if (m_Shader != null)
             {
                 foreach (var assets in assetGroup)
@@ -302,7 +302,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assetGroup);
+            container.Set(m_OutputPort, assetGroup);
         }
     }
 }

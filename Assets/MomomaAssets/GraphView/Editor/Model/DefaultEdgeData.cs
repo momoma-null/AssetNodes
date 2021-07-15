@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -12,20 +13,21 @@ namespace MomomaAssets.GraphView
     [Serializable]
     public class DefaultEdgeData : IEdgeData
     {
-        public DefaultEdgeData(string input, string output)
-        {
-            m_InputPortGuid = input;
-            m_OutputPortGuid = output;
-        }
-
         [SerializeField]
         string m_InputPortGuid;
         [SerializeField]
         string m_OutputPortGuid;
 
+        public int Priority => 1;
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultEdgeDataEditor();
         public string InputPortGuid { get => m_InputPortGuid; set => m_InputPortGuid = value; }
         public string OutputPortGuid { get => m_OutputPortGuid; set => m_OutputPortGuid = value; }
+
+        public DefaultEdgeData(string input, string output)
+        {
+            m_InputPortGuid = input;
+            m_OutputPortGuid = output;
+        }
 
         public GraphElement Deserialize() => new DefaultEdge(this);
 
@@ -51,6 +53,22 @@ namespace MomomaAssets.GraphView
             {
                 graphView.RemoveElement(edge);
             }
+        }
+
+        public void ReplaceGuid(Dictionary<string, string> guids)
+        {
+            if (!guids.TryGetValue(m_InputPortGuid, out var newGuid))
+            {
+                newGuid = PortData.GetNewId();
+                guids.Add(m_InputPortGuid, newGuid);
+            }
+            m_InputPortGuid = newGuid;
+            if (!guids.TryGetValue(m_OutputPortGuid, out newGuid))
+            {
+                newGuid = PortData.GetNewId();
+                guids.Add(m_OutputPortGuid, newGuid);
+            }
+            m_OutputPortGuid = newGuid;
         }
 
         sealed class DefaultEdgeDataEditor : IGraphElementEditor

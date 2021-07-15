@@ -8,8 +8,8 @@ using UnityObject = UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Load/From Directory")]
     sealed class LoadAssetFromDirectoryNode : INodeProcessor
     {
@@ -22,11 +22,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
         public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
-        public IEnumerable<PortData> OutputPorts => m_OutPorts;
+        public IEnumerable<PortData> OutputPorts => new[] { m_OutPort };
 
         [SerializeField]
         [HideInInspector]
-        PortData[] m_OutPorts = new[] { new PortData(typeof(UnityObject)) };
+        PortData m_OutPort = new PortData(typeof(UnityObject));
 
         [SerializeField]
         DefaultAsset? m_Folder;
@@ -41,7 +41,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
                 assetGroup = new AssetGroup(assets);
             }
-            container.Set(m_OutPorts[0].Id, assetGroup);
+            container.Set(m_OutPort, assetGroup);
         }
     }
 }

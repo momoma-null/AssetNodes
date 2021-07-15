@@ -18,8 +18,9 @@ namespace MomomaAssets.GraphView
         string m_Id;
 
         public Type PortType => Type.GetType(m_PortType);
+        public string PortTypeName => m_PortName;
         public string PortName => m_PortName;
-        public string Id => m_Id;
+        public string Id { get => m_Id; set => m_Id = value; }
 
         public PortData(Type type, string name = "", string? id = null)
         {

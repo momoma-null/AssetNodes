@@ -1,14 +1,17 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
+    [Serializable]
     [InitializeOnLoad]
     [CreateElement("Group/Combine")]
-    sealed class CombineNode : INodeProcessor, ISerializationCallbackReceiver
+    sealed class CombineNode : INodeProcessor
     {
         sealed class CombineNodeEditor : IGraphElementEditor
         {
@@ -16,7 +19,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             public void OnDestroy() { }
             public void OnGUI(SerializedProperty property)
             {
-                using (var m_InputPortsProperty = property.FindPropertyRelative(nameof(m_InputPortIds)))
+                using (var m_InputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts)))
+                using (var m_PortTypeProperty = property.FindPropertyRelative($"{nameof(m_OutputPort)}.m_PortType"))
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     using (new EditorGUI.DisabledScope(m_InputPortsProperty.arraySize < 2))
@@ -28,18 +32,22 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     {
                         ++m_InputPortsProperty.arraySize;
                         using (var element = m_InputPortsProperty.GetArrayElementAtIndex(m_InputPortsProperty.arraySize - 1))
+                        using (var guidProperty = element.FindPropertyRelative("m_Id"))
                         {
-                            element.stringValue = PortData.GetNewId();
+                            guidProperty.stringValue = PortData.GetNewId();
                         }
                     }
-                }
-                using (var m_TypeIndexProperty = property.FindPropertyRelative(nameof(m_TypeIndex)))
-                {
                     EditorGUI.BeginChangeCheck();
-                    var newIndex = EditorGUILayout.Popup(m_TypeIndexProperty.intValue, UnityObjectTypeUtility.TypeNames);
+                    var newValue = UnityObjectTypeUtility.AssetTypePopup(m_PortTypeProperty.stringValue);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        m_TypeIndexProperty.intValue = newIndex;
+                        m_PortTypeProperty.stringValue = newValue;
+                        for (var i = 0; i < m_InputPortsProperty.arraySize; ++i)
+                        {
+                            using (var element = m_InputPortsProperty.GetArrayElementAtIndex(i))
+                            using (var portTypeProperty = element.FindPropertyRelative("m_PortType"))
+                                portTypeProperty.stringValue = newValue;
+                        }
                     }
                 }
             }
@@ -53,37 +61,25 @@ namespace MomomaAssets.GraphView.AssetProcessor
         CombineNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new CombineNodeEditor();
-        public IEnumerable<PortData> InputPorts { get; private set; } = new PortData[0];
-        public IEnumerable<PortData> OutputPorts { get; private set; } = new PortData[0];
+        public IEnumerable<PortData> InputPorts => m_InputPorts;
+        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
 
         [SerializeField]
         [HideInInspector]
-        string[] m_InputPortIds = new[] { PortData.GetNewId() };
+        PortData[] m_InputPorts = new[] { new PortData(typeof(UnityObject)) };
         [SerializeField]
         [HideInInspector]
-        string m_OutputPortId = PortData.GetNewId();
+        PortData m_OutputPort = new PortData(typeof(UnityObject));
 
         [SerializeField]
-        int m_TypeIndex;
+        string m_TypeName = "";
 
         public void Process(ProcessingDataContainer container)
         {
             var output = new AssetGroup();
-            for (var i = 0; i < m_InputPortIds.Length; ++i)
-                output.UnionWith(container.Get(m_InputPortIds[i], () => new AssetGroup()));
-            container.Set(m_OutputPortId, output);
+            foreach (var i in m_InputPorts)
+                output.UnionWith(container.Get(i, this.NewAssetGroup));
+            container.Set(m_OutputPort, output);
         }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            var type = UnityObjectTypeUtility.GetAssetTypeData(m_TypeIndex).AssetType;
-            var inputPorts = new PortData[m_InputPortIds.Length];
-            for (var i = 0; i < inputPorts.Length; ++i)
-                inputPorts[i] = new PortData(type, id: m_InputPortIds[i]);
-            InputPorts = inputPorts;
-            OutputPorts = new[] { new PortData(type, id: m_OutputPortId) };
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }

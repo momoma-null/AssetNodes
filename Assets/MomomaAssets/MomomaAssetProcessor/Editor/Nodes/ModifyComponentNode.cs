@@ -9,8 +9,8 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("Modify/Component")]
     sealed class ModifyComponentNode : INodeProcessor
     {
@@ -181,7 +181,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             using (var prefabInstance = new PrefabInstance())
             {
                 prefabInstance.Deserialize(m_SerializedPrefabInstance);
@@ -200,7 +200,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort.Id, assetGroup);
+            container.Set(m_OutputPort, assetGroup);
         }
 
         void CopyComponentModifications(GameObject go, Type componentType, List<SerializedProperty> sourceProperties)

@@ -10,8 +10,8 @@ using UnityObject = UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    [InitializeOnLoad]
     [Serializable]
+    [InitializeOnLoad]
     [CreateElement("File/Move Asset")]
     sealed class MoveAssetNode : INodeProcessor
     {
@@ -42,7 +42,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             var regex = new Regex(m_SourcePath);
             foreach (var assets in assetGroup)
             {
@@ -56,7 +56,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
                 AssetDatabase.MoveAsset(srcPath, dstPath);
             }
-            container.Set(m_OutputPort.Id, assetGroup);
+            container.Set(m_OutputPort, assetGroup);
         }
     }
 }

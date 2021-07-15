@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -6,12 +7,17 @@ using UnityObject = UnityEngine.Object;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    public sealed class AssetGroup : HashSet<AssetData>
+    public sealed class AssetGroup : HashSet<AssetData>, IProcessingData
     {
         public AssetGroup() { }
         public AssetGroup(IEnumerable<AssetData> source) : base(source) { }
 
         public string GropuName { get; set; } = "";
+    }
+
+    public static class AssetGroupExtension
+    {
+        public static AssetGroup NewAssetGroup<T>(this T t) => new AssetGroup();
     }
 
     public sealed class AssetData

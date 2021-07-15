@@ -515,17 +515,7 @@ namespace MomomaAssets.GraphView
                     guidsToReplace[serializedGraphElement.Guid] = newGuid;
                 }
                 serializedGraphElement.Guid = newGuid;
-                var newReferenceGuids = new string[serializedGraphElement.ReferenceGuids.Count];
-                for (var i = 0; i < serializedGraphElement.ReferenceGuids.Count; ++i)
-                {
-                    if (!guidsToReplace.TryGetValue(serializedGraphElement.ReferenceGuids[i], out newGuid))
-                    {
-                        newGuid = Guid.NewGuid().ToString();
-                        guidsToReplace[serializedGraphElement.ReferenceGuids[i]] = newGuid;
-                    }
-                    newReferenceGuids[i] = newGuid;
-                }
-                serializedGraphElement.ReferenceGuids = newReferenceGuids;
+                serializedGraphElement.GraphElementData?.ReplaceGuid(guidsToReplace);
             }
             var allRect = Rect.zero;
             foreach (var serializedGraphElement in serializedGraphElements)
@@ -549,10 +539,13 @@ namespace MomomaAssets.GraphView
                 rect.position += offset;
                 serializedGraphElement.Position = rect;
             }
-            foreach (var serializedGraphElement in serializedGraphElements.Where(i => !(i.GraphElementData is IEdgeData)))
-                serializedGraphElement.Deserialize(m_GraphView);
-            foreach (var serializedGraphElement in serializedGraphElements.Where(i => i is IEdgeData))
-                serializedGraphElement.Deserialize(m_GraphView);
+            foreach (var group in serializedGraphElements.GroupBy(i => i.GraphElementData?.Priority ?? 0).OrderBy(i => i.Key))
+            {
+                foreach(var serializedGraphElement in group)
+                {
+                    serializedGraphElement.Deserialize(m_GraphView);
+                }
+            }
             if (m_GraphViewObjectHandler != null)
             {
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))

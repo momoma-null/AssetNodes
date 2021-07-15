@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -6,7 +7,9 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
+    [Serializable]
     [InitializeOnLoad]
+    [CreateElement("Group/Group by PrefabType")]
     sealed class GroupByPrefabTypeNode : INodeProcessor
     {
         static GroupByPrefabTypeNode()
@@ -17,7 +20,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GroupByPrefabTypeNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public string MenuPath => "Group/Group by PrefabType";
         public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
         public IEnumerable<PortData> OutputPorts => m_OutputPorts;
 
@@ -33,7 +35,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container)
         {
-            var assetGroup = container.Get(m_InputPort.Id, () => new AssetGroup());
+            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();
@@ -46,9 +48,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     case PrefabAssetType.Variant: variants.Add(assets); break;
                 }
             }
-            container.Set(m_OutputPorts[0].Id, regulars);
-            container.Set(m_OutputPorts[1].Id, models);
-            container.Set(m_OutputPorts[2].Id, variants);
+            container.Set(m_OutputPorts[0],regulars);
+            container.Set(m_OutputPorts[1],models);
+            container.Set(m_OutputPorts[2],variants);
         }
     }
 }
