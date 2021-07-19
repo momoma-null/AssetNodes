@@ -162,16 +162,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         ModifyComponentNode() { }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(GameObject));
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(GameObject));
         [SerializeField]
         bool m_IncludeChildren = false;
         [SerializeField]
@@ -179,9 +169,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_SerializedPrefabInstance = "";
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             using (var prefabInstance = new PrefabInstance())
             {
                 prefabInstance.Deserialize(m_SerializedPrefabInstance);
@@ -200,7 +198,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
 
         void CopyComponentModifications(GameObject go, Type componentType, List<SerializedProperty> sourceProperties)

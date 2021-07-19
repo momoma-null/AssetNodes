@@ -37,7 +37,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     using (var regexProperty = property.FindPropertyRelative(nameof(m_Regex)))
                         regexProperty.stringValue = EditorGUI.TextField(position, regexProperty.stringValue);
                     position.x += position.width;
-                    using (var portTypeProperty = property.FindPropertyRelative("m_PortData.m_PortType"))
+                    using (var portTypeProperty = property.FindPropertyRelative($"{nameof(m_PortData)}.m_PortType"))
                     {
                         EditorGUI.BeginChangeCheck();
                         var newValue = UnityObjectTypeUtility.AssetTypePopup(position, portTypeProperty.stringValue);
@@ -56,21 +56,21 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GroupByTypeNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => m_TypeGroups.Select(i => i.PortData);
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(UnityObject));
 
         [SerializeField]
         TypeGroup[] m_TypeGroups = new TypeGroup[0];
 
-        public void Process(ProcessingDataContainer container)
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = new AssetGroup(container.Get(m_InputPort, this.NewAssetGroup));
-            foreach (var typeGroup in m_TypeGroups)
+            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = new AssetGroup(container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup));
+            for (var i = 0; i < m_TypeGroups.Length; ++i)
             {
+                var typeGroup = m_TypeGroups[i];
                 var result = new AssetGroup();
                 var regex = new Regex(typeGroup.Regex);
                 foreach (var assets in assetGroup)
@@ -86,7 +86,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
                 assetGroup.ExceptWith(result);
-                container.Set(typeGroup.PortData, result);
+                container.Set(portDataContainer.OutputPorts[i], result);
             }
         }
 

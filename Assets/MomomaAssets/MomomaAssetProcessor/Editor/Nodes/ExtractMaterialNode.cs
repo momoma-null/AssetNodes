@@ -20,24 +20,20 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         ExtractMaterialNode() { }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(GameObject));
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(GameObject));
-
         [SerializeField]
         string m_DirectoryPath = "../Materials";
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             foreach (var assets in assetGroup)
             {
                 var path = assets.AssetPath;
@@ -65,7 +61,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

@@ -51,9 +51,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         OverwriteTextureImporterNode() { }
 
+        [SerializeField]
+        TextureImporter? m_Importer = null;
+
         public IGraphElementEditor GraphElementEditor { get; } = new OverwriteTextureImporterNodeEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
         public IEnumerable<UnityObject> Assets
         {
             get
@@ -67,20 +68,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(Texture));
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(Texture));
-
-        [SerializeField]
-        TextureImporter? m_Importer = null;
-
-        public void Process(ProcessingDataContainer container)
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(Texture)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(Texture)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             if (m_Importer != null)
             {
                 foreach (var assets in assetGroup)
@@ -111,7 +107,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

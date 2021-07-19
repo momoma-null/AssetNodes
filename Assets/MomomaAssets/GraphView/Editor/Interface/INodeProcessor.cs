@@ -7,8 +7,7 @@ namespace MomomaAssets.GraphView
     public interface INodeProcessor
     {
         IGraphElementEditor GraphElementEditor { get; }
-        IEnumerable<PortData> InputPorts { get; }
-        IEnumerable<PortData> OutputPorts { get; }
-        void Process(ProcessingDataContainer container);
+        void Initialize(IPortDataContainer portDataContainer);
+        void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer);
     }
 }

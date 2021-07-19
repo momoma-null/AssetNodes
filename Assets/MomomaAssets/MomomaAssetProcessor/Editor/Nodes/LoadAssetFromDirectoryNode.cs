@@ -20,18 +20,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         LoadAssetFromDirectoryNode() { }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => Array.Empty<PortData>();
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutPort = new PortData(typeof(UnityObject));
-
         [SerializeField]
         DefaultAsset? m_Folder;
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
+        {
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = new AssetGroup();
             if (m_Folder != null)
@@ -41,7 +40,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
                 assetGroup = new AssetGroup(assets);
             }
-            container.Set(m_OutPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

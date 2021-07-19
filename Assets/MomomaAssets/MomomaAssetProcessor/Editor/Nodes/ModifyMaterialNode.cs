@@ -263,27 +263,22 @@ namespace MomomaAssets.GraphView.AssetProcessor
             GraphElementEditor = new ModifyMaterialNodeEditor(() => m_PropertyValues);
         }
 
-        public IGraphElementEditor GraphElementEditor { get; }
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(Material));
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(Material));
-
         [SerializeField]
         Shader? m_Shader;
-
         [SerializeReference]
         IPropertyValue[] m_PropertyValues = new IPropertyValue[0];
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; }
+
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(Material)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(Material)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             if (m_Shader != null)
             {
                 foreach (var assets in assetGroup)
@@ -302,7 +297,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

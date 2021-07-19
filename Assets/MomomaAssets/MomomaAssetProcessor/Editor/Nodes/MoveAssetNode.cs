@@ -22,27 +22,22 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         MoveAssetNode() { }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(UnityObject));
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(UnityObject));
-
         [SerializeField]
         string m_SourcePath = "Assets/(.+)";
-
         [SerializeField]
         string m_DestinationPath = "Assets/$1";
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             var regex = new Regex(m_SourcePath);
             foreach (var assets in assetGroup)
             {
@@ -56,7 +51,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
                 AssetDatabase.MoveAsset(srcPath, dstPath);
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

@@ -18,7 +18,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             public string this[int index] => keyArray[index];
             public void Add(AssetTypeData assetTypeData) => Add(assetTypeData.AssetType.AssemblyQualifiedName, assetTypeData);
-            public int IndexOfKey(string key) => indexCache[key];
+            public bool TryGetIndex(string key, out int index) => indexCache.TryGetValue(key, out index);
+
             public AssetTypeDatas Initialize()
             {
                 keyArray = Keys.ToArray();
@@ -53,14 +54,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public static string AssetTypePopup(string type)
         {
-            var index = s_Types.IndexOfKey(type);
+            if (!s_Types.TryGetIndex(type, out var index))
+                index = 0;
             index = EditorGUILayout.Popup(index, TypeNames);
             return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
         }
 
         public static string AssetTypePopup(Rect position, string type)
         {
-            var index = s_Types.IndexOfKey(type);
+            if (!s_Types.TryGetIndex(type, out var index))
+                index = 0;
             index = EditorGUI.Popup(position, index, TypeNames);
             return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
         }

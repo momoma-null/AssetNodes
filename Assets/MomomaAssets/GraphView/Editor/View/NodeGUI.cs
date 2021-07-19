@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
@@ -24,7 +25,8 @@ namespace MomomaAssets.GraphView
             m_Node = nodeData;
             style.minWidth = 150f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
-            title = m_Node.GetType().Name.Replace("Node", "");
+            var nodeTypeName = m_Node.Processor.GetType().Name;
+            title = Regex.Replace(nodeTypeName, "([a-z])([A-Z])", "$1 $2").Replace("Node", "");
             m_CollapseButton.schedule.Execute(() =>
             {
                 if (!m_CollapseButton.enabledInHierarchy)

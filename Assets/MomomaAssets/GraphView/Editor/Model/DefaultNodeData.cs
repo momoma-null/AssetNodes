@@ -17,6 +17,10 @@ namespace MomomaAssets.GraphView
     {
         [SerializeField]
         bool m_Expanded = true;
+        [SerializeField]
+        List<PortData> m_InputPorts;
+        [SerializeField]
+        List<PortData> m_OutputPorts;
         [SerializeReference]
         INodeProcessor m_Processor;
 
@@ -26,17 +30,22 @@ namespace MomomaAssets.GraphView
         public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.GraphElementEditor));
         public bool Expanded => m_Expanded;
         public INodeProcessor Processor => m_Processor;
+        public List<PortData> InputPorts => m_InputPorts;
+        public List<PortData> OutputPorts => m_OutputPorts;
 
         public DefaultNodeData(INodeProcessor processor)
         {
+            m_InputPorts = new List<PortData>();
+            m_OutputPorts = new List<PortData>();
             m_Processor = processor;
+            m_Processor.Initialize(this);
         }
 
         public GraphElement Deserialize()
         {
             var node = new NodeGUI(this);
-            PortDataToPort(m_Processor.InputPorts, node.inputContainer.Query<Port>().ToList());
-            PortDataToPort(m_Processor.OutputPorts, node.outputContainer.Query<Port>().ToList());
+            PortDataToPort(InputPorts, node.inputContainer.Query<Port>().ToList());
+            PortDataToPort(OutputPorts, node.outputContainer.Query<Port>().ToList());
             node.expanded = m_Expanded;
             return node;
         }
@@ -48,7 +57,7 @@ namespace MomomaAssets.GraphView
             var toDeleteElements = new HashSet<GraphElement>();
             var ports = node.inputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
             var portCount = 0;
-            foreach (var data in Processor.InputPorts)
+            foreach (var data in InputPorts)
             {
                 if (ports.TryGetValue(data.Id, out var port))
                 {
@@ -76,7 +85,7 @@ namespace MomomaAssets.GraphView
             }
             ports = node.outputContainer.Query<Port>().ToList().ToDictionary(i => i.viewDataKey, i => i);
             portCount = 0;
-            foreach (var data in Processor.OutputPorts)
+            foreach (var data in OutputPorts)
             {
                 if (ports.TryGetValue(data.Id, out var port))
                 {
@@ -117,7 +126,7 @@ namespace MomomaAssets.GraphView
 
         public void ReplaceGuid(Dictionary<string, string> guids)
         {
-            foreach (var i in m_Processor.InputPorts)
+            foreach (var i in InputPorts)
             {
                 if (!guids.TryGetValue(i.Id, out var newGuid))
                 {
@@ -126,7 +135,7 @@ namespace MomomaAssets.GraphView
                 }
                 i.Id = newGuid;
             }
-            foreach (var i in m_Processor.OutputPorts)
+            foreach (var i in OutputPorts)
             {
                 if (!guids.TryGetValue(i.Id, out var newGuid))
                 {

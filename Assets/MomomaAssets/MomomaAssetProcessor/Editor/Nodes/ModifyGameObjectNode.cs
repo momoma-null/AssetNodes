@@ -103,24 +103,22 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => new[] { m_OutputPort };
-
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(GameObject));
-        [SerializeField]
-        [HideInInspector]
-        PortData m_OutputPort = new PortData(typeof(GameObject));
         [SerializeField]
         bool m_IncludeChildren = false;
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
-        public void Process(ProcessingDataContainer container)
+        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             Action<GameObject>? process = null;
             foreach (var setting in m_Properties)
             {
@@ -186,7 +184,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         process(root);
                 }
             }
-            container.Set(m_OutputPort, assetGroup);
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

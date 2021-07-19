@@ -20,22 +20,18 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GroupByPrefabTypeNode() { }
 
         public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-        public IEnumerable<PortData> InputPorts => new[] { m_InputPort };
-        public IEnumerable<PortData> OutputPorts => m_OutputPorts;
 
-        [SerializeField]
-        [HideInInspector]
-        PortData m_InputPort = new PortData(typeof(GameObject));
-
-        [SerializeField]
-        [HideInInspector]
-        PortData[] m_OutputPorts = new PortData[] { new PortData(typeof(GameObject), nameof(PrefabAssetType.Regular)),
-                                                    new PortData(typeof(GameObject), nameof(PrefabAssetType.Model)),
-                                                    new PortData(typeof(GameObject), nameof(PrefabAssetType.Variant)) };
-
-        public void Process(ProcessingDataContainer container)
+        public void Initialize(IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(m_InputPort, this.NewAssetGroup);
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Regular)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Model)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Variant)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();
@@ -48,9 +44,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     case PrefabAssetType.Variant: variants.Add(assets); break;
                 }
             }
-            container.Set(m_OutputPorts[0],regulars);
-            container.Set(m_OutputPorts[1],models);
-            container.Set(m_OutputPorts[2],variants);
+            container.Set(portDataContainer.OutputPorts[0], regulars);
+            container.Set(portDataContainer.OutputPorts[1], models);
+            container.Set(portDataContainer.OutputPorts[2], variants);
         }
     }
 }
