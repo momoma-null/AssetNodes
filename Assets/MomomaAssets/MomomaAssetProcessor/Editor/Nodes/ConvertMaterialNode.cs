@@ -24,7 +24,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Shader? m_DestinationShader;
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

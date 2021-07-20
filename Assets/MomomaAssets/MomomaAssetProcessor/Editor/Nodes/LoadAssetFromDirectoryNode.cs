@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         DefaultAsset? m_Folder;
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

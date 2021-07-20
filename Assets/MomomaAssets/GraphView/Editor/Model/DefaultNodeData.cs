@@ -13,30 +13,28 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    sealed class DefaultNodeData : INodeData
+    sealed class DefaultNodeData : INodeData, ISerializationCallbackReceiver
     {
         [SerializeField]
         bool m_Expanded = true;
         [SerializeField]
-        List<PortData> m_InputPorts;
+        List<PortData> m_InputPorts = new List<PortData>();
         [SerializeField]
-        List<PortData> m_OutputPorts;
+        List<PortData> m_OutputPorts = new List<PortData>();
         [SerializeReference]
         INodeProcessor m_Processor;
 
         NodeDataEditor? m_NodeDataEditor;
 
         public int Priority => 0;
-        public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.GraphElementEditor));
+        public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.ProcessorEditor));
         public bool Expanded => m_Expanded;
         public INodeProcessor Processor => m_Processor;
-        public List<PortData> InputPorts => m_InputPorts;
-        public List<PortData> OutputPorts => m_OutputPorts;
+        public IList<PortData> InputPorts => m_InputPorts;
+        public IList<PortData> OutputPorts => m_OutputPorts;
 
         public DefaultNodeData(INodeProcessor processor)
         {
-            m_InputPorts = new List<PortData>();
-            m_OutputPorts = new List<PortData>();
             m_Processor = processor;
             m_Processor.Initialize(this);
         }
@@ -66,6 +64,9 @@ namespace MomomaAssets.GraphView
                     {
                         port.portName = "";
                         port.portType = data.PortType;
+                        foreach (var edge in port.connections)
+                            if (!port.portType.IsAssignableFrom(edge.output.portType))
+                                toDeleteElements.Add(edge);
                     }
                 }
                 else
@@ -94,6 +95,9 @@ namespace MomomaAssets.GraphView
                     {
                         port.portName = "";
                         port.portType = data.PortType;
+                        foreach (var edge in port.connections)
+                            if (!edge.input.portType.IsAssignableFrom(port.portType))
+                                toDeleteElements.Add(edge);
                     }
                 }
                 else
@@ -111,7 +115,8 @@ namespace MomomaAssets.GraphView
                 toDeleteElements.UnionWith(port.connections);
                 node.outputContainer.Remove(port);
             }
-            node.RefreshPorts();
+            node.extensionContainer.Query<IMGUIContainer>().ForEach(i => i.MarkDirtyLayout());
+            node.RefreshExpandedState();
             node.expanded = m_Expanded;
             graphView.DeleteElements(toDeleteElements);
         }
@@ -146,11 +151,35 @@ namespace MomomaAssets.GraphView
             }
         }
 
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            var ports = new HashSet<string>();
+            for (var i = 0; i < m_InputPorts.Count; ++i)
+            {
+                if (!ports.Add(m_InputPorts[i].Id))
+                {
+                    m_InputPorts[i].Id = PortData.GetNewId();
+                    ports.Add(m_InputPorts[i].Id);
+                }
+            }
+            ports.Clear();
+            for (var i = 0; i < m_OutputPorts.Count; ++i)
+            {
+                if (!ports.Add(m_OutputPorts[i].Id))
+                {
+                    m_OutputPorts[i].Id = PortData.GetNewId();
+                    ports.Add(m_OutputPorts[i].Id);
+                }
+            }
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+
         sealed class NodeDataEditor : IGraphElementEditor
         {
-            readonly IGraphElementEditor m_ProcessorEditor;
+            readonly INodeProcessorEditor m_ProcessorEditor;
 
-            public NodeDataEditor(IGraphElementEditor processorEditor)
+            public NodeDataEditor(INodeProcessorEditor processorEditor)
             {
                 m_ProcessorEditor = processorEditor;
             }
@@ -165,8 +194,10 @@ namespace MomomaAssets.GraphView
             public void OnGUI(SerializedProperty property)
             {
                 using (var m_ProcessorProperty = property.FindPropertyRelative(nameof(m_Processor)))
+                using (var m_InputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts)))
+                using (var m_OutputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts)))
                 {
-                    m_ProcessorEditor.OnGUI(m_ProcessorProperty);
+                    m_ProcessorEditor.OnGUI(m_ProcessorProperty, m_InputPortsProperty, m_OutputPortsProperty);
                 }
             }
         }

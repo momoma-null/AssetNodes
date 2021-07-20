@@ -108,7 +108,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

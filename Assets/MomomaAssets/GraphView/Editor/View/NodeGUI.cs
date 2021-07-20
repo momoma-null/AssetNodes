@@ -23,18 +23,11 @@ namespace MomomaAssets.GraphView
         public NodeGUI(INodeData nodeData) : base()
         {
             m_Node = nodeData;
-            style.minWidth = 150f;
+            style.minWidth = 200f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             var nodeTypeName = m_Node.Processor.GetType().Name;
             title = Regex.Replace(nodeTypeName, "([a-z])([A-Z])", "$1 $2").Replace("Node", "");
-            m_CollapseButton.schedule.Execute(() =>
-            {
-                if (!m_CollapseButton.enabledInHierarchy)
-                {
-                    m_CollapseButton.SetEnabled(false);
-                    m_CollapseButton.SetEnabled(true);
-                }
-            }).Every(0);
+            m_CollapseButton.schedule.Execute(FixCollapseButtonEnable).Every(0);
         }
 
         ~NodeGUI()
@@ -48,6 +41,15 @@ namespace MomomaAssets.GraphView
                 DestroyImmediate(m_CachedEditor);
             m_SerializedObject = null;
             m_ExpandedProperty = null;
+        }
+
+        void FixCollapseButtonEnable()
+        {
+            if (!m_CollapseButton.enabledInHierarchy)
+            {
+                m_CollapseButton.SetEnabled(false);
+                m_CollapseButton.SetEnabled(true);
+            }
         }
 
         protected override void ToggleCollapse()
@@ -87,26 +89,29 @@ namespace MomomaAssets.GraphView
             else
             {
                 Editor.CreateCachedEditor(m_SerializedObject.targetObjects, null, ref m_CachedEditor);
-                var field = new IMGUIContainer(() =>
-                {
-                    var oldWideMode = EditorGUIUtility.wideMode;
-                    var oldFieldWidth = EditorGUIUtility.fieldWidth;
-                    try
-                    {
-                        EditorGUIUtility.wideMode = true;
-                        EditorGUIUtility.fieldWidth = 150f;
-                        m_CachedEditor.OnInspectorGUI();
-                    }
-                    finally
-                    {
-                        EditorGUIUtility.wideMode = oldWideMode;
-                        EditorGUIUtility.fieldWidth = oldFieldWidth;
-                    }
-                })
-                { cullingEnabled = true };
+                var field = new IMGUIContainer(OnGUIHandler) { cullingEnabled = true };
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();
+        }
+
+        void OnGUIHandler()
+        {
+            if (m_CachedEditor == null)
+                return;
+            var oldWideMode = EditorGUIUtility.wideMode;
+            var oldFieldWidth = EditorGUIUtility.fieldWidth;
+            try
+            {
+                EditorGUIUtility.wideMode = true;
+                EditorGUIUtility.fieldWidth = 150f;
+                m_CachedEditor.OnInspectorGUI();
+            }
+            finally
+            {
+                EditorGUIUtility.wideMode = oldWideMode;
+                EditorGUIUtility.fieldWidth = oldFieldWidth;
+            }
         }
 
         public void Update()

@@ -50,7 +50,7 @@ namespace MomomaAssets.GraphView
                     m_SerializedObject.Update();
                     using (var sp = m_SerializedObject.FindProperty(nameof(m_Position)))
                         sp.rectValue = value;
-                    m_SerializedObject?.ApplyModifiedProperties();
+                    m_SerializedObject.ApplyModifiedProperties();
                 }
             }
         }

@@ -6,7 +6,7 @@ namespace MomomaAssets.GraphView
 {
     public interface IPortDataContainer
     {
-        List<PortData> InputPorts { get; }
-        List<PortData> OutputPorts { get; }
+        IList<PortData> InputPorts { get; }
+        IList<PortData> OutputPorts { get; }
     }
 }

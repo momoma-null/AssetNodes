@@ -15,7 +15,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
     sealed class OverwriteTextureImporterNode : INodeProcessor, IAdditionalAssetHolder
     {
-        sealed class OverwriteTextureImporterNodeEditor : IGraphElementEditor
+        sealed class OverwriteTextureImporterNodeEditor : INodeProcessorEditor
         {
             Editor? m_CachedEditor;
 
@@ -27,9 +27,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     DestroyImmediate(m_CachedEditor);
             }
 
-            public void OnGUI(SerializedProperty property)
+            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
             {
-                using (var m_ImporterProperty = property.FindPropertyRelative(nameof(m_Importer)))
+                using (var m_ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer)))
                 {
                     if (m_ImporterProperty.objectReferenceValue == null)
                         return;
@@ -54,7 +54,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         TextureImporter? m_Importer = null;
 
-        public IGraphElementEditor GraphElementEditor { get; } = new OverwriteTextureImporterNodeEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new OverwriteTextureImporterNodeEditor();
         public IEnumerable<UnityObject> Assets
         {
             get

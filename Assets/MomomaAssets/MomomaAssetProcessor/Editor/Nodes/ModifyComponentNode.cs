@@ -107,7 +107,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        sealed class ModifyComponentNodeEditor : IGraphElementEditor
+        sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
             PrefabInstance? m_PrefabInstance;
             Editor? m_CachedEditor;
@@ -122,11 +122,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     DestroyImmediate(m_CachedEditor);
             }
 
-            public void OnGUI(SerializedProperty property)
+            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
             {
-                using (var m_IncludeChildrenProperty = property.FindPropertyRelative(nameof(m_IncludeChildren)))
-                using (var m_TypeNameProperty = property.FindPropertyRelative(nameof(m_TypeName)))
-                using (var m_SerializedPrefabInstanceProperty = property.FindPropertyRelative(nameof(m_SerializedPrefabInstance)))
+                using (var m_IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren)))
+                using (var m_TypeNameProperty = processorProperty.FindPropertyRelative(nameof(m_TypeName)))
+                using (var m_SerializedPrefabInstanceProperty = processorProperty.FindPropertyRelative(nameof(m_SerializedPrefabInstance)))
                 {
                     EditorGUILayout.PropertyField(m_IncludeChildrenProperty);
                     using (var change = new EditorGUI.ChangeCheckScope())
@@ -169,7 +169,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_SerializedPrefabInstance = "";
 
-        public IGraphElementEditor GraphElementEditor { get; } = new ModifyComponentNodeEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new ModifyComponentNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

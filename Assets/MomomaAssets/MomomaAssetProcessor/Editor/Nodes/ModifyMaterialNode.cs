@@ -116,7 +116,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        sealed class ModifyMaterialNodeEditor : IGraphElementEditor
+        sealed class ModifyMaterialNodeEditor : INodeProcessorEditor
         {
             public bool UseDefaultVisualElement => false;
 
@@ -139,10 +139,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 m_MaterialProperties = new MaterialProperty[0];
             }
 
-            public void OnGUI(SerializedProperty property)
+            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
             {
-                using (var m_ShaderProperty = property.FindPropertyRelative(nameof(m_Shader)))
-                using (var m_PropertyValuesProperty = property.FindPropertyRelative(nameof(m_PropertyValues)))
+                using (var m_ShaderProperty = processorProperty.FindPropertyRelative(nameof(m_Shader)))
+                using (var m_PropertyValuesProperty = processorProperty.FindPropertyRelative(nameof(m_PropertyValues)))
                 {
                     EditorGUI.BeginChangeCheck();
                     EditorGUILayout.PropertyField(m_ShaderProperty);
@@ -258,17 +258,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
             INodeDataUtility.AddConstructor(() => new ModifyMaterialNode());
         }
 
-        ModifyMaterialNode()
-        {
-            GraphElementEditor = new ModifyMaterialNodeEditor(() => m_PropertyValues);
-        }
+        ModifyMaterialNode() { }
 
         [SerializeField]
         Shader? m_Shader;
         [SerializeReference]
         IPropertyValue[] m_PropertyValues = new IPropertyValue[0];
 
-        public IGraphElementEditor GraphElementEditor { get; }
+        ModifyMaterialNodeEditor? m_Editor;
+
+        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyMaterialNodeEditor(GetPropertyValues));
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
@@ -299,5 +298,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
+
+        IPropertyValue[] GetPropertyValues() => m_PropertyValues;
     }
 }

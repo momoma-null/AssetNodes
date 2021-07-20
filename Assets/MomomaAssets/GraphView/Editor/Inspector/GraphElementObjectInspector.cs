@@ -7,6 +7,19 @@ namespace MomomaAssets.GraphView
     [CustomEditor(typeof(GraphElementObject))]
     sealed class GraphElementObjectInspector : Editor
     {
+        SerializedProperty? m_GraphElementDataProperty;
+
+        void OnEnable()
+        {
+            if (target != null)
+                m_GraphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
+        }
+
+        void OnDisable()
+        {
+            m_GraphElementDataProperty = null;
+        }
+
         void OnDestroy()
         {
             if (target is GraphElementObject graphElementObject)
@@ -22,11 +35,8 @@ namespace MomomaAssets.GraphView
             if (target is GraphElementObject graphElementObject)
             {
                 var editor = graphElementObject.GraphElementData?.GraphElementEditor;
-                if (editor != null)
-                {
-                    using (var dataProperty = serializedObject.FindProperty("m_GraphElementData"))
-                        editor.OnGUI(dataProperty);
-                }
+                if (editor != null && m_GraphElementDataProperty != null)
+                    editor.OnGUI(m_GraphElementDataProperty);
             }
             if (serializedObject.hasModifiedProperties)
                 serializedObject.ApplyModifiedProperties();

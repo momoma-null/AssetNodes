@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
+using ReorderableList = UnityEditorInternal.ReorderableList;
 
 #nullable enable
 
@@ -13,41 +13,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [Serializable]
     [InitializeOnLoad]
     [CreateElement("Group/Group by Type")]
-    sealed class GroupByTypeNode : INodeProcessor, ISerializationCallbackReceiver
+    sealed class GroupByTypeNode : INodeProcessor
     {
-        [Serializable]
-        sealed class TypeGroup
-        {
-            public AssetTypeData AssetTypeData => UnityObjectTypeUtility.GetAssetTypeData(m_PortData.PortTypeName);
-
-            [SerializeField]
-            PortData m_PortData = new PortData(typeof(UnityObject));
-            [SerializeField]
-            string m_Regex = "";
-
-            public PortData PortData => m_PortData;
-            public string Regex => m_Regex;
-
-            [CustomPropertyDrawer(typeof(TypeGroup))]
-            sealed class TypeGroupDrawer : PropertyDrawer
-            {
-                public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-                {
-                    position.width *= 0.5f;
-                    using (var regexProperty = property.FindPropertyRelative(nameof(m_Regex)))
-                        regexProperty.stringValue = EditorGUI.TextField(position, regexProperty.stringValue);
-                    position.x += position.width;
-                    using (var portTypeProperty = property.FindPropertyRelative($"{nameof(m_PortData)}.m_PortType"))
-                    {
-                        EditorGUI.BeginChangeCheck();
-                        var newValue = UnityObjectTypeUtility.AssetTypePopup(position, portTypeProperty.stringValue);
-                        if (EditorGUI.EndChangeCheck())
-                            portTypeProperty.stringValue = newValue;
-                    }
-                }
-            }
-        }
-
         static GroupByTypeNode()
         {
             INodeDataUtility.AddConstructor(() => new GroupByTypeNode());
@@ -55,31 +22,32 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         GroupByTypeNode() { }
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
-
         [SerializeField]
-        TypeGroup[] m_TypeGroups = new TypeGroup[0];
+        string[] m_Regexs = new string[1];
+
+        public INodeProcessorEditor ProcessorEditor { get; } = new GroupByTypeNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = new AssetGroup(container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup));
-            for (var i = 0; i < m_TypeGroups.Length; ++i)
+            for (var i = 0; i < m_Regexs.Length; ++i)
             {
-                var typeGroup = m_TypeGroups[i];
+                var assetTypeData = UnityObjectTypeUtility.GetAssetTypeData(portDataContainer.OutputPorts[i].PortTypeName);
+                var regex = new Regex(m_Regexs[i]);
                 var result = new AssetGroup();
-                var regex = new Regex(typeGroup.Regex);
                 foreach (var assets in assetGroup)
                 {
                     var path = assets.AssetPath;
                     var importer = AssetImporter.GetAtPath(path);
-                    if ((importer != null && typeGroup.AssetTypeData.IsTarget(importer)) || typeGroup.AssetTypeData.IsTarget(assets.MainAsset))
+                    if ((importer != null && assetTypeData.IsTarget(importer)) || assetTypeData.IsTarget(assets.MainAsset))
                     {
-                        if (string.IsNullOrEmpty(typeGroup.Regex) || regex.Match(path).Success)
+                        if (string.IsNullOrEmpty(m_Regexs[i]) || regex.Match(path).Success)
                         {
                             result.Add(assets);
                         }
@@ -90,19 +58,87 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        sealed class GroupByTypeNodeEditor : INodeProcessorEditor
         {
-            if (m_TypeGroups.Length > 1)
+            ReorderableList? m_ReorderableList;
+
+            SerializedProperty? m_RegexsProperty;
+            SerializedProperty? m_OutputPortsProperty;
+
+            public bool UseDefaultVisualElement => false;
+
+            public void OnDestroy() { }
+
+            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
             {
-                var guids = new HashSet<string>();
-                foreach (var i in m_TypeGroups)
+                if (m_ReorderableList == null)
                 {
-                    if (!guids.Add(i.PortData.Id))
-                        i.PortData.Id = PortData.GetNewId();
+                    m_ReorderableList = new ReorderableList(new List<string>(), typeof(string), true, false, true, true);
+                    m_ReorderableList.drawElementCallback = DrawElement;
+                    m_ReorderableList.onReorderCallbackWithDetails = Reorder;
+                    m_ReorderableList.onAddCallback = Add;
+                    m_ReorderableList.onRemoveCallback = Remove;
+                    m_ReorderableList.onCanRemoveCallback = CanRemove;
+                }
+                m_RegexsProperty = processorProperty.FindPropertyRelative(nameof(m_Regexs));
+                m_OutputPortsProperty = outputPortsProperty;
+                if (m_OutputPortsProperty.arraySize != m_ReorderableList.count)
+                {
+                    m_ReorderableList.list.Clear();
+                    for (var i = 0; i < m_OutputPortsProperty.arraySize; ++i)
+                        m_ReorderableList.list.Add(null);
+                }
+                m_ReorderableList.DoLayoutList();
+            }
+
+            void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
+            {
+                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
+                    return;
+                rect.width *= 0.5f;
+                using (var regexProperty = m_RegexsProperty.GetArrayElementAtIndex(index))
+                    regexProperty.stringValue = EditorGUI.TextField(rect, regexProperty.stringValue);
+                rect.x += rect.width;
+                using (var element = m_OutputPortsProperty.GetArrayElementAtIndex(index))
+                using (var portTypeProperty = element.FindPropertyRelative("m_PortType"))
+                {
+                    EditorGUI.BeginChangeCheck();
+                    var newValue = UnityObjectTypeUtility.AssetTypePopup(rect, portTypeProperty.stringValue);
+                    if (EditorGUI.EndChangeCheck())
+                        portTypeProperty.stringValue = newValue;
                 }
             }
-        }
 
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+            void Reorder(ReorderableList list, int oldIndex, int newIndex)
+            {
+                m_RegexsProperty?.MoveArrayElement(oldIndex, newIndex);
+                m_OutputPortsProperty?.MoveArrayElement(oldIndex, newIndex);
+            }
+
+            void Add(ReorderableList list)
+            {
+                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
+                    return;
+                ++m_OutputPortsProperty.arraySize;
+                m_RegexsProperty.arraySize = m_OutputPortsProperty.arraySize;
+                list.list.Add(null);
+            }
+
+            void Remove(ReorderableList list)
+            {
+                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
+                    return;
+                if (m_OutputPortsProperty.arraySize == 0)
+                    return;
+                m_RegexsProperty.DeleteArrayElementAtIndex(list.index);
+                m_OutputPortsProperty.DeleteArrayElementAtIndex(list.index);
+                list.list.RemoveAt(list.index);
+            }
+
+            bool CanRemove(ReorderableList list)
+            {
+                return list.count > 1;
+            }
+        }
     }
 }

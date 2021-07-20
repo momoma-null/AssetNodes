@@ -27,7 +27,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_DestinationPath = "Assets/$1";
 
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultGraphElementEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
