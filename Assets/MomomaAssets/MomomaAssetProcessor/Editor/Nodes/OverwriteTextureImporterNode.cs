@@ -89,7 +89,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         using (var dstSO = new SerializedObject(importer))
                         {
                             iterotor.Next(true);
-                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_Output" };
+                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_ExternalObjects", "m_Output" };
                             while (true)
                             {
                                 if (!excludePaths.Contains(iterotor.propertyPath))

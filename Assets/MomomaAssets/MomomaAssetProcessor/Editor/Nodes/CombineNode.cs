@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -20,7 +19,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         CombineNode() { }
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
+        [SerializeField]
+        string m_Type = "";
+
+        public INodeProcessorEditor ProcessorEditor { get; } = new CombineNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
@@ -34,6 +36,42 @@ namespace MomomaAssets.GraphView.AssetProcessor
             foreach (var i in portDataContainer.InputPorts)
                 output.UnionWith(container.Get(i, this.NewAssetGroup));
             container.Set(portDataContainer.OutputPorts[0], output);
+        }
+
+        sealed class CombineNodeEditor : INodeProcessorEditor
+        {
+            public bool UseDefaultVisualElement => false;
+
+            public void OnDestroy() { }
+
+            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            {
+                EditorGUIUtility.wideMode = false;
+                using (var m_TypeProperty = processorProperty.FindPropertyRelative(nameof(m_Type)))
+                {
+                    EditorGUI.BeginChangeCheck();
+                    var newValue = UnityObjectTypeUtility.AssetTypePopup(m_TypeProperty.stringValue);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        m_TypeProperty.stringValue = newValue;
+                        for (var i = 0; i < inputPortsProperty.arraySize; ++i)
+                            using (var element = inputPortsProperty.GetArrayElementAtIndex(i))
+                            using (var m_PortTypeProperty = element.FindPropertyRelative("m_PortType"))
+                                m_PortTypeProperty.stringValue = newValue;
+                        using (var element = outputPortsProperty.GetArrayElementAtIndex(0))
+                        using (var m_PortTypeProperty = element.FindPropertyRelative("m_PortType"))
+                            m_PortTypeProperty.stringValue = newValue;
+                    }
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("+"))
+                        ++inputPortsProperty.arraySize;
+                    using (new EditorGUI.DisabledScope(inputPortsProperty.arraySize < 2))
+                        if (GUILayout.Button("-"))
+                            --inputPortsProperty.arraySize;
+                }
+            }
         }
     }
 }

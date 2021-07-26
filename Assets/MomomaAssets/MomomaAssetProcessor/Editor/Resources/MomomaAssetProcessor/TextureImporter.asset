@@ -69,67 +69,7 @@ TextureImporter:
   m_TextureFormatSet: 0
   m_IgnorePngGamma: 0
   m_ApplyGammaDecoding: 0
-  m_PlatformSettings:
-  - serializedVersion: 3
-    m_BuildTarget: DefaultTexturePlatform
-    m_MaxTextureSize: 2048
-    m_ResizeAlgorithm: 0
-    m_TextureFormat: -1
-    m_TextureCompression: 1
-    m_CompressionQuality: 50
-    m_CrunchedCompression: 0
-    m_AllowsAlphaSplitting: 0
-    m_Overridden: 0
-    m_AndroidETC2FallbackOverride: 0
-    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    m_BuildTarget: Standalone
-    m_MaxTextureSize: 2048
-    m_ResizeAlgorithm: 0
-    m_TextureFormat: -1
-    m_TextureCompression: 1
-    m_CompressionQuality: 50
-    m_CrunchedCompression: 0
-    m_AllowsAlphaSplitting: 0
-    m_Overridden: 0
-    m_AndroidETC2FallbackOverride: 0
-    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    m_BuildTarget: iPhone
-    m_MaxTextureSize: 2048
-    m_ResizeAlgorithm: 0
-    m_TextureFormat: -1
-    m_TextureCompression: 1
-    m_CompressionQuality: 50
-    m_CrunchedCompression: 0
-    m_AllowsAlphaSplitting: 0
-    m_Overridden: 0
-    m_AndroidETC2FallbackOverride: 0
-    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    m_BuildTarget: Android
-    m_MaxTextureSize: 2048
-    m_ResizeAlgorithm: 0
-    m_TextureFormat: -1
-    m_TextureCompression: 1
-    m_CompressionQuality: 50
-    m_CrunchedCompression: 0
-    m_AllowsAlphaSplitting: 0
-    m_Overridden: 0
-    m_AndroidETC2FallbackOverride: 0
-    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    m_BuildTarget: WebGL
-    m_MaxTextureSize: 2048
-    m_ResizeAlgorithm: 0
-    m_TextureFormat: -1
-    m_TextureCompression: 1
-    m_CompressionQuality: 50
-    m_CrunchedCompression: 0
-    m_AllowsAlphaSplitting: 0
-    m_Overridden: 0
-    m_AndroidETC2FallbackOverride: 0
-    m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+  m_PlatformSettings: []
   m_SpriteSheet:
     serializedVersion: 2
     m_Sprites: []
@@ -146,25 +86,25 @@ TextureImporter:
   m_SpritePackingTag: 
   m_Output:
     textureImportInstructions:
-      compressedFormat: 12
-      uncompressedFormat: 4
-      desiredFormat: 12
-      usageMode: 3
+      compressedFormat: 0
+      uncompressedFormat: 0
+      desiredFormat: 0
+      usageMode: 0
       colorSpace: 0
-      androidETC2FallbackFormat: 4
-      width: 4
-      height: 4
+      androidETC2FallbackFormat: 0
+      width: 0
+      height: 0
       depth: 0
       cubeIntermediateSize: 0
-      cubeMode: 6
+      cubeMode: 0
       cubeLayout: 0
-      compressionQuality: 50
+      compressionQuality: 0
       androidETC2FallbackDownscale: 0
       vtOnly: 0
     sourceTextureInformation:
-      width: 5
-      height: 3
-      doesTextureContainAlpha: 0
+      width: -1
+      height: -1
+      doesTextureContainAlpha: 1
       sourceWasHDR: 0
     importInspectorWarnings: 
   m_PSDRemoveMatte: 0

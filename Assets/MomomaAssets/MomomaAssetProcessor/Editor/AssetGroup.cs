@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -17,7 +16,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
     public static class AssetGroupExtension
     {
-        public static AssetGroup NewAssetGroup<T>(this T t) => new AssetGroup();
+        public static AssetGroup NewAssetGroup(this INodeProcessor t) => new AssetGroup();
     }
 
     public sealed class AssetData

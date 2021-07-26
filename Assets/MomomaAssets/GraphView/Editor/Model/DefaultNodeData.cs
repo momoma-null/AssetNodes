@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
@@ -13,7 +14,7 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    sealed class DefaultNodeData : INodeData, ISerializationCallbackReceiver
+    sealed class DefaultNodeData : INodeData, IAdditionalAssetHolder, ISerializationCallbackReceiver
     {
         [SerializeField]
         bool m_Expanded = true;
@@ -28,6 +29,7 @@ namespace MomomaAssets.GraphView
 
         public int Priority => 0;
         public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.ProcessorEditor));
+        public IEnumerable<UnityObject> Assets => m_Processor is IAdditionalAssetHolder assetHolder ? assetHolder.Assets : Array.Empty<UnityObject>();
         public bool Expanded => m_Expanded;
         public INodeProcessor Processor => m_Processor;
         public IList<PortData> InputPorts => m_InputPorts;
@@ -44,7 +46,6 @@ namespace MomomaAssets.GraphView
             var node = new NodeGUI(this);
             PortDataToPort(InputPorts, node.inputContainer.Query<Port>().ToList());
             PortDataToPort(OutputPorts, node.outputContainer.Query<Port>().ToList());
-            node.expanded = m_Expanded;
             return node;
         }
 
@@ -117,7 +118,7 @@ namespace MomomaAssets.GraphView
             }
             node.extensionContainer.Query<IMGUIContainer>().ForEach(i => i.MarkDirtyLayout());
             node.RefreshExpandedState();
-            node.expanded = m_Expanded;
+            node.schedule.Execute(() => node.expanded = m_Expanded).ExecuteLater(1);
             graphView.DeleteElements(toDeleteElements);
         }
 

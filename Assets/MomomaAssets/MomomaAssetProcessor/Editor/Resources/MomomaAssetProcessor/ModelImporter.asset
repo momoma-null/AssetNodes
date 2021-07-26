@@ -52,7 +52,7 @@ ModelImporter:
     m_ImportBlendShapes: 1
     m_ImportCameras: 1
     m_ImportLights: 1
-    m_FileIdsGeneration: 18
+    m_FileIdsGeneration: 2
     swapUVChannels: 0
     generateSecondaryUV: 0
     m_UseFileUnits: 1
@@ -73,9 +73,9 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     m_UseFileScale: 1
-    m_FileScale: 0.01
-    m_FileScaleUnit: cm
-    m_FileScaleFactor: 0.01
+    m_FileScale: 1
+    m_FileScaleUnit: 
+    m_FileScaleFactor: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -86,7 +86,7 @@ ModelImporter:
     normalSmoothingSource: 0
   m_ImportedTakeInfos: []
   m_ImportedRoots: []
-  m_HasExtraRoot: 1
+  m_HasExtraRoot: 0
   m_HasEmbeddedTextures: 0
   m_ReferencedClips: []
   m_ImportAnimation: 1

@@ -99,19 +99,10 @@ namespace MomomaAssets.GraphView
         {
             if (m_CachedEditor == null)
                 return;
-            var oldWideMode = EditorGUIUtility.wideMode;
-            var oldFieldWidth = EditorGUIUtility.fieldWidth;
-            try
-            {
-                EditorGUIUtility.wideMode = true;
-                EditorGUIUtility.fieldWidth = 150f;
-                m_CachedEditor.OnInspectorGUI();
-            }
-            finally
-            {
-                EditorGUIUtility.wideMode = oldWideMode;
-                EditorGUIUtility.fieldWidth = oldFieldWidth;
-            }
+            EditorGUIUtility.wideMode = true;
+            EditorGUIUtility.fieldWidth = 93f;
+            EditorGUIUtility.labelWidth = 93f;
+            m_CachedEditor.OnInspectorGUI();
         }
 
         public void Update()

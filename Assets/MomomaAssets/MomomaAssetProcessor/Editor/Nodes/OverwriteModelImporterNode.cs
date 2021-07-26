@@ -88,10 +88,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         using (var dstSO = new SerializedObject(importer))
                         {
                             iterotor.Next(true);
-                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_Materials", "m_ImportedRoots" };
+                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_ExternalObjects", "m_ImportedRoots", "m_HumanDescription" };
                             while (true)
                             {
-                                if (!excludePaths.Contains(iterotor.propertyPath))
+                                if (iterotor.editable && !excludePaths.Contains(iterotor.propertyPath))
                                     dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
                                 if (!iterotor.Next(false))
                                     break;

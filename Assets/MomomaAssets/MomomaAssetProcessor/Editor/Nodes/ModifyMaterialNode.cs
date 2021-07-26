@@ -178,7 +178,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         EditorGUILayout.LabelField("Property Values", EditorStyles.boldLabel);
                         using (new EditorGUI.IndentLevelScope(1))
                         {
-                            EditorGUIUtility.fieldWidth = 64f;
+                            EditorGUIUtility.labelWidth = 0;
+                            EditorGUIUtility.fieldWidth = 0;
                             for (var i = 0; i < m_PropertyValuesProperty.arraySize; ++i)
                             {
                                 using (new EditorGUILayout.HorizontalScope())
@@ -233,7 +234,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                         if (enableProperty == null)
                                             break;
                                         EditorGUI.BeginChangeCheck();
-                                        var newEnabled = EditorGUILayout.Toggle(enableProperty.boolValue, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight * 2f));
+                                        var newEnabled = EditorGUILayout.Toggle(enableProperty.boolValue, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight));
                                         using (new EditorGUI.DisabledScope(!enableProperty.boolValue))
                                         {
                                             m_MaterialEditor.ShaderProperty(materialProperty, materialProperty.displayName);
