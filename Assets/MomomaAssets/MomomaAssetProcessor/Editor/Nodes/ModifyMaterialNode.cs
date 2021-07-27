@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using static UnityEngine.Object;
@@ -176,63 +175,62 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             m_PropertyValuesProperty.arraySize = m_MaterialProperties.Length;
                         }
                         EditorGUILayout.LabelField("Property Values", EditorStyles.boldLabel);
-                        using (new EditorGUI.IndentLevelScope(1))
+                        EditorGUIUtility.labelWidth = 0;
+                        EditorGUIUtility.fieldWidth = 0;
+                        for (var i = 0; i < m_PropertyValuesProperty.arraySize; ++i)
                         {
-                            EditorGUIUtility.labelWidth = 0;
-                            EditorGUIUtility.fieldWidth = 0;
-                            for (var i = 0; i < m_PropertyValuesProperty.arraySize; ++i)
+                            using (var element = m_PropertyValuesProperty.GetArrayElementAtIndex(i))
                             {
-                                using (new EditorGUILayout.HorizontalScope())
-                                using (var element = m_PropertyValuesProperty.GetArrayElementAtIndex(i))
+                                var materialProperty = m_MaterialProperties[i];
+                                IPropertyValue propertyValue;
+                                switch (materialProperty.type)
                                 {
-                                    var materialProperty = m_MaterialProperties[i];
-                                    IPropertyValue propertyValue;
-                                    switch (materialProperty.type)
+                                    case MaterialProperty.PropType.Float:
+                                    case MaterialProperty.PropType.Range:
+                                        if (changed || !(i < propertyValues.Length && propertyValues[i] is FloatValue floatValue))
+                                        {
+                                            floatValue = new FloatValue();
+                                            if (Event.current.type != EventType.Layout)
+                                                element.managedReferenceValue = floatValue;
+                                        }
+                                        propertyValue = floatValue;
+                                        break;
+                                    case MaterialProperty.PropType.Color:
+                                        if (changed || !(i < propertyValues.Length && propertyValues[i] is ColorValue colorValue))
+                                        {
+                                            colorValue = new ColorValue();
+                                            if (Event.current.type != EventType.Layout)
+                                                element.managedReferenceValue = colorValue;
+                                        }
+                                        propertyValue = colorValue;
+                                        break;
+                                    case MaterialProperty.PropType.Vector:
+                                        if (changed || !(i < propertyValues.Length && propertyValues[i] is VectorValue vectorValue))
+                                        {
+                                            vectorValue = new VectorValue();
+                                            if (Event.current.type != EventType.Layout)
+                                                element.managedReferenceValue = vectorValue;
+                                        }
+                                        propertyValue = vectorValue;
+                                        break;
+                                    case MaterialProperty.PropType.Texture:
+                                        if (changed || !(i < propertyValues.Length && propertyValues[i] is TextureValue textureValue))
+                                        {
+                                            textureValue = new TextureValue();
+                                            if (Event.current.type != EventType.Layout)
+                                                element.managedReferenceValue = textureValue;
+                                        }
+                                        propertyValue = textureValue;
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException(nameof(materialProperty.type));
+                                }
+                                using (var enableProperty = element.FindPropertyRelative(nameof(FloatValue.enabled)))
+                                {
+                                    if (enableProperty == null)
+                                        break;
+                                    using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        case MaterialProperty.PropType.Float:
-                                        case MaterialProperty.PropType.Range:
-                                            if (changed || !(i < propertyValues.Length && propertyValues[i] is FloatValue floatValue))
-                                            {
-                                                floatValue = new FloatValue();
-                                                if (Event.current.type != EventType.Layout)
-                                                    element.managedReferenceValue = floatValue;
-                                            }
-                                            propertyValue = floatValue;
-                                            break;
-                                        case MaterialProperty.PropType.Color:
-                                            if (changed || !(i < propertyValues.Length && propertyValues[i] is ColorValue colorValue))
-                                            {
-                                                colorValue = new ColorValue();
-                                                if (Event.current.type != EventType.Layout)
-                                                    element.managedReferenceValue = colorValue;
-                                            }
-                                            propertyValue = colorValue;
-                                            break;
-                                        case MaterialProperty.PropType.Vector:
-                                            if (changed || !(i < propertyValues.Length && propertyValues[i] is VectorValue vectorValue))
-                                            {
-                                                vectorValue = new VectorValue();
-                                                if (Event.current.type != EventType.Layout)
-                                                    element.managedReferenceValue = vectorValue;
-                                            }
-                                            propertyValue = vectorValue;
-                                            break;
-                                        case MaterialProperty.PropType.Texture:
-                                            if (changed || !(i < propertyValues.Length && propertyValues[i] is TextureValue textureValue))
-                                            {
-                                                textureValue = new TextureValue();
-                                                if (Event.current.type != EventType.Layout)
-                                                    element.managedReferenceValue = textureValue;
-                                            }
-                                            propertyValue = textureValue;
-                                            break;
-                                        default:
-                                            throw new ArgumentOutOfRangeException(nameof(materialProperty.type));
-                                    }
-                                    using (var enableProperty = element.FindPropertyRelative(nameof(FloatValue.enabled)))
-                                    {
-                                        if (enableProperty == null)
-                                            break;
                                         EditorGUI.BeginChangeCheck();
                                         var newEnabled = EditorGUILayout.Toggle(enableProperty.boolValue, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight));
                                         using (new EditorGUI.DisabledScope(!enableProperty.boolValue))

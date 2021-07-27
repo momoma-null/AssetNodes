@@ -21,6 +21,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         LoadAssetFromDirectoryNode() { }
 
         [SerializeField]
+        bool m_AutoReload = false;
+
+        [SerializeField]
         DefaultAsset? m_Folder;
 
         public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
@@ -33,12 +36,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = new AssetGroup();
-            if (m_Folder != null)
+            if (!CoreAssetProcessor.IsProcessing || m_AutoReload)
             {
-                var folderPath = AssetDatabase.GetAssetPath(m_Folder);
-                var guids = AssetDatabase.FindAssets("", new[] { folderPath });
-                var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
-                assetGroup = new AssetGroup(assets);
+                if (m_Folder != null)
+                {
+                    var folderPath = AssetDatabase.GetAssetPath(m_Folder);
+                    var guids = AssetDatabase.FindAssets("", new[] { folderPath });
+                    var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
+                    assetGroup = new AssetGroup(assets);
+                }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }

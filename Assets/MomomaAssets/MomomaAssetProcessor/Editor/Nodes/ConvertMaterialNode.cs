@@ -41,7 +41,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     foreach (var material in assets.GetAssetsFromType<Material>())
                     {
-                        if (m_SourceShader != null && material.shader != m_SourceShader)
+                        if (m_SourceShader != null && material.shader != m_SourceShader || material.shader == m_DestinationShader)
                             continue;
                         material.shader = m_DestinationShader;
                         if (EditorUtility.IsDirty(material))

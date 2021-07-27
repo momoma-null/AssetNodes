@@ -84,16 +84,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     if (AssetImporter.GetAtPath(path) is ModelImporter importer)
                     {
                         using (var srcSO = new SerializedObject(m_Importer))
-                        using (var iterotor = srcSO.GetIterator())
+                        using (var iterator = srcSO.GetIterator())
                         using (var dstSO = new SerializedObject(importer))
                         {
-                            iterotor.Next(true);
-                            var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_ExternalObjects", "m_ImportedRoots", "m_HumanDescription" };
+                            iterator.NextVisible(true);
+                            var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_RigImportWarnings", "m_ImportedRoots", "m_HasExtraRoot" };
                             while (true)
                             {
-                                if (iterotor.editable && !excludePaths.Contains(iterotor.propertyPath))
-                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
-                                if (!iterotor.Next(false))
+                                if (iterator.editable && !excludePaths.Contains(iterator.propertyPath))
+                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterator);
+                                if (!iterator.NextVisible(false))
                                     break;
                             }
                             if (dstSO.hasModifiedProperties)
