@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -41,9 +40,20 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (m_Folder != null)
                 {
                     var folderPath = AssetDatabase.GetAssetPath(m_Folder);
-                    var guids = AssetDatabase.FindAssets("", new[] { folderPath });
-                    var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
-                    assetGroup = new AssetGroup(assets);
+                    if (CoreAssetProcessor.IsProcessing)
+                    {
+                        foreach (var path in CoreAssetProcessor.ImportedAssetsPaths)
+                        {
+                            if (path.StartsWith(folderPath))
+                                assetGroup.Add(new AssetData(path));
+                        }
+                    }
+                    else
+                    {
+                        var guids = AssetDatabase.FindAssets("", new[] { folderPath });
+                        var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
+                        assetGroup.UnionWith(assets);
+                    }
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);

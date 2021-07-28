@@ -1,6 +1,6 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 
 #nullable enable
@@ -12,6 +12,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         static HashSet<GraphViewObject>? s_GraphViewObjects;
 
         public static bool IsProcessing { get; private set; }
+        public static IEnumerable<string> ImportedAssetsPaths { get; private set; } = Array.Empty<string>();
 
         public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(AssetDatabase.StartAssetEditing, () =>
             {
@@ -30,6 +31,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
             try
             {
                 IsProcessing = true;
+                var paths = new HashSet<string>(importedAssets);
+                paths.UnionWith(movedAssets);
+                ImportedAssetsPaths = paths;
                 if (s_GraphViewObjects == null)
                 {
                     s_GraphViewObjects = new HashSet<GraphViewObject>(AssetDatabase.FindAssets("t:GraphViewObject").
@@ -53,6 +57,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             finally
             {
                 IsProcessing = false;
+                ImportedAssetsPaths  = Array.Empty<string>();
             }
         }
     }
