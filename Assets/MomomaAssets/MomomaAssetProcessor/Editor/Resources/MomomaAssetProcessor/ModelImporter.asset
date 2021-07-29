@@ -84,7 +84,16 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  m_ImportedTakeInfos: []
+  m_ImportedTakeInfos:
+  - name: 
+    defaultClipName: 
+    internalID: 0
+    startTime: 0
+    stopTime: 0
+    bakeStartTime: 0
+    bakeStopTime: 0
+    sampleRate: 0
+    clip: {fileID: 0}
   m_ImportedRoots: []
   m_HasExtraRoot: 0
   m_HasEmbeddedTextures: 0
