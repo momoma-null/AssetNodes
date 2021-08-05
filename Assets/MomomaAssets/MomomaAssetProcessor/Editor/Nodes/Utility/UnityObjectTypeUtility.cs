@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -11,6 +12,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     static class UnityObjectTypeUtility
     {
+        static readonly Type s_UnityTypeType = Type.GetType("UnityEditor.UnityType, UnityEditor.dll");
+        static readonly MethodInfo s_FindTypeByPersistentTypeIDInfo = s_UnityTypeType.GetMethod("FindTypeByPersistentTypeID", BindingFlags.Static | BindingFlags.Public);
+        static readonly PropertyInfo s_nameInfo = s_UnityTypeType.GetProperty("name", BindingFlags.Instance | BindingFlags.Public);
+
         sealed class AssetTypeDatas : Dictionary<string, AssetTypeData>
         {
             Dictionary<string, int> indexCache = new Dictionary<string, int>();
@@ -66,6 +71,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 index = 0;
             index = EditorGUI.Popup(position, index, TypeNames);
             return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
+        }
+
+        public static Type GetTypeFromClassId(int id)
+        {
+            var unityType = s_FindTypeByPersistentTypeIDInfo.Invoke(null, new object[] { id });
+            if (s_nameInfo.GetValue(unityType) is string typeName)
+            {
+                return Type.GetType($"UnityEngine.{typeName}, UnityEngine.dll");
+            }
+            throw new InvalidOperationException();
         }
     }
 

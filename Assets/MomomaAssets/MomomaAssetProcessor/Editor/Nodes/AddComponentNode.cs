@@ -88,26 +88,45 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
-            if (AddComponentNodeEditor.MenuPaths.ContainsKey(m_MenuPath))
+            if (AddComponentNodeEditor.MenuPaths.TryGetValue(m_MenuPath, out var index))
             {
+                Type componentType;
+                var command = Unsupported.GetSubmenusCommands("Component")[index];
+                if (command.StartsWith("SCRIPT"))
+                {
+                    var scriptId = int.Parse(command.Substring(6));
+                    var monoScript = EditorUtility.InstanceIDToObject(scriptId) as MonoScript;
+                    componentType = monoScript?.GetClass() ?? throw new InvalidOperationException();
+                }
+                else
+                {
+                    var classId = int.Parse(command);
+                    componentType = UnityObjectTypeUtility.GetTypeFromClassId(classId);
+                }
                 var regex = new Regex(m_Regex);
                 var menuPath = "Component/" + m_MenuPath;
                 foreach (var assets in assetGroup)
                 {
-                    if((assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
+                    if ((assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
                     if (m_IncludeChildren)
                     {
                         foreach (var go in assets.GetAssetsFromType<GameObject>())
                         {
                             if (regex.Match(go.name).Success)
-                                s_ExecuteMenuItemOnGameObjectsInfo.Invoke(null, new object[] { menuPath, new[] { go } });
+                            {
+                                if (go.GetComponent(componentType) == null)
+                                    go.AddComponent(componentType);
+                            }
                         }
                     }
                     else if (assets.MainAsset is GameObject root)
                     {
                         if (regex.Match(root.name).Success)
-                            s_ExecuteMenuItemOnGameObjectsInfo.Invoke(null, new object[] { menuPath, new[] { root } });
+                        {
+                            if (root.GetComponent(componentType) == null)
+                                root.AddComponent(componentType);
+                        }
                     }
                 }
             }
