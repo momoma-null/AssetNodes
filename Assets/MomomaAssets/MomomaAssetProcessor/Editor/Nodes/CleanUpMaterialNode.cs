@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+
+#nullable enable
+
+namespace MomomaAssets.GraphView.AssetProcessor
+{
+    [Serializable]
+    [InitializeOnLoad]
+    [CreateElement("Clean up/Material")]
+    sealed class CleanUpMaterialNode : INodeProcessor
+    {
+        static CleanUpMaterialNode()
+        {
+            INodeDataUtility.AddConstructor(() => new CleanUpMaterialNode());
+        }
+
+        CleanUpMaterialNode() { }
+
+        public INodeProcessorEditor ProcessorEditor => new DefaultNodeProcessorEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
+        {
+            portDataContainer.InputPorts.Add(new PortData(typeof(Material)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(Material)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
+            foreach (var asset in assetGroup)
+            {
+                if (asset.MainAsset is Material mat)
+                {
+                    using (var so = new SerializedObject(mat))
+                    using (var savedProp = so.FindProperty("m_SavedProperties"))
+                    {
+                        RemoveProperties(savedProp.FindPropertyRelative("m_TexEnvs"), mat);
+                        RemoveProperties(savedProp.FindPropertyRelative("m_Floats"), mat);
+                        RemoveProperties(savedProp.FindPropertyRelative("m_Colors"), mat);
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                }
+            }
+            container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        static void RemoveProperties(SerializedProperty props, Material mat)
+        {
+            for (var i = props.arraySize - 1; i >= 0; --i)
+            {
+                var name = props.GetArrayElementAtIndex(i).FindPropertyRelative("first").stringValue;
+                if (!mat.HasProperty(name))
+                    props.DeleteArrayElementAtIndex(i);
+            }
+        }
+    }
+}

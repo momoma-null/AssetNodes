@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -88,7 +88,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         using (var dstSO = new SerializedObject(importer))
                         {
                             iterator.NextVisible(true);
-                            var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_RigImportWarnings", "m_ImportedRoots", "m_HasExtraRoot" };
+                            var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_ImportedTakeInfos", "m_ImportedRoots", "m_HasExtraRoot" };
                             while (true)
                             {
                                 if (iterator.editable && !excludePaths.Contains(iterator.propertyPath))

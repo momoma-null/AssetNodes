@@ -24,6 +24,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public UnityObject MainAsset { get; }
         public UnityObject[] AllAssets { get; }
         public string AssetPath { get; }
+        public AssetImporter? Importer { get; }
 
         public AssetData(string path)
         {
@@ -33,6 +34,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             else
                 AllAssets = AssetDatabase.LoadAllAssetsAtPath(path);
             AssetPath = path;
+            Importer = AssetImporter.GetAtPath(path);
         }
 
         public IEnumerable<T> GetAssetsFromType<T>() where T : UnityObject

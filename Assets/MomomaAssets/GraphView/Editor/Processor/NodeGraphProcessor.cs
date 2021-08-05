@@ -10,11 +10,13 @@ namespace MomomaAssets.GraphView
     {
         readonly Action? PreProcess;
         readonly Action? PostProcess;
+        readonly Action? Completed;
 
-        public NodeGraphProcessor(Action? preProcess = null, Action? postProcess = null)
+        public NodeGraphProcessor(Action? preProcess = null, Action? postProcess = null, Action? completed = null)
         {
             PreProcess = preProcess;
             PostProcess = postProcess;
+            Completed = completed;
         }
 
         public void StartProcess(GraphViewObject graphViewObject)
@@ -76,15 +78,22 @@ namespace MomomaAssets.GraphView
             {
                 GetData(guidToSerializedGraphElements, nordId, container);
             }
+            Completed?.Invoke();
         }
 
         void GetData(Dictionary<string, ISerializedGraphElement> guidToSerializedGraphElements, string id, ProcessingDataContainer container)
         {
             if (guidToSerializedGraphElements[id].GraphElementData is INodeData nodeData)
             {
-                PreProcess?.Invoke();
-                nodeData.Processor.Process(container, nodeData);
-                PostProcess?.Invoke();
+                try
+                {
+                    PreProcess?.Invoke();
+                    nodeData.Processor.Process(container, nodeData);
+                }
+                finally
+                {
+                    PostProcess?.Invoke();
+                }
             }
         }
     }

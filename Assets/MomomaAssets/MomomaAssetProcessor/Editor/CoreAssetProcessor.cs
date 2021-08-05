@@ -19,8 +19,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 AssetDatabase.StopAssetEditing();
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
-                EditorUtility.UnloadUnusedAssetsImmediate();
-            });
+            },
+            EditorUtility.UnloadUnusedAssetsImmediate);
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
@@ -57,7 +57,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             finally
             {
                 IsProcessing = false;
-                ImportedAssetsPaths  = Array.Empty<string>();
+                ImportedAssetsPaths = Array.Empty<string>();
             }
         }
     }
