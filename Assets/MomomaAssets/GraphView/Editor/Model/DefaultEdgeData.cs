@@ -18,8 +18,10 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         string m_OutputPortGuid;
 
+        DefaultEdgeDataEditor? m_Editor;
+
         public int Priority => 1;
-        public IGraphElementEditor GraphElementEditor { get; } = new DefaultEdgeDataEditor();
+        public IGraphElementEditor GraphElementEditor => m_Editor ?? (m_Editor = new DefaultEdgeDataEditor());
         public string InputPortGuid { get => m_InputPortGuid; set => m_InputPortGuid = value; }
         public string OutputPortGuid { get => m_OutputPortGuid; set => m_OutputPortGuid = value; }
 

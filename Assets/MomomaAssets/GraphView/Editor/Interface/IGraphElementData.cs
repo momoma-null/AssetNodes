@@ -5,13 +5,12 @@ using UnityEditor.Experimental.GraphView;
 
 namespace MomomaAssets.GraphView
 {
-    using GraphView = UnityEditor.Experimental.GraphView.GraphView;
     public interface IGraphElementData
     {
         int Priority { get; }
         IGraphElementEditor GraphElementEditor { get; }
         GraphElement Deserialize();
-        void DeserializeOverwrite(GraphElement graphElement, GraphView graphView);
+        void DeserializeOverwrite(GraphElement graphElement, UnityEditor.Experimental.GraphView.GraphView graphView);
         void ReplaceGuid(Dictionary<string, string> guids);
     }
 }

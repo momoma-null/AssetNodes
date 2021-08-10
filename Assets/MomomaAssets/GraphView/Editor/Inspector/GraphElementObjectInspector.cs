@@ -36,7 +36,8 @@ namespace MomomaAssets.GraphView
             {
                 var editor = graphElementObject.GraphElementData?.GraphElementEditor;
                 if (editor != null && m_GraphElementDataProperty != null)
-                    editor.OnGUI(m_GraphElementDataProperty);
+                    using (var prop = m_GraphElementDataProperty.Copy())
+                        editor.OnGUI(prop);
             }
             if (serializedObject.hasModifiedProperties)
                 serializedObject.ApplyModifiedProperties();

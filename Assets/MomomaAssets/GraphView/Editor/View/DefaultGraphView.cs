@@ -6,15 +6,32 @@ using UnityEditor.Experimental.GraphView;
 
 namespace MomomaAssets.GraphView
 {
-    using GraphView = UnityEditor.Experimental.GraphView.GraphView;
-
-    sealed class DefaultGraphView : GraphView
+    sealed class DefaultGraphView : UnityEditor.Experimental.GraphView.GraphView
     {
         readonly ISelection m_Selection;
+        readonly IGraphViewCallbackReceiver m_GraphViewCallbackReceiver;
 
-        public DefaultGraphView(ISelection selection)
+        public DefaultGraphView(ISelection selection, IGraphViewCallbackReceiver graphViewCallbackReceiver)
         {
             m_Selection = selection;
+            m_GraphViewCallbackReceiver = graphViewCallbackReceiver;
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            base.BuildContextualMenu(evt);
+            if (evt.target is Node node)
+            {
+                evt.menu.AppendSeparator();
+                evt.menu.AppendAction("Group selection", i => GroupSelection(node, i));
+            }
+        }
+
+        void GroupSelection(Node node, DropdownMenuAction action)
+        {
+            var data = new DefaultGroupData(new[] { node.viewDataKey });
+            var group = new DefaultGroup(data);
+            m_GraphViewCallbackReceiver.AddElement(group, action.eventInfo.mousePosition);
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)

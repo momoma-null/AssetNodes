@@ -11,7 +11,7 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView
 {
-    public sealed class NodeGraph : IDisposable, ISelection
+    public sealed class NodeGraph : IDisposable, ISelection, IGraphViewCallbackReceiver
     {
         sealed class GraphViewObjectHandler : IDisposable, IEquatable<GraphViewObjectHandler>
         {
@@ -252,7 +252,7 @@ namespace MomomaAssets.GraphView
             m_EditorWindow = editorWindow;
             m_NodeGraphProcessor = nodeGraphProcessor;
             m_NodeGraphType = m_EditorWindow.GetType();
-            m_GraphView = new DefaultGraphView(this);
+            m_GraphView = new DefaultGraphView(this, this);
             m_GraphView.style.flexGrow = 1;
             m_EditorWindow.rootVisualElement.Add(m_GraphView);
             m_GraphView.serializeGraphElements = SerializeGraphElements;
@@ -460,7 +460,6 @@ namespace MomomaAssets.GraphView
                             m_GraphView.AddElement(edge);
                             //m_GraphView.OnValueChanged(edge);
                         }
-                        edge.AddManipulator(new ContextualMenuManipulator(context => context.menu.AppendAction("Add Token", action => AddToken(edge, action), action => DropdownMenuAction.Status.Normal)));
                     }
                 }
             }
@@ -539,12 +538,9 @@ namespace MomomaAssets.GraphView
                 rect.position += offset;
                 serializedGraphElement.Position = rect;
             }
-            foreach (var group in serializedGraphElements.GroupBy(i => i.GraphElementData?.Priority ?? 0).OrderBy(i => i.Key))
+            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.GraphElementData?.Priority))
             {
-                foreach(var serializedGraphElement in group)
-                {
-                    serializedGraphElement.Deserialize(m_GraphView);
-                }
+                serializedGraphElement.Deserialize(m_GraphView);
             }
             if (m_GraphViewObjectHandler != null)
             {
@@ -573,14 +569,7 @@ namespace MomomaAssets.GraphView
             elementsToRemove.RemoveWhere(element => serializedGraphElements.ContainsKey(element.viewDataKey));
             m_GraphView.DeleteElements(elementsToRemove);
             var guids = m_GraphView.graphElements.ToList().ToDictionary(element => element.viewDataKey, element => element);
-            foreach (var serializedGraphElement in serializedGraphElements.Where(i => !(i.Value.GraphElementData is IEdgeData)))
-            {
-                if (guids.TryGetValue(serializedGraphElement.Key, out var graphElement))
-                    serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);
-                else
-                    serializedGraphElement.Value.Deserialize(m_GraphView);
-            }
-            foreach (var serializedGraphElement in serializedGraphElements.Where(i => i.Value.GraphElementData is IEdgeData))
+            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.Value.GraphElementData?.Priority))
             {
                 if (guids.TryGetValue(serializedGraphElement.Key, out var graphElement))
                     serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);
@@ -603,18 +592,6 @@ namespace MomomaAssets.GraphView
                 }
             }
             //m_GraphView.OnValueChanged(edge);
-        }
-
-        void AddToken(Edge edge, DropdownMenuAction action)
-        {
-            var inputPort = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, edge.output.portType);
-            var outputPort = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, edge.input.portType);
-            var token = new TokenNode<DefaultEdge>(inputPort, outputPort);
-            AddElement(token, m_EditorWindow.position.position + action.eventInfo.mousePosition);
-            edge.input.Disconnect(edge);
-            inputPort.Connect(edge);
-            edge.input.ConnectTo<DefaultEdge>(outputPort);
-            edge.input = inputPort;
         }
 
         public void AddElement(GraphElement graphElement, Vector2 screenMousePosition)
