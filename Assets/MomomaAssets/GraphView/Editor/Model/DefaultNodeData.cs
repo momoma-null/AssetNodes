@@ -49,6 +49,8 @@ namespace MomomaAssets.GraphView
             return node;
         }
 
+        public void SetPosition(GraphElement graphElement, Rect position) => graphElement.SetPosition(position);
+
         public void DeserializeOverwrite(GraphElement graphElement, GraphView graphView)
         {
             if (!(graphElement is Node node))
@@ -103,7 +105,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, data.PortType);
+                    port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType);
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }

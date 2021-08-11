@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 
 #nullable enable
@@ -32,6 +31,13 @@ namespace MomomaAssets.GraphView
         }
 
         public GraphElement Deserialize() => new DefaultGroup(this);
+
+        public void SetPosition(GraphElement graphElement, Rect position)
+        {
+            if (!(graphElement is DefaultGroup group))
+                throw new InvalidOperationException();
+            group.SetPositionWhenDeserialization(position);
+        }
 
         public void DeserializeOverwrite(GraphElement graphElement, GraphView graphView)
         {

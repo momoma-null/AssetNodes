@@ -54,7 +54,7 @@ namespace MomomaAssets.GraphView
         public static void Deserialize(this ISerializedGraphElement serializedGraphElement, GraphElement graphElement, GraphView graphView)
         {
             graphElement.viewDataKey = serializedGraphElement.Guid;
-            graphElement.SetPosition(serializedGraphElement.Position);
+            serializedGraphElement.GraphElementData?.SetPosition(graphElement, serializedGraphElement.Position);
             serializedGraphElement.GraphElementData?.DeserializeOverwrite(graphElement, graphView);
         }
     }

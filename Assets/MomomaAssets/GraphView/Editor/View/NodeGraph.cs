@@ -111,7 +111,6 @@ namespace MomomaAssets.GraphView
                             return i as GraphElementObject;
                     return null;
                 }
-
             }
 
             public sealed class SetScope : IDisposable
@@ -173,12 +172,7 @@ namespace MomomaAssets.GraphView
                             Undo.DestroyObjectImmediate(i);
                         }
                     }
-                    var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        AssetDatabase.SaveAssets();
-                        //AssetDatabase.ImportAsset(path);
-                    }
+                    AssetDatabase.SaveAssets();
                 }
 
                 public void AddGraphElementObject(GraphElementObject graphElementObject)
@@ -248,7 +242,7 @@ namespace MomomaAssets.GraphView
         public NodeGraph(EditorWindow editorWindow, NodeGraphProcessor nodeGraphProcessor)
         {
             if (editorWindow == null)
-                throw new ArgumentNullException("editorWindow");
+                throw new ArgumentNullException(nameof(editorWindow));
             m_EditorWindow = editorWindow;
             m_NodeGraphProcessor = nodeGraphProcessor;
             m_NodeGraphType = m_EditorWindow.GetType();
@@ -305,7 +299,7 @@ namespace MomomaAssets.GraphView
                     if (selectable is GraphElement element)
                     {
                         var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                        if (graphElementObject != null)
+                        if (graphElementObject != null && !Selection.Contains(graphElementObject))
                         {
                             var ids = new int[Selection.instanceIDs.Length + 1];
                             Array.Copy(Selection.instanceIDs, ids, Selection.instanceIDs.Length);
@@ -481,6 +475,19 @@ namespace MomomaAssets.GraphView
                         var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
                         if (graphElementObject != null)
                             graphElementObject.Position = element.GetPosition();
+                        if (element is Scope scope)
+                        {
+                            foreach (var e in scope.containedElements)
+                            {
+                                graphElementObject = getScope.TryGetGraphElementObjectByGuid(e.viewDataKey);
+                                if (graphElementObject != null)
+                                {
+                                    var rect = graphElementObject.Position;
+                                    rect.position += graphViewChange.moveDelta;
+                                    graphElementObject.Position = rect;
+                                }
+                            }
+                        }
                     }
                 }
             }

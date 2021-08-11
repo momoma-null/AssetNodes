@@ -23,13 +23,17 @@ namespace MomomaAssets.GraphView
             if (evt.target is Node node)
             {
                 evt.menu.AppendSeparator();
-                evt.menu.AppendAction("Group selection", i => GroupSelection(node, i));
+                evt.menu.AppendAction("Group selection", GroupSelection);
             }
         }
 
-        void GroupSelection(Node node, DropdownMenuAction action)
+        void GroupSelection(DropdownMenuAction action)
         {
-            var data = new DefaultGroupData(new[] { node.viewDataKey });
+            var guids = new List<string>();
+            foreach (var i in selection)
+                if (i is Node node)
+                    guids.Add(node.viewDataKey);
+            var data = new DefaultGroupData(guids.ToArray());
             var group = new DefaultGroup(data);
             m_GraphViewCallbackReceiver.AddElement(group, action.eventInfo.mousePosition);
         }

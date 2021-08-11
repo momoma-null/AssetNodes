@@ -33,6 +33,8 @@ namespace MomomaAssets.GraphView
 
         public GraphElement Deserialize() => new DefaultEdge(this);
 
+        public void SetPosition(GraphElement graphElement, Rect position) => graphElement.SetPosition(position);
+
         public void DeserializeOverwrite(GraphElement graphElement, GraphView graphView)
         {
             if (!(graphElement is Edge edge))
