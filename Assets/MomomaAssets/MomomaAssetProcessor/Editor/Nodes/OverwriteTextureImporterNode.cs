@@ -12,7 +12,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [Serializable]
     [InitializeOnLoad]
     [CreateElement("Importer/Texture")]
-
     sealed class OverwriteTextureImporterNode : INodeProcessor, IAdditionalAssetHolder
     {
         sealed class OverwriteTextureImporterNodeEditor : INodeProcessorEditor
@@ -65,6 +64,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     m_Importer.name = m_Importer.name.Replace("(Clone)", "");
                 }
                 return new[] { m_Importer };
+            }
+        }
+
+        public void OnClone()
+        {
+            if (m_Importer != null)
+            {
+                m_Importer = Instantiate(m_Importer);
+                m_Importer.name = m_Importer.name.Replace("(Clone)", "");
             }
         }
 

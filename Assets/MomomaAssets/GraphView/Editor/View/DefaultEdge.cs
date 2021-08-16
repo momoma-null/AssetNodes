@@ -23,6 +23,5 @@ namespace MomomaAssets.GraphView
         }
 
         public void Bind(SerializedObject serializedObject) { }
-        public void Update() { }
     }
 }

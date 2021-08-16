@@ -49,6 +49,12 @@ namespace MomomaAssets.GraphView
             return node;
         }
 
+        public void OnClone()
+        {
+            if (m_Processor is IAdditionalAssetHolder assetHolder)
+                assetHolder.OnClone();
+        }
+
         public void SetPosition(GraphElement graphElement, Rect position) => graphElement.SetPosition(position);
 
         public void DeserializeOverwrite(GraphElement graphElement, GraphView graphView)
@@ -74,7 +80,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType);
+                    port = new Port<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
@@ -105,7 +111,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = Port.Create<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType);
+                    port = new Port<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }

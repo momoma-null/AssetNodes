@@ -548,6 +548,8 @@ namespace MomomaAssets.GraphView
             foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.GraphElementData?.Priority))
             {
                 serializedGraphElement.Deserialize(m_GraphView);
+                if (serializedGraphElement is IAdditionalAssetHolder assetHolder)
+                    assetHolder.OnClone();
             }
             if (m_GraphViewObjectHandler != null)
             {
@@ -655,8 +657,6 @@ namespace MomomaAssets.GraphView
         void OnGraphElementChanged(string guid)
         {
             var element = m_GraphView.GetElementByGuid(guid);
-            if (element is IFieldHolder fieldHolder)
-                fieldHolder.Update();
             if (m_GraphViewObjectHandler != null && element != null)
             {
                 using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))

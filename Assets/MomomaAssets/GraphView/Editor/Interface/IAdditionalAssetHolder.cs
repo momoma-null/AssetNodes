@@ -8,5 +8,6 @@ namespace MomomaAssets.GraphView
     public interface IAdditionalAssetHolder
     {
         IEnumerable<Object> Assets { get; }
+        void OnClone();
     }
 }

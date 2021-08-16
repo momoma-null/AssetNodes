@@ -11,19 +11,43 @@ using static UnityEngine.Object;
 
 namespace MomomaAssets.GraphView
 {
-    sealed class NodeGUI : Node, IFieldHolder, IDisposable
+    sealed class NodeGUI : Node, IFieldHolder, IDisposable, INotifyValueChanged<bool>, IBindable
     {
         readonly INodeData m_Node;
         SerializedObject? m_SerializedObject;
-        SerializedProperty? m_ExpandedProperty;
         Editor? m_CachedEditor;
 
         public IGraphElementData GraphElementData => m_Node;
+        public bool value
+        {
+            get => expanded;
+            set
+            {
+                if (value == expanded)
+                    return;
+                if (panel != null)
+                {
+                    using (var evt = ChangeEvent<bool>.GetPooled(expanded, value))
+                    {
+                        evt.target = this;
+                        SetValueWithoutNotify(value);
+                        SendEvent(evt);
+                    }
+                }
+                else
+                {
+                    SetValueWithoutNotify(value);
+                }
+            }
+        }
+        public IBinding? binding { get; set; }
+        public string? bindingPath { get; set; }
 
         public NodeGUI(INodeData nodeData) : base()
         {
             m_Node = nodeData;
             style.minWidth = 200f;
+            style.maxWidth = 400f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             var nodeTypeName = m_Node.Processor.GetType().Name;
             title = Regex.Replace(nodeTypeName, "([a-z])([A-Z])", "$1 $2").Replace("Node", "");
@@ -40,7 +64,12 @@ namespace MomomaAssets.GraphView
             if (m_CachedEditor != null)
                 DestroyImmediate(m_CachedEditor);
             m_SerializedObject = null;
-            m_ExpandedProperty = null;
+        }
+
+        public void SetValueWithoutNotify(bool newValue)
+        {
+            expanded = newValue;
+            MarkDirtyRepaint();
         }
 
         void FixCollapseButtonEnable()
@@ -54,19 +83,14 @@ namespace MomomaAssets.GraphView
 
         protected override void ToggleCollapse()
         {
-            base.ToggleCollapse();
-            if (m_SerializedObject == null || m_ExpandedProperty == null)
-                return;
-            m_SerializedObject.UpdateIfRequiredOrScript();
-            m_ExpandedProperty.boolValue = expanded;
-            m_SerializedObject.ApplyModifiedProperties();
+            value = !expanded;
         }
 
         public void Bind(SerializedObject serializedObject)
         {
             m_SerializedObject = serializedObject;
             extensionContainer.Clear();
-            m_ExpandedProperty = serializedObject.FindProperty("m_GraphElementData.m_Expanded");
+            this.BindProperty(serializedObject.FindProperty("m_GraphElementData.m_Expanded"));
             if (m_Node.GraphElementEditor.UseDefaultVisualElement)
             {
                 using (var iterator = serializedObject.FindProperty("m_GraphElementData.m_Processor"))
@@ -90,6 +114,7 @@ namespace MomomaAssets.GraphView
             {
                 Editor.CreateCachedEditor(m_SerializedObject.targetObjects, null, ref m_CachedEditor);
                 var field = new IMGUIContainer(OnGUIHandler) { cullingEnabled = true };
+                field.Bind(m_SerializedObject);
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();
@@ -103,11 +128,6 @@ namespace MomomaAssets.GraphView
             EditorGUIUtility.fieldWidth = 93f;
             EditorGUIUtility.labelWidth = 93f;
             m_CachedEditor.OnInspectorGUI();
-        }
-
-        public void Update()
-        {
-            m_SerializedObject?.UpdateIfRequiredOrScript();
         }
     }
 }

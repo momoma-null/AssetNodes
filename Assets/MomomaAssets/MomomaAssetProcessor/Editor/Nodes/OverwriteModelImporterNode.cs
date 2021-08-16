@@ -67,6 +67,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
+        public void OnClone()
+        {
+            if (m_Importer != null)
+            {
+                m_Importer = Instantiate(m_Importer);
+                m_Importer.name = m_Importer.name.Replace("(Clone)", "");
+            }
+        }
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));

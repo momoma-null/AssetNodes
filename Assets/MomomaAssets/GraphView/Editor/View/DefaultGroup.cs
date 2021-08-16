@@ -31,8 +31,6 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        public void Update() { }
-
         public void SetPositionWhenDeserialization(Rect position)
         {
             SetScopePositionOnly(position);

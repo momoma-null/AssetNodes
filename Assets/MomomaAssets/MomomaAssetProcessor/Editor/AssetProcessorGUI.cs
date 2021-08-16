@@ -16,10 +16,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         void OnEnable()
         {
-            m_NodeGraph = new NodeGraph(this, CoreAssetProcessor.s_NodeGraphProcessor);
+            if (m_NodeGraph == null)
+                m_NodeGraph = new NodeGraph(this, CoreAssetProcessor.s_NodeGraphProcessor);
         }
 
-        void OnDisable()
+        void OnDestroy()
         {
             m_NodeGraph?.Dispose();
             m_NodeGraph = null;

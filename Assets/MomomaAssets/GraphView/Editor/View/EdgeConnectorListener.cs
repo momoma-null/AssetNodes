@@ -7,8 +7,10 @@ namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
-    class EdgeConnectorListener// : IEdgeConnectorListener
+    sealed class EdgeConnectorListener : IEdgeConnectorListener
     {
+        GraphViewChange m_GraphViewChange;
+
         public void OnDropOutsidePort(Edge edge, Vector2 position)
         {
             var graphView = edge.GetFirstAncestorOfType<GraphView>();
@@ -34,9 +36,8 @@ namespace MomomaAssets.GraphView
             var edgesToCreate = new List<Edge>() { edge };
             if (graphView.graphViewChanged != null)
             {
-                var graphViewChange = new GraphViewChange();
-                graphViewChange.edgesToCreate = edgesToCreate;
-                edgesToCreate = graphView.graphViewChanged(graphViewChange).edgesToCreate;
+                m_GraphViewChange.edgesToCreate = edgesToCreate;
+                edgesToCreate = graphView.graphViewChanged(m_GraphViewChange).edgesToCreate;
             }
 
             foreach (var e in edgesToCreate)
