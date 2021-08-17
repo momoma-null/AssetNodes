@@ -71,9 +71,13 @@ namespace MomomaAssets.GraphView
             }
         }
 
+        public SerializedObject? SerializedObject => m_SerializedObject;
+
         void OnValidate()
         {
-            onValueChanged?.Invoke(Guid);
+            m_SerializedObject?.UpdateIfRequiredOrScript();
+            if (Event.current?.rawType != EventType.Layout)
+                onValueChanged?.Invoke(Guid);
         }
 
         void Awake()
@@ -108,6 +112,7 @@ namespace MomomaAssets.GraphView
         public string Guid { get => m_Guid; set => m_Guid = value; }
         public Rect Position { get => m_Position; set => m_Position = value; }
         public IGraphElementData? GraphElementData { get => m_GraphElementData; set => m_GraphElementData = value; }
+        public SerializedObject? SerializedObject => null;
 
         public SerializedGraphElement() { }
     }

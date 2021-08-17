@@ -17,6 +17,7 @@ namespace MomomaAssets.GraphView
         string Guid { get; set; }
         Rect Position { get; set; }
         IGraphElementData? GraphElementData { get; set; }
+        SerializedObject? SerializedObject { get; }
     }
 
     public static class SerializedGraphElementExtensions
@@ -26,10 +27,9 @@ namespace MomomaAssets.GraphView
             if (graphElement is IFieldHolder fieldHolder)
             {
                 serializedGraphElement.GraphElementData = fieldHolder.GraphElementData;
-                if (serializedGraphElement is ScriptableObject scriptableObject)
+                if (serializedGraphElement.SerializedObject != null)
                 {
-                    var so = new SerializedObject(scriptableObject);
-                    fieldHolder.Bind(so);
+                    fieldHolder.Bind(serializedGraphElement.SerializedObject);
                 }
             }
             serializedGraphElement.Guid = graphElement.viewDataKey;
@@ -42,10 +42,9 @@ namespace MomomaAssets.GraphView
                 throw new ArgumentNullException(nameof(serializedGraphElement.GraphElementData));
             var graphElement = serializedGraphElement.GraphElementData.Deserialize();
             graphView.AddElement(graphElement);
-            if (serializedGraphElement is ScriptableObject scriptableObject && graphElement is IFieldHolder fieldHolder)
+            if (serializedGraphElement.SerializedObject != null && graphElement is IFieldHolder fieldHolder)
             {
-                var so = new SerializedObject(scriptableObject);
-                fieldHolder.Bind(so);
+                fieldHolder.Bind(serializedGraphElement.SerializedObject);
             }
             serializedGraphElement.Deserialize(graphElement, graphView);
             return graphElement;

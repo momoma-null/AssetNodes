@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 using UnityObject = UnityEngine.Object;
 
@@ -125,6 +126,7 @@ namespace MomomaAssets.GraphView
                 node.outputContainer.Remove(port);
             }
             node.extensionContainer.Query<IMGUIContainer>().ForEach(i => i.MarkDirtyLayout());
+            node.extensionContainer.Query<PropertyField>().ForEach(i => i.MarkDirtyRepaint());
             node.RefreshExpandedState();
             node.schedule.Execute(() => node.expanded = m_Expanded).ExecuteLater(1);
             graphView.DeleteElements(toDeleteElements);

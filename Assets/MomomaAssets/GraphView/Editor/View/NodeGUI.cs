@@ -114,7 +114,6 @@ namespace MomomaAssets.GraphView
             {
                 Editor.CreateCachedEditor(m_SerializedObject.targetObjects, null, ref m_CachedEditor);
                 var field = new IMGUIContainer(OnGUIHandler) { cullingEnabled = true };
-                field.Bind(m_SerializedObject);
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();

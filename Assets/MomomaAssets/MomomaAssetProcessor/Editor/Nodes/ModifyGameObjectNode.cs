@@ -67,7 +67,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             case PropertyType.ReflectionProbeStatic:
                                 using (var check = new EditorGUI.ChangeCheckScope())
                                 {
-                                    bool.TryParse(valueProperty.stringValue, out var boolValue);
+                                    if (!bool.TryParse(valueProperty.stringValue, out var boolValue))
+                                        valueProperty.stringValue = default(bool).ToString();
                                     boolValue = EditorGUI.Toggle(position, boolValue);
                                     if (check.changed)
                                     {
@@ -88,7 +89,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             case PropertyType.Layer:
                                 using (var check = new EditorGUI.ChangeCheckScope())
                                 {
-                                    int.TryParse(valueProperty.stringValue, out var intValue);
+                                    if (!int.TryParse(valueProperty.stringValue, out var intValue))
+                                        valueProperty.stringValue = default(int).ToString();
                                     intValue = EditorGUI.LayerField(position, intValue);
                                     if (check.changed)
                                     {
