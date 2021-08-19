@@ -12,9 +12,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     static class UnityObjectTypeUtility
     {
-        static readonly Type s_UnityTypeType = Type.GetType("UnityEditor.UnityType, UnityEditor.dll");
-        static readonly MethodInfo s_FindTypeByPersistentTypeIDInfo = s_UnityTypeType.GetMethod("FindTypeByPersistentTypeID", BindingFlags.Static | BindingFlags.Public);
-        static readonly PropertyInfo s_nameInfo = s_UnityTypeType.GetProperty("name", BindingFlags.Instance | BindingFlags.Public);
+        static readonly MethodInfo s_ScriptingWrapperTypeNameForNativeIDInfo = Type.GetType("UnityEditor.RuntimeClassMetadataUtils, UnityEditor.dll").GetMethod("ScriptingWrapperTypeNameForNativeID", BindingFlags.Static | BindingFlags.Public);
 
         sealed class AssetTypeDatas : Dictionary<string, AssetTypeData>
         {
@@ -73,13 +71,90 @@ namespace MomomaAssets.GraphView.AssetProcessor
             return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
         }
 
-        public static Type GetTypeFromClassId(int id)
+        sealed class ComponentCommand
         {
-            var unityType = s_FindTypeByPersistentTypeIDInfo.Invoke(null, new object[] { id });
-            if (s_nameInfo.GetValue(unityType) is string typeName)
+            readonly Dictionary<string, int> menuPaths;
+            readonly Dictionary<string, string> commandToMenuPaths;
+
+            public string[] Commands { get; }
+            public string[] DisplayNames { get; }
+            public IReadOnlyDictionary<string, int> MenuPaths => menuPaths;
+            public IReadOnlyDictionary<string, string> CommandToMenuPaths => commandToMenuPaths;
+
+            public ComponentCommand()
             {
-                return Type.GetType($"UnityEngine.{typeName}, UnityEngine.dll");
+                var removeCount = "Component/".Length;
+                var menus = Unsupported.GetSubmenus("Component");
+                Commands = Unsupported.GetSubmenusCommands("Component");
+                var dstMenus = new List<string>();
+                menuPaths = new Dictionary<string, int>(menus.Length);
+                commandToMenuPaths = new Dictionary<string, string>(menus.Length);
+                for (var i = 0; i < menus.Length; ++i)
+                {
+                    if (Commands[i] != "ADD")
+                    {
+                        var dstPath = menus[i].Remove(0, removeCount);
+                        menuPaths.Add(dstPath, menuPaths.Count);
+                        dstMenus.Add(dstPath);
+                        commandToMenuPaths.Add(Commands[i], dstPath);
+                    }
+                }
+                DisplayNames = dstMenus.ToArray();
             }
+        }
+
+        static ComponentCommand? s_ComponentCommand;
+        static ComponentCommand SafeComponentCommand => s_ComponentCommand ?? (s_ComponentCommand = new ComponentCommand());
+
+        public static string ComponentTypePopup(string menuPath)
+        {
+            if (!SafeComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
+                index = 0;
+            index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNames);
+            return SafeComponentCommand.DisplayNames[index];
+        }
+
+        public static bool TryGetComponentTypeFromMenuPath(string menuPath, out Type componentType)
+        {
+            if (SafeComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
+            {
+                var command = SafeComponentCommand.Commands[index];
+                if (command.StartsWith("SCRIPT"))
+                {
+                    var scriptId = int.Parse(command.Substring(6));
+                    if (EditorUtility.InstanceIDToObject(scriptId) is MonoScript monoScript)
+                        componentType = monoScript.GetClass();
+                    else
+                        throw new InvalidOperationException();
+                }
+                else
+                {
+                    var classId = int.Parse(command);
+                    if (s_ScriptingWrapperTypeNameForNativeIDInfo.Invoke(null, new object[] { classId }) is string typeName)
+                        componentType = Type.GetType($"{typeName}, UnityEngine.dll");
+                    else
+                        throw new InvalidOperationException();
+                }
+                return true;
+            }
+            else
+            {
+                componentType = typeof(Component);
+                return false;
+            }
+        }
+
+        public static string GetMenuPath(MonoScript monoScript)
+        {
+            if (SafeComponentCommand.CommandToMenuPaths.TryGetValue($"SCRIPT{monoScript.GetInstanceID()}", out var menuPath))
+                return menuPath;
+            throw new InvalidOperationException();
+        }
+
+        public static string GetMenuPath(int classId)
+        {
+            if (SafeComponentCommand.CommandToMenuPaths.TryGetValue(classId.ToString(), out var menuPath))
+                return menuPath;
             throw new InvalidOperationException();
         }
     }
