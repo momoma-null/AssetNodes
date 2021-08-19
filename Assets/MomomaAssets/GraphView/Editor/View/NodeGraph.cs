@@ -545,7 +545,7 @@ namespace MomomaAssets.GraphView
                 rect.position += offset;
                 serializedGraphElement.Position = rect;
             }
-            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.GraphElementData?.Priority))
+            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.GraphElementData?.Priority ?? 0))
             {
                 serializedGraphElement.Deserialize(m_GraphView);
                 if (serializedGraphElement is IAdditionalAssetHolder assetHolder)
@@ -578,7 +578,7 @@ namespace MomomaAssets.GraphView
             elementsToRemove.RemoveWhere(element => serializedGraphElements.ContainsKey(element.viewDataKey));
             m_GraphView.DeleteElements(elementsToRemove);
             var guids = m_GraphView.graphElements.ToList().ToDictionary(element => element.viewDataKey, element => element);
-            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.Value.GraphElementData?.Priority))
+            foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.Value.GraphElementData?.Priority ?? 0))
             {
                 if (guids.TryGetValue(serializedGraphElement.Key, out var graphElement))
                     serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);

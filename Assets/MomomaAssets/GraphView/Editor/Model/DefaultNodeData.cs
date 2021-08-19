@@ -127,7 +127,10 @@ namespace MomomaAssets.GraphView
             }
             node.extensionContainer.Query<IMGUIContainer>().ForEach(i => i.MarkDirtyLayout());
             node.extensionContainer.Query<PropertyField>().ForEach(i => i.MarkDirtyRepaint());
-            node.RefreshExpandedState();
+            if (node.expanded != true)
+                node.expanded = true;
+            else
+                node.RefreshExpandedState();
             node.schedule.Execute(() => node.expanded = m_Expanded).ExecuteLater(1);
             graphView.DeleteElements(toDeleteElements);
         }
