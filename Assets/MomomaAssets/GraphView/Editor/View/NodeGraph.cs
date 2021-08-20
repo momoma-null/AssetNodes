@@ -462,8 +462,13 @@ namespace MomomaAssets.GraphView
                 using (var setScope = new GraphViewObjectHandler.SetScope(m_GraphViewObjectHandler))
                 {
                     setScope.DeleteGraphElementObjects(new HashSet<string>(graphViewChange.elementsToRemove.Select(i => i.viewDataKey)));
-                    foreach (IEdgeCallback e in graphViewChange.elementsToRemove.Where(e => e is IEdgeCallback))
-                        e.onPortChanged -= OnPortChanged;
+                    foreach (var i in graphViewChange.elementsToRemove)
+                    {
+                        if (i is IEdgeCallback edgeCallback)
+                            edgeCallback.onPortChanged -= OnPortChanged;
+                        if (i is IDisposable disposable)
+                            disposable.Dispose();
+                    }
                 }
             }
             if (graphViewChange.movedElements != null && graphViewChange.movedElements.Count > 0)

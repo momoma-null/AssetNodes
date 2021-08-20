@@ -24,6 +24,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 if (m_CachedEditor != null)
                     DestroyImmediate(m_CachedEditor);
+                m_CachedEditor = null;
             }
 
             public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
@@ -61,7 +62,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (m_Importer == null)
                 {
                     m_Importer = Instantiate(AssetData.s_DefaultImporter);
-                    m_Importer.name = m_Importer.name.Replace("(Clone)", "");
+                    m_Importer.name = AssetData.s_DefaultImporter.name;
                 }
                 return new[] { m_Importer };
             }
@@ -69,11 +70,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void OnClone()
         {
-            if (m_Importer != null)
-            {
-                m_Importer = Instantiate(m_Importer);
-                m_Importer.name = m_Importer.name.Replace("(Clone)", "");
-            }
+            foreach (TextureImporter i in this.CloneAssets())
+                m_Importer = i;
         }
 
         public void Initialize(IPortDataContainer portDataContainer)

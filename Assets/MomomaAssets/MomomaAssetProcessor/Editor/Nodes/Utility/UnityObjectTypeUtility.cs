@@ -78,6 +78,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             public string[] Commands { get; }
             public string[] DisplayNames { get; }
+            public string[] DisplayNamesWithTransform { get; }
             public IReadOnlyDictionary<string, int> MenuPaths => menuPaths;
             public IReadOnlyDictionary<string, string> CommandToMenuPaths => commandToMenuPaths;
 
@@ -100,18 +101,30 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
                 DisplayNames = dstMenus.ToArray();
+                dstMenus.Insert(0, "Transfrom");
+                DisplayNamesWithTransform = dstMenus.ToArray();
             }
         }
 
         static ComponentCommand? s_ComponentCommand;
         static ComponentCommand SafeComponentCommand => s_ComponentCommand ?? (s_ComponentCommand = new ComponentCommand());
 
-        public static string ComponentTypePopup(string menuPath)
+        public static string ComponentTypePopup(string menuPath, bool includingTransform = false)
         {
             if (!SafeComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
                 index = 0;
-            index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNames);
-            return SafeComponentCommand.DisplayNames[index];
+            if (includingTransform)
+            {
+                if (menuPath != SafeComponentCommand.DisplayNamesWithTransform[0])
+                    ++index;
+                index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNamesWithTransform);
+                return SafeComponentCommand.DisplayNamesWithTransform[index];
+            }
+            else
+            {
+                index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNames);
+                return SafeComponentCommand.DisplayNames[index];
+            }
         }
 
         public static bool TryGetComponentTypeFromMenuPath(string menuPath, out Type componentType)
@@ -139,8 +152,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             else
             {
-                componentType = typeof(Component);
-                return false;
+                componentType = typeof(Transform);
+                return menuPath == SafeComponentCommand.DisplayNamesWithTransform[0];
             }
         }
 
@@ -155,7 +168,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             if (SafeComponentCommand.CommandToMenuPaths.TryGetValue(classId.ToString(), out var menuPath))
                 return menuPath;
-            throw new InvalidOperationException();
+            return SafeComponentCommand.DisplayNamesWithTransform[0];
         }
     }
 

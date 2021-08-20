@@ -63,6 +63,7 @@ namespace MomomaAssets.GraphView
         {
             if (m_CachedEditor != null)
                 DestroyImmediate(m_CachedEditor);
+            m_CachedEditor = null;
             m_SerializedObject = null;
         }
 
