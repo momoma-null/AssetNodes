@@ -24,6 +24,7 @@ namespace MomomaAssets.GraphView
             {
                 evt.menu.AppendSeparator();
                 evt.menu.AppendAction("Group selection", GroupSelection);
+                evt.menu.AppendAction("Remove from group", RemoveFromGroup, GetStatusRemoveFromGroup);
             }
         }
 
@@ -36,6 +37,26 @@ namespace MomomaAssets.GraphView
             var data = new DefaultGroupData(guids.ToArray());
             var group = new DefaultGroup(data);
             m_GraphViewCallbackReceiver.AddElement(group, action.eventInfo.mousePosition);
+        }
+
+        void RemoveFromGroup(DropdownMenuAction action)
+        {
+            foreach (var i in selection)
+            {
+                if (i is Node node)
+                    node.GetContainingScope()?.RemoveElement(node);
+            }
+        }
+
+        DropdownMenuAction.Status GetStatusRemoveFromGroup(DropdownMenuAction action)
+        {
+            var canRemove = false;
+            foreach (var i in selection)
+            {
+                if (i is Node node)
+                    canRemove |= node.GetContainingScope() != null;
+            }
+            return canRemove ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Hidden;
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)

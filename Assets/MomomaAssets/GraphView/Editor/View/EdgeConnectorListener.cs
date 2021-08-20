@@ -17,7 +17,7 @@ namespace MomomaAssets.GraphView
             if (graphView != null)
             {
                 var context = new NodeCreationContext();
-                context.screenMousePosition = position;
+                context.screenMousePosition = GUIUtility.GUIToScreenPoint(position);
                 context.target = edge;
                 graphView.nodeCreationRequest(context);
             }

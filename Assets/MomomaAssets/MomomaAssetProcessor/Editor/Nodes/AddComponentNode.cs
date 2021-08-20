@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 
@@ -37,8 +36,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
         }
-
-        static readonly MethodInfo s_ExecuteMenuItemOnGameObjectsInfo = typeof(EditorApplication).GetMethod("ExecuteMenuItemOnGameObjects", BindingFlags.Static | BindingFlags.NonPublic);
 
         static AddComponentNode()
         {

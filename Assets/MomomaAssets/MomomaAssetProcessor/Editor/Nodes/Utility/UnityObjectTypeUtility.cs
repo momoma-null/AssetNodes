@@ -71,18 +71,18 @@ namespace MomomaAssets.GraphView.AssetProcessor
             return 0 <= index && index < s_Types.Count ? s_Types[index] : "";
         }
 
-        sealed class ComponentCommand
+        static class ComponentCommand
         {
-            readonly Dictionary<string, int> menuPaths;
-            readonly Dictionary<string, string> commandToMenuPaths;
+            static readonly Dictionary<string, int> menuPaths;
+            static readonly Dictionary<string, string> commandToMenuPaths;
 
-            public string[] Commands { get; }
-            public string[] DisplayNames { get; }
-            public string[] DisplayNamesWithTransform { get; }
-            public IReadOnlyDictionary<string, int> MenuPaths => menuPaths;
-            public IReadOnlyDictionary<string, string> CommandToMenuPaths => commandToMenuPaths;
+            static public string[] Commands { get; }
+            static public string[] DisplayNames { get; }
+            static public string[] DisplayNamesWithTransform { get; }
+            static public IReadOnlyDictionary<string, int> MenuPaths => menuPaths;
+            static public IReadOnlyDictionary<string, string> CommandToMenuPaths => commandToMenuPaths;
 
-            public ComponentCommand()
+            static ComponentCommand()
             {
                 var removeCount = "Component/".Length;
                 var menus = Unsupported.GetSubmenus("Component");
@@ -106,32 +106,29 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static ComponentCommand? s_ComponentCommand;
-        static ComponentCommand SafeComponentCommand => s_ComponentCommand ?? (s_ComponentCommand = new ComponentCommand());
-
         public static string ComponentTypePopup(string menuPath, bool includingTransform = false)
         {
-            if (!SafeComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
+            if (!ComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
                 index = 0;
             if (includingTransform)
             {
-                if (menuPath != SafeComponentCommand.DisplayNamesWithTransform[0])
+                if (menuPath != ComponentCommand.DisplayNamesWithTransform[0])
                     ++index;
-                index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNamesWithTransform);
-                return SafeComponentCommand.DisplayNamesWithTransform[index];
+                index = EditorGUILayout.Popup(index, ComponentCommand.DisplayNamesWithTransform);
+                return ComponentCommand.DisplayNamesWithTransform[index];
             }
             else
             {
-                index = EditorGUILayout.Popup(index, SafeComponentCommand.DisplayNames);
-                return SafeComponentCommand.DisplayNames[index];
+                index = EditorGUILayout.Popup(index, ComponentCommand.DisplayNames);
+                return ComponentCommand.DisplayNames[index];
             }
         }
 
         public static bool TryGetComponentTypeFromMenuPath(string menuPath, out Type componentType)
         {
-            if (SafeComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
+            if (ComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
             {
-                var command = SafeComponentCommand.Commands[index];
+                var command = ComponentCommand.Commands[index];
                 if (command.StartsWith("SCRIPT"))
                 {
                     var scriptId = int.Parse(command.Substring(6));
@@ -153,22 +150,22 @@ namespace MomomaAssets.GraphView.AssetProcessor
             else
             {
                 componentType = typeof(Transform);
-                return menuPath == SafeComponentCommand.DisplayNamesWithTransform[0];
+                return menuPath == ComponentCommand.DisplayNamesWithTransform[0];
             }
         }
 
         public static string GetMenuPath(MonoScript monoScript)
         {
-            if (SafeComponentCommand.CommandToMenuPaths.TryGetValue($"SCRIPT{monoScript.GetInstanceID()}", out var menuPath))
+            if (ComponentCommand.CommandToMenuPaths.TryGetValue($"SCRIPT{monoScript.GetInstanceID()}", out var menuPath))
                 return menuPath;
             throw new InvalidOperationException();
         }
 
         public static string GetMenuPath(int classId)
         {
-            if (SafeComponentCommand.CommandToMenuPaths.TryGetValue(classId.ToString(), out var menuPath))
+            if (ComponentCommand.CommandToMenuPaths.TryGetValue(classId.ToString(), out var menuPath))
                 return menuPath;
-            return SafeComponentCommand.DisplayNamesWithTransform[0];
+            return ComponentCommand.DisplayNamesWithTransform[0];
         }
     }
 
@@ -190,5 +187,4 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public string DisplayName { get; }
         public bool IsTarget(UnityObject x) => isTarget(x);
     }
-
 }
