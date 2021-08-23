@@ -252,6 +252,8 @@ namespace MomomaAssets.GraphView
             m_GraphView.serializeGraphElements = SerializeGraphElements;
             m_GraphView.unserializeAndPaste = UnserializeAndPaste;
             m_GraphView.graphViewChanged = GraphViewChanged;
+            m_GraphView.elementsAddedToGroup = OnElementsAddedToGroup;
+            m_GraphView.elementsRemovedFromGroup = OnElementsRemovedFromGroup;
             m_GraphView.styleSheets.Add(Resources.Load<StyleSheet>("GraphViewStyles"));
             m_GraphView.Insert(0, new GridBackground() { style = { alignItems = Align.Center, justifyContent = Justify.Center } });
             var miniMap = new MiniMap();
@@ -434,6 +436,36 @@ namespace MomomaAssets.GraphView
             m_CreateGraphButton.visible = true;
         }
 
+        void OnElementsAddedToGroup(Group group, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+            {
+                var graphElementObject = getScope.TryGetGraphElementObjectByGuid(group.viewDataKey);
+                if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
+                {
+                    Undo.RecordObject(graphElementObject, "Add elements to group");
+                    groupData.AddElements(elements.Select(i => i.viewDataKey));
+                }
+            }
+        }
+
+        void OnElementsRemovedFromGroup(Group group, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+            {
+                var graphElementObject = getScope.TryGetGraphElementObjectByGuid(group.viewDataKey);
+                if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
+                {
+                    Undo.RecordObject(graphElementObject, "Remove elements from group");
+                    groupData.RemoveElements(elements.Select(i => i.viewDataKey));
+                }
+            }
+        }
+
         GraphViewChange GraphViewChanged(GraphViewChange graphViewChange)
         {
             if (m_GraphViewObjectHandler == null)
@@ -553,7 +585,7 @@ namespace MomomaAssets.GraphView
             foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.GraphElementData?.Priority ?? 0))
             {
                 serializedGraphElement.Deserialize(m_GraphView);
-                if (serializedGraphElement is IAdditionalAssetHolder assetHolder)
+                if (serializedGraphElement.GraphElementData is IAdditionalAssetHolder assetHolder)
                     assetHolder.OnClone();
             }
             if (m_GraphViewObjectHandler != null)

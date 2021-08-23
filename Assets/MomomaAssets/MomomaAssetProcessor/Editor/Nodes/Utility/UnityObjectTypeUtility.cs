@@ -73,47 +73,48 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         static class ComponentCommand
         {
-            static readonly Dictionary<string, int> menuPaths;
-            static readonly Dictionary<string, string> commandToMenuPaths;
-
-            static public string[] Commands { get; }
             static public string[] DisplayNames { get; }
             static public string[] DisplayNamesWithTransform { get; }
-            static public IReadOnlyDictionary<string, int> MenuPaths => menuPaths;
-            static public IReadOnlyDictionary<string, string> CommandToMenuPaths => commandToMenuPaths;
+            static public IReadOnlyDictionary<string, int> MenuPaths { get; }
+            static public IReadOnlyDictionary<string, string> CommandToMenuPaths { get; }
+            static public IReadOnlyDictionary<string, string> MenuPathToCommands { get; }
 
             static ComponentCommand()
             {
                 var removeCount = "Component/".Length;
                 var menus = Unsupported.GetSubmenus("Component");
-                Commands = Unsupported.GetSubmenusCommands("Component");
-                var dstMenus = new List<string>();
-                menuPaths = new Dictionary<string, int>(menus.Length);
-                commandToMenuPaths = new Dictionary<string, string>(menus.Length);
+                var commands = Unsupported.GetSubmenusCommands("Component");
+                var dstMenus = new List<string>(menus.Length);
+                var menuPaths = new Dictionary<string, int>(menus.Length);
+                var commandToMenuPaths = new Dictionary<string, string>(menus.Length);
+                var menuPathToCommands = new Dictionary<string, string>(menus.Length);
                 for (var i = 0; i < menus.Length; ++i)
                 {
-                    if (Commands[i] != "ADD")
+                    if (commands[i] != "ADD")
                     {
                         var dstPath = menus[i].Remove(0, removeCount);
                         menuPaths.Add(dstPath, menuPaths.Count);
                         dstMenus.Add(dstPath);
-                        commandToMenuPaths.Add(Commands[i], dstPath);
+                        commandToMenuPaths.Add(commands[i], dstPath);
+                        menuPathToCommands.Add(dstPath, commands[i]);
                     }
                 }
                 DisplayNames = dstMenus.ToArray();
                 dstMenus.Insert(0, "Transfrom");
+                menuPaths.Add(dstMenus[0], -1);
                 DisplayNamesWithTransform = dstMenus.ToArray();
+                MenuPaths = menuPaths;
+                CommandToMenuPaths = commandToMenuPaths;
+                MenuPathToCommands = menuPathToCommands;
             }
         }
 
         public static string ComponentTypePopup(string menuPath, bool includingTransform = false)
         {
-            if (!ComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
-                index = 0;
+            ComponentCommand.MenuPaths.TryGetValue(menuPath, out var index);
             if (includingTransform)
             {
-                if (menuPath != ComponentCommand.DisplayNamesWithTransform[0])
-                    ++index;
+                ++index;
                 index = EditorGUILayout.Popup(index, ComponentCommand.DisplayNamesWithTransform);
                 return ComponentCommand.DisplayNamesWithTransform[index];
             }
@@ -126,9 +127,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public static bool TryGetComponentTypeFromMenuPath(string menuPath, out Type componentType)
         {
-            if (ComponentCommand.MenuPaths.TryGetValue(menuPath, out var index))
+            if (ComponentCommand.MenuPathToCommands.TryGetValue(menuPath, out var command))
             {
-                var command = ComponentCommand.Commands[index];
                 if (command.StartsWith("SCRIPT"))
                 {
                     var scriptId = int.Parse(command.Substring(6));

@@ -15,8 +15,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [CreateElement("Modify/Component")]
     sealed class ModifyComponentNode : INodeProcessor, IAdditionalAssetHolder
     {
+        [Serializable]
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
+            [SerializeField]
             Editor? m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
@@ -47,6 +49,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             {
                                 if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
                                 {
+                                    if (m_CachedEditor != null)
+                                        DestroyImmediate(m_CachedEditor);
+                                    m_CachedEditor = null;
                                     var go = new GameObject();
                                     try
                                     {
@@ -66,7 +71,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                                         break;
                                                 }
                                                 presetSo.ApplyModifiedProperties();
-                                                DestroyImmediate(m_CachedEditor);
                                             }
                                         }
                                         finally
@@ -99,8 +103,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
         bool m_IncludeChildren = false;
         [SerializeField]
         Preset? m_Preset = null;
+        [SerializeField]
+        ModifyComponentNodeEditor? m_Editor = null;
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new ModifyComponentNodeEditor();
+        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyComponentNodeEditor());
         public IEnumerable<UnityObject> Assets
         {
             get

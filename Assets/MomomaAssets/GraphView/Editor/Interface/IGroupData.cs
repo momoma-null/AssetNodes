@@ -7,6 +7,7 @@ namespace MomomaAssets.GraphView
     public interface IGroupData : IGraphElementData
     {
         string Name { get; }
-        IEnumerable<string> IncludingGuids { get; }
+        void AddElements(IEnumerable<string> guids);
+        void RemoveElements(IEnumerable<string> guids);
     }
 }

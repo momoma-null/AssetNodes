@@ -11,24 +11,30 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    public class DefaultGroupData : IGroupData
+    public class DefaultGroupData : IGroupData, ISerializationCallbackReceiver
     {
         [SerializeField]
         string m_Name = "New Group";
         [SerializeField]
-        string[] m_IncludingGuids;
+        string[] m_IncludingGuids = Array.Empty<string>();
+
+        [NonSerialized]
+        HashSet<string> m_IncludingGuidSet = new HashSet<string>();
 
         DefaultGraphElementEditor? m_Editor;
 
         public int Priority => 1;
         public IGraphElementEditor GraphElementEditor => m_Editor ?? (m_Editor = new DefaultGraphElementEditor());
         public string Name => m_Name;
-        public IEnumerable<string> IncludingGuids => m_IncludingGuids;
 
-        public DefaultGroupData(string[] guids)
+        public DefaultGroupData(IEnumerable<string> guids)
         {
-            m_IncludingGuids = guids;
+            m_IncludingGuidSet = new HashSet<string>(guids);
         }
+
+        public void AddElements(IEnumerable<string> guids) => m_IncludingGuidSet.UnionWith(guids);
+
+        public void RemoveElements(IEnumerable<string> guids) => m_IncludingGuidSet.ExceptWith(guids);
 
         public GraphElement Deserialize() => new DefaultGroup(this);
 
@@ -44,11 +50,13 @@ namespace MomomaAssets.GraphView
             if (!(graphElement is Group group))
                 throw new InvalidOperationException();
             group.title = m_Name;
-            var elements = new HashSet<string>(m_IncludingGuids);
-            group.RemoveElements(group.containedElements.Where(e => !elements.Contains(e.viewDataKey)));
-            elements.ExceptWith(group.containedElements.Select(e => e.viewDataKey));
-            var allElements = graphView.graphElements.ToList();
-            group.AddElements(allElements.Where(e => elements.Contains(e.viewDataKey)));
+            var toRemoveElements = new HashSet<GraphElement>(group.containedElements);
+            toRemoveElements.RemoveWhere(e => m_IncludingGuidSet.Contains(e.viewDataKey));
+            group.RemoveElements(toRemoveElements);
+            var toAddElements = new HashSet<GraphElement>(graphView.graphElements.ToList());
+            toAddElements.ExceptWith(group.containedElements);
+            group.AddElements(toAddElements.Where(e => m_IncludingGuidSet.Contains(e.viewDataKey)));
+            group.UpdateGeometryFromContent();
         }
 
         public void ReplaceGuid(Dictionary<string, string> guids)
@@ -63,6 +71,23 @@ namespace MomomaAssets.GraphView
                 }
                 m_IncludingGuids[i] = newGuid;
             }
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            if (m_IncludingGuidSet == null)
+                m_IncludingGuidSet = new HashSet<string>();
+            else
+                m_IncludingGuidSet.Clear();
+            m_IncludingGuidSet.UnionWith(m_IncludingGuids);
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            if (m_IncludingGuidSet == null)
+                m_IncludingGuidSet = new HashSet<string>();
+            m_IncludingGuids = new string[m_IncludingGuidSet.Count];
+            m_IncludingGuidSet.CopyTo(m_IncludingGuids);
         }
     }
 }
