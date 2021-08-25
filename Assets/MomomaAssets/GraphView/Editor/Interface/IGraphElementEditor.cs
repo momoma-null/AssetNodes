@@ -7,7 +7,8 @@ namespace MomomaAssets.GraphView
     public interface IGraphElementEditor
     {
         bool UseDefaultVisualElement { get; }
-        void OnDestroy();
+        void OnEnable();
+        void OnDisable(bool isDestroying);
         void OnGUI(SerializedProperty property);
     }
 
@@ -15,18 +16,21 @@ namespace MomomaAssets.GraphView
     {
         public bool UseDefaultVisualElement => true;
 
-        public void OnDestroy() { }
+        public void OnEnable() { }
+        public void OnDisable(bool isDestroying) { }
 
         public void OnGUI(SerializedProperty property)
         {
             using (var endProperty = property.GetEndProperty(false))
             {
-                if (property.NextVisible(true) && !SerializedProperty.EqualContents(property, endProperty))
+                if (property.NextVisible(true))
                 {
                     while (true)
                     {
+                        if (SerializedProperty.EqualContents(property, endProperty))
+                            break;
                         EditorGUILayout.PropertyField(property, true);
-                        if (!property.NextVisible(false) || SerializedProperty.EqualContents(property, endProperty))
+                        if (!property.NextVisible(false))
                             break;
                     }
                 }

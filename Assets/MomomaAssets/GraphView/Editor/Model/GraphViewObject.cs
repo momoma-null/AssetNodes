@@ -27,7 +27,7 @@ namespace MomomaAssets.GraphView
 
         public event Action? onValueChanged;
         public Type? GraphViewType { get; private set; }
-        public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
+        public IReadOnlyList<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
 
         void OnValidate()
         {

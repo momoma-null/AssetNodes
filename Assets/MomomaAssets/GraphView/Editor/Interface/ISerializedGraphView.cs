@@ -8,7 +8,7 @@ namespace MomomaAssets.GraphView
 {
     public interface ISerializedGraphView
     {
-        IEnumerable<ISerializedGraphElement> SerializedGraphElements { get; }
+        IReadOnlyList<ISerializedGraphElement> SerializedGraphElements { get; }
     }
 
     [Serializable]
@@ -19,6 +19,6 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         List<SerializedGraphElement> m_SerializedGraphElements;
 
-        public IEnumerable<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
+        public IReadOnlyList<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
     }
 }

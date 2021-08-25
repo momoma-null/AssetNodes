@@ -119,23 +119,43 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             public bool UseDefaultVisualElement => false;
 
+            readonly ModifyMaterialNode m_Node;
+
             MaterialEditor? m_MaterialEditor;
             Material? m_Material;
-            MaterialProperty[] m_MaterialProperties = new MaterialProperty[0];
-            Func<IPropertyValue[]> getPropertyValues;
+            MaterialProperty[] m_MaterialProperties = Array.Empty<MaterialProperty>();
 
-            public ModifyMaterialNodeEditor(Func<IPropertyValue[]> getPropertyValues)
+            public ModifyMaterialNodeEditor(ModifyMaterialNode node)
             {
-                this.getPropertyValues = getPropertyValues;
+                m_Node = node;
             }
 
-            public void OnDestroy()
+            public void OnEnable()
+            {
+                if (m_Material == null)
+                {
+                    m_Material = new Material(m_Node.m_Shader) { hideFlags = HideFlags.DontSave };
+                    foreach (var i in m_Node.m_PropertyValues)
+                    {
+                        i.SetPropertyValue(m_Material);
+                    }
+                    m_MaterialProperties = MaterialEditor.GetMaterialProperties(new[] { m_Material });
+                }
+                if (m_MaterialEditor == null)
+                {
+                    m_MaterialEditor = Editor.CreateEditor(m_Material, typeof(MaterialEditor)) as MaterialEditor;
+                }
+            }
+
+            public void OnDisable(bool isDestroying)
             {
                 if (m_Material != null)
                     DestroyImmediate(m_Material);
+                m_Material = null;
                 if (m_MaterialEditor != null)
                     DestroyImmediate(m_MaterialEditor);
-                m_MaterialProperties = new MaterialProperty[0];
+                m_MaterialEditor = null;
+                m_MaterialProperties = Array.Empty<MaterialProperty>();
             }
 
             public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
@@ -152,23 +172,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                     if (m_ShaderProperty.objectReferenceValue is Shader shader)
                     {
-                        var propertyValues = getPropertyValues();
-                        if (m_Material == null)
-                        {
-                            m_Material = new Material(shader) { hideFlags = HideFlags.DontSave };
-                            foreach (var i in propertyValues)
-                            {
-                                i.SetPropertyValue(m_Material);
-                            }
-                            m_MaterialProperties = MaterialEditor.GetMaterialProperties(new[] { m_Material });
-                        }
-                        if (m_MaterialEditor == null)
-                        {
-                            m_MaterialEditor = Editor.CreateEditor(m_Material, typeof(MaterialEditor)) as MaterialEditor;
-                            if (m_MaterialEditor == null)
-                                throw new NullReferenceException();
-                        }
-                        if (changed)
+                        var propertyValues = m_Node.m_PropertyValues;
+                        if (changed && m_Material != null)
                         {
                             m_Material.shader = shader;
                             m_MaterialProperties = MaterialEditor.GetMaterialProperties(new[] { m_Material });
@@ -235,7 +240,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                         var newEnabled = EditorGUILayout.Toggle(enableProperty.boolValue, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight));
                                         using (new EditorGUI.DisabledScope(!enableProperty.boolValue))
                                         {
-                                            m_MaterialEditor.ShaderProperty(materialProperty, materialProperty.displayName);
+                                            m_MaterialEditor?.ShaderProperty(materialProperty, materialProperty.displayName);
                                         }
                                         if (EditorGUI.EndChangeCheck())
                                         {
@@ -266,7 +271,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         ModifyMaterialNodeEditor? m_Editor;
 
-        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyMaterialNodeEditor(GetPropertyValues));
+        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyMaterialNodeEditor(this));
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
@@ -297,7 +302,5 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
-
-        IPropertyValue[] GetPropertyValues() => m_PropertyValues;
     }
 }

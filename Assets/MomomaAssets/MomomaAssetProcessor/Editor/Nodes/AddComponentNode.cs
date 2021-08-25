@@ -17,7 +17,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             public bool UseDefaultVisualElement => false;
 
-            public void OnDestroy() { }
+            public void OnEnable() { }
+            public void OnDisable(bool isDestroying) { }
 
             public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
             {

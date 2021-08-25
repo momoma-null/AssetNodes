@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using UnityEngine;
+using UnityEditor;
 
 #nullable enable
 
@@ -7,26 +8,27 @@ namespace MomomaAssets.GraphView
     [CustomEditor(typeof(GraphElementObject))]
     sealed class GraphElementObjectInspector : Editor
     {
+        [SerializeReference]
+        IGraphElementEditor? m_Editor;
+
         SerializedProperty? m_GraphElementDataProperty;
 
         void OnEnable()
         {
-            if (target != null)
-                m_GraphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
+            m_GraphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
+            if (target is GraphElementObject graphElementObject)
+            {
+                m_Editor = graphElementObject.GraphElementData?.GraphElementEditor;
+            }
+            m_Editor?.OnEnable();
         }
 
         void OnDisable()
         {
+            m_GraphElementDataProperty?.Dispose();
             m_GraphElementDataProperty = null;
-        }
-
-        void OnDestroy()
-        {
-            if (target is GraphElementObject graphElementObject)
-            {
-                var editor = graphElementObject.GraphElementData?.GraphElementEditor;
-                editor?.OnDestroy();
-            }
+            m_Editor?.OnDisable(Unsupported.IsDestroyScriptableObject(this));
+            m_Editor = null;
         }
 
         public override void OnInspectorGUI()

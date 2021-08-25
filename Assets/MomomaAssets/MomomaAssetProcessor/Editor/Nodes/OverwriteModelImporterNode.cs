@@ -16,14 +16,32 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class OverwriteModelImporterNodeEditor : INodeProcessorEditor
         {
+            readonly OverwriteModelImporterNode m_Node;
+
             Editor? m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
 
-            public void OnDestroy()
+            public OverwriteModelImporterNodeEditor(OverwriteModelImporterNode node)
+            {
+                m_Node = node;
+            }
+
+            public void OnEnable()
+            {
+                if (m_CachedEditor == null)
+                {
+                    m_CachedEditor = Editor.CreateEditor(m_Node.m_Importer);
+                }
+            }
+
+            public void OnDisable(bool isDestroying)
             {
                 if (m_CachedEditor != null)
+                {
+                    m_CachedEditor.hideFlags = HideFlags.None;
                     DestroyImmediate(m_CachedEditor);
+                }
                 m_CachedEditor = null;
             }
 
@@ -31,8 +49,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 using (var m_ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer)))
                 {
-                    if (m_ImporterProperty.objectReferenceValue == null)
-                        return;
                     Editor.CreateCachedEditor(m_ImporterProperty.objectReferenceValue, null, ref m_CachedEditor);
                     m_CachedEditor.OnInspectorGUI();
                 }
@@ -54,7 +70,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         ModelImporter? m_Importer = null;
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new OverwriteModelImporterNodeEditor();
+        OverwriteModelImporterNodeEditor? m_Editor;
+
+        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new OverwriteModelImporterNodeEditor(this));
         public IEnumerable<UnityObject> Assets
         {
             get
