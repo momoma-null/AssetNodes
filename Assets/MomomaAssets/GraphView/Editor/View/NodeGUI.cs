@@ -14,6 +14,8 @@ namespace MomomaAssets.GraphView
     {
         readonly INodeData m_Node;
 
+        Editor? m_Editor;
+
         public IGraphElementData GraphElementData => m_Node;
         public bool value
         {
@@ -51,6 +53,16 @@ namespace MomomaAssets.GraphView
             m_CollapseButton.schedule.Execute(FixCollapseButtonEnable).Every(0);
         }
 
+        void OnDetachFromPanel(DetachFromPanelEvent evt)
+        {
+            if (m_Editor != null)
+            {
+                UnityEngine.Object.DestroyImmediate(m_Editor);
+                m_Editor = null;
+            }
+            UnregisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
+
         public void SetValueWithoutNotify(bool newValue)
         {
             expanded = newValue;
@@ -74,6 +86,7 @@ namespace MomomaAssets.GraphView
         public void Bind(SerializedObject serializedObject)
         {
             extensionContainer.Clear();
+            serializedObject.Update();
             this.BindProperty(serializedObject.FindProperty("m_GraphElementData.m_Expanded"));
             if (m_Node.GraphElementEditor.UseDefaultVisualElement)
             {
@@ -98,25 +111,20 @@ namespace MomomaAssets.GraphView
             }
             else
             {
-                var field = new IMGUIContainer(() => OnGUIHandler(serializedObject)) { cullingEnabled = true };
+                Editor.CreateCachedEditor(serializedObject.targetObjects, null, ref m_Editor);
+                RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+                var field = new IMGUIContainer(() => OnGUIHandler()) { cullingEnabled = true };
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();
         }
 
-        void OnGUIHandler(SerializedObject serializedObject)
+        void OnGUIHandler()
         {
             EditorGUIUtility.wideMode = true;
             EditorGUIUtility.fieldWidth = 93f;
             EditorGUIUtility.labelWidth = 93f;
-            serializedObject.UpdateIfRequiredOrScript();
-            if (serializedObject.targetObject is GraphElementObject graphElementObject)
-            {
-                using (var prop = serializedObject.FindProperty("m_GraphElementData"))
-                    graphElementObject.GraphElementData?.GraphElementEditor?.OnGUI(prop);
-            }
-            if (serializedObject.hasModifiedProperties)
-                serializedObject.ApplyModifiedProperties();
+            m_Editor?.OnInspectorGUI();
         }
     }
 }

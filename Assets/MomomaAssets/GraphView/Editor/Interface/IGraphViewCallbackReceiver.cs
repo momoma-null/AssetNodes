@@ -7,6 +7,6 @@ namespace MomomaAssets.GraphView
 {
     interface IGraphViewCallbackReceiver
     {
-        void AddElement(GraphElement graphElement, Vector2 screenMousePosition);
+        void AddElement(IGraphElementData graphElement, Vector2 screenMousePosition);
     }
 }

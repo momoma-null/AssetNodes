@@ -35,8 +35,7 @@ namespace MomomaAssets.GraphView
                 if (i is Node node)
                     guids.Add(node.viewDataKey);
             var data = new DefaultGroupData(guids.ToArray());
-            var group = new DefaultGroup(data);
-            m_GraphViewCallbackReceiver.AddElement(group, action.eventInfo.mousePosition);
+            m_GraphViewCallbackReceiver.AddElement(data, action.eventInfo.mousePosition);
         }
 
         void RemoveFromGroup(DropdownMenuAction action)

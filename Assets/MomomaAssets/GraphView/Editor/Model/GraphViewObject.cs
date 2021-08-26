@@ -34,6 +34,12 @@ namespace MomomaAssets.GraphView
             onValueChanged?.Invoke();
         }
 
+        void OnEnable()
+        {
+            foreach(var i in m_SerializedGraphElements)
+                i.OnEnable();
+        }
+
         void OnDestroy()
         {
             onValueChanged = null;

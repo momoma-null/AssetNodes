@@ -11,7 +11,7 @@ namespace MomomaAssets.GraphView
 
     sealed class SearchWindowProvider : ScriptableObject, ISearchWindowProvider
     {
-        public event Action<GraphElement, Vector2>? addGraphElement;
+        public event Action<IGraphElementData, Vector2>? addGraphElement;
         public Type graphViewType { get; set; } = typeof(GraphView);
 
         List<SearchTreeEntry>? m_SearchTree;
@@ -64,10 +64,9 @@ namespace MomomaAssets.GraphView
             var processor = ctor?.Invoke();
             if (processor == null)
                 return false;
-            var graphElement = new NodeGUI(new DefaultNodeData(processor)) as GraphElement;
-            if (addGraphElement != null && graphElement != null)
+            if (addGraphElement != null)
             {
-                addGraphElement(graphElement, context.screenMousePosition);
+                addGraphElement(new DefaultNodeData(processor), context.screenMousePosition);
                 return true;
             }
             return false;

@@ -27,8 +27,13 @@ namespace MomomaAssets.GraphView
         {
             m_GraphElementDataProperty?.Dispose();
             m_GraphElementDataProperty = null;
-            m_Editor?.OnDisable(Unsupported.IsDestroyScriptableObject(this));
-            m_Editor = null;
+            if (m_Editor != null)
+            {
+                var isDestroying = Unsupported.IsDestroyScriptableObject(this);
+                m_Editor.OnDisable(isDestroying);
+                if (isDestroying)
+                    m_Editor = null;
+            }
         }
 
         public override void OnInspectorGUI()

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -13,7 +11,7 @@ namespace MomomaAssets.GraphView
         GraphElementObject() { }
 
         [SerializeField]
-        string m_Guid = "";
+        string m_Guid = System.Guid.NewGuid().ToString();
         [SerializeField]
         Rect m_Position = Rect.zero;
         [SerializeReference]
@@ -86,9 +84,10 @@ namespace MomomaAssets.GraphView
                 hideFlags |= HideFlags.DontSaveInEditor;
         }
 
-        void OnEnable()
+        internal void OnEnable()
         {
-            m_SerializedObject = new SerializedObject(this);
+            if (m_SerializedObject == null)
+                m_SerializedObject = new SerializedObject(this);
         }
 
         void OnDisable()
@@ -102,7 +101,7 @@ namespace MomomaAssets.GraphView
     public sealed class SerializedGraphElement : ISerializedGraphElement
     {
         [SerializeField]
-        string m_Guid = "";
+        string m_Guid = System.Guid.NewGuid().ToString();
         [SerializeField]
         Rect m_Position;
         [SerializeReference]

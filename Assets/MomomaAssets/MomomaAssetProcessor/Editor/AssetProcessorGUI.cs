@@ -28,7 +28,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         void OnDisable()
         {
-            m_Data?.OnDisable(Unsupported.IsDestroyScriptableObject(this));
             m_NodeGraph?.Dispose();
             m_NodeGraph = null;
         }

@@ -43,8 +43,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (isDestroying && m_CachedEditor != null)
                 {
                     DestroyImmediate(m_CachedEditor);
+                    m_CachedEditor = null;
                 }
-                m_CachedEditor = null;
             }
 
             public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
