@@ -6,11 +6,10 @@ using UnityEditor;
 namespace MomomaAssets.GraphView
 {
     [CustomEditor(typeof(GraphElementObject))]
+    [DefaultExecutionOrder(-9)]
     sealed class GraphElementObjectInspector : Editor
     {
-        [SerializeReference]
         IGraphElementEditor? m_Editor;
-
         SerializedProperty? m_GraphElementDataProperty;
 
         void OnEnable()
@@ -27,13 +26,8 @@ namespace MomomaAssets.GraphView
         {
             m_GraphElementDataProperty?.Dispose();
             m_GraphElementDataProperty = null;
-            if (m_Editor != null)
-            {
-                var isDestroying = Unsupported.IsDestroyScriptableObject(this);
-                m_Editor.OnDisable(isDestroying);
-                if (isDestroying)
-                    m_Editor = null;
-            }
+            m_Editor?.OnDisable();
+            m_Editor = null;
         }
 
         public override void OnInspectorGUI()
@@ -41,10 +35,9 @@ namespace MomomaAssets.GraphView
             serializedObject.UpdateIfRequiredOrScript();
             if (target is GraphElementObject graphElementObject)
             {
-                var editor = graphElementObject.GraphElementData?.GraphElementEditor;
-                if (editor != null && m_GraphElementDataProperty != null)
+                if (m_Editor != null && m_GraphElementDataProperty != null)
                     using (var prop = m_GraphElementDataProperty.Copy())
-                        editor.OnGUI(prop);
+                        m_Editor.OnGUI(prop);
             }
             if (serializedObject.hasModifiedProperties)
                 serializedObject.ApplyModifiedProperties();

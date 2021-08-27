@@ -19,13 +19,14 @@ namespace MomomaAssets.GraphView
         string[] m_IncludingGuids = Array.Empty<string>();
 
         [NonSerialized]
-        HashSet<string> m_IncludingGuidSet = new HashSet<string>();
+        HashSet<string> m_IncludingGuidSet;
 
         DefaultGraphElementEditor? m_Editor;
 
         public int Priority => 1;
         public IGraphElementEditor GraphElementEditor => m_Editor ?? (m_Editor = new DefaultGraphElementEditor());
         public string Name => m_Name;
+        public int ElementCount => m_IncludingGuidSet.Count;
 
         public DefaultGroupData(IEnumerable<string> guids)
         {
@@ -49,6 +50,11 @@ namespace MomomaAssets.GraphView
         {
             if (!(graphElement is Group group))
                 throw new InvalidOperationException();
+            if (m_IncludingGuidSet.Count == 0)
+            {
+                graphView.RemoveElement(group);
+                return;
+            }
             group.title = m_Name;
             var toRemoveElements = new HashSet<GraphElement>(group.containedElements);
             toRemoveElements.RemoveWhere(e => m_IncludingGuidSet.Contains(e.viewDataKey));
@@ -61,16 +67,17 @@ namespace MomomaAssets.GraphView
 
         public void ReplaceGuid(Dictionary<string, string> guids)
         {
-            for (var i = 0; i < m_IncludingGuids.Length; ++i)
+            var newSet = new HashSet<string>();
+            foreach (var guid in m_IncludingGuidSet)
             {
-                var guid = m_IncludingGuids[i];
                 if (!guids.TryGetValue(guid, out var newGuid))
                 {
-                    newGuid = PortData.GetNewId();
+                    newGuid = Guid.NewGuid().ToString();
                     guids.Add(guid, newGuid);
                 }
-                m_IncludingGuids[i] = newGuid;
+                newSet.Add(newGuid);
             }
+            m_IncludingGuidSet = newSet;
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()

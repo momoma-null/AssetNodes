@@ -190,10 +190,8 @@ namespace MomomaAssets.GraphView
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 
-        [Serializable]
         sealed class NodeDataEditor : IGraphElementEditor
         {
-            [SerializeReference]
             INodeProcessorEditor m_ProcessorEditor;
 
             public NodeDataEditor(INodeProcessorEditor processorEditor)
@@ -204,7 +202,7 @@ namespace MomomaAssets.GraphView
             public bool UseDefaultVisualElement => m_ProcessorEditor.UseDefaultVisualElement;
 
             public void OnEnable() => m_ProcessorEditor.OnEnable();
-            public void OnDisable(bool isDestroying) => m_ProcessorEditor.OnDisable(isDestroying);
+            public void OnDisable() => m_ProcessorEditor.OnDisable();
 
             public void OnGUI(SerializedProperty property)
             {

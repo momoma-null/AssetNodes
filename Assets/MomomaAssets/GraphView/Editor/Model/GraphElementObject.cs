@@ -6,6 +6,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
+    [DefaultExecutionOrder(-11)]
     sealed class GraphElementObject : ScriptableObject, ISerializedGraphElement
     {
         GraphElementObject() { }
@@ -84,7 +85,7 @@ namespace MomomaAssets.GraphView
                 hideFlags |= HideFlags.DontSaveInEditor;
         }
 
-        internal void OnEnable()
+        void OnEnable()
         {
             if (m_SerializedObject == null)
                 m_SerializedObject = new SerializedObject(this);

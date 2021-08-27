@@ -8,7 +8,7 @@ namespace MomomaAssets.GraphView
     {
         bool UseDefaultVisualElement { get; }
         void OnEnable();
-        void OnDisable(bool isDestroying);
+        void OnDisable();
         void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty);
     }
 
@@ -19,7 +19,7 @@ namespace MomomaAssets.GraphView
         public bool UseDefaultVisualElement => m_DefaultGraphElementEditor.UseDefaultVisualElement;
 
         public void OnEnable() => m_DefaultGraphElementEditor.OnEnable();
-        public void OnDisable(bool isDestroying) => m_DefaultGraphElementEditor.OnDisable(isDestroying);
+        public void OnDisable() => m_DefaultGraphElementEditor.OnDisable();
         public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
                     => m_DefaultGraphElementEditor.OnGUI(processorProperty);
     }

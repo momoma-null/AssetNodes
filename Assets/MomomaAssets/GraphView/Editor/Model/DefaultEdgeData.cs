@@ -80,7 +80,7 @@ namespace MomomaAssets.GraphView
             public bool UseDefaultVisualElement => false;
 
             public void OnEnable() { }
-            public void OnDisable(bool isDestroying) { }
+            public void OnDisable() { }
 
             public void OnGUI(SerializedProperty property)
             {

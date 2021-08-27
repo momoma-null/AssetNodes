@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView
             if (evt.target is Node node)
             {
                 evt.menu.AppendSeparator();
-                evt.menu.AppendAction("Group selection", GroupSelection);
+                evt.menu.AppendAction("Group selection", GroupSelection, GetStatusAddToGroup);
                 evt.menu.AppendAction("Remove from group", RemoveFromGroup, GetStatusRemoveFromGroup);
             }
         }
@@ -45,6 +45,18 @@ namespace MomomaAssets.GraphView
                 if (i is Node node)
                     node.GetContainingScope()?.RemoveElement(node);
             }
+        }
+
+        DropdownMenuAction.Status GetStatusAddToGroup(DropdownMenuAction action)
+        {
+            foreach (var i in selection)
+            {
+                if (i is Node node && node.GetContainingScope() != null)
+                {
+                    return DropdownMenuAction.Status.Disabled;
+                }
+            }
+            return DropdownMenuAction.Status.Normal;
         }
 
         DropdownMenuAction.Status GetStatusRemoveFromGroup(DropdownMenuAction action)

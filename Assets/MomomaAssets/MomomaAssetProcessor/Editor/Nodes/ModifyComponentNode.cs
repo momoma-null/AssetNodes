@@ -15,13 +15,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [CreateElement("Modify/Component")]
     sealed class ModifyComponentNode : INodeProcessor, IAdditionalAssetHolder
     {
-        [Serializable]
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
-            [SerializeField]
             Preset? m_Preset;
-            [SerializeField]
             Editor? m_CachedEditor;
+            string m_OldMenuPath = "";
 
             public bool UseDefaultVisualElement => false;
 
@@ -38,9 +36,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
 
-            public void OnDisable(bool isDestroying)
+            public void OnDisable()
             {
-                if (isDestroying && m_CachedEditor != null)
+                if (m_CachedEditor != null)
                 {
                     DestroyImmediate(m_CachedEditor);
                     m_CachedEditor = null;
@@ -62,13 +60,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             var menuPath = (m_ManagedTypePPtrProperty.objectReferenceValue is MonoScript monoScript) ? UnityObjectTypeUtility.GetMenuPath(monoScript) : UnityObjectTypeUtility.GetMenuPath(m_NativeTypeIDProperty.intValue);
                             EditorGUI.BeginChangeCheck();
                             menuPath = UnityObjectTypeUtility.ComponentTypePopup(menuPath, true);
+                            if (menuPath != m_OldMenuPath)
+                            {
+                                if (m_CachedEditor != null)
+                                    DestroyImmediate(m_CachedEditor);
+                                m_CachedEditor = null;
+                            }
+                            m_OldMenuPath = menuPath;
                             if (EditorGUI.EndChangeCheck())
                             {
                                 if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
                                 {
-                                    if (m_CachedEditor != null)
-                                        DestroyImmediate(m_CachedEditor);
-                                    m_CachedEditor = null;
                                     var go = new GameObject();
                                     try
                                     {
@@ -121,7 +123,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Preset? m_Preset = null;
 
-        [NonSerialized]
         ModifyComponentNodeEditor? m_Editor = null;
 
         public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyComponentNodeEditor(this));
@@ -135,6 +136,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     try
                     {
                         m_Preset = new Preset(go.transform);
+                        m_Preset.hideFlags = HideFlags.HideInHierarchy;
                     }
                     finally
                     {

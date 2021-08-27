@@ -13,222 +13,6 @@ namespace MomomaAssets.GraphView
 {
     public sealed class NodeGraph : IDisposable, ISelection, IGraphViewCallbackReceiver
     {
-        sealed class GraphViewObjectHandler : IDisposable, IEquatable<GraphViewObjectHandler>
-        {
-            public GraphViewObjectHandler(GraphViewObject graphViewObject, Type graphViewType, Action<string> onGraphElementChanged, Undo.UndoRedoCallback onGraphViewChanged, NodeGraphProcessor nodeGraphProcessor)
-            {
-                m_GraphViewObject = graphViewObject;
-                m_SerializedObject = new SerializedObject(m_GraphViewObject);
-                m_SerializedGraphElementsProperty = m_SerializedObject.FindProperty("m_SerializedGraphElements");
-                using (var sp = m_SerializedObject.FindProperty("m_GraphViewTypeName"))
-                    sp.stringValue = graphViewType.AssemblyQualifiedName;
-                m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
-                m_OnGraphElementChanged = onGraphElementChanged;
-                foreach (var element in m_GraphViewObject.SerializedGraphElements)
-                {
-                    if (element is GraphElementObject graphElementObject)
-                    {
-                        graphElementObject.onValueChanged += m_OnGraphElementChanged;
-                    }
-                }
-                m_OnGraphViewChanged = onGraphViewChanged;
-                m_GraphViewObject.onValueChanged += RegisterAllValueChangedEvents;
-                //m_GraphViewObject.onValueChanged += m_OnGraphViewChanged;
-                Undo.undoRedoPerformed += onGraphViewChanged;
-                m_NodeGraphProcessor = nodeGraphProcessor;
-            }
-
-            ~GraphViewObjectHandler() => Dispose();
-
-            readonly Action<string> m_OnGraphElementChanged;
-            readonly Undo.UndoRedoCallback m_OnGraphViewChanged;
-            readonly NodeGraphProcessor m_NodeGraphProcessor;
-
-            SerializedObject m_SerializedObject;
-            SerializedProperty m_SerializedGraphElementsProperty;
-            GraphViewObject m_GraphViewObject;
-
-            public bool IsValid => m_GraphViewObject != null;
-            public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
-            public Action StartProcess => () => { if (m_GraphViewObject != null) m_NodeGraphProcessor.StartProcess(m_GraphViewObject); };
-
-            public void Dispose()
-            {
-                if (m_GraphViewObject != null)
-                {
-                    foreach (var element in m_GraphViewObject.SerializedGraphElements)
-                    {
-                        if (element is GraphElementObject graphElementObject)
-                        {
-                            graphElementObject.onValueChanged -= m_OnGraphElementChanged;
-                        }
-                    }
-                    m_GraphViewObject.onValueChanged -= RegisterAllValueChangedEvents;
-                    //m_GraphViewObject.onValueChanged -= m_OnGraphViewChanged;
-                    Undo.undoRedoPerformed -= m_OnGraphViewChanged;
-                }
-                m_SerializedGraphElementsProperty.Dispose();
-                m_SerializedObject.Dispose();
-            }
-
-            public bool Equals(GraphViewObjectHandler other)
-            {
-                return other.m_GraphViewObject == m_GraphViewObject;
-            }
-
-            public void CreateMainAsset(string pathName)
-            {
-                AssetDatabase.CreateAsset(m_GraphViewObject, pathName);
-            }
-
-            void RegisterAllValueChangedEvents()
-            {
-                foreach (var element in m_GraphViewObject.SerializedGraphElements)
-                {
-                    if (element is GraphElementObject graphElementObject)
-                    {
-                        graphElementObject.onValueChanged -= m_OnGraphElementChanged;
-                        graphElementObject.onValueChanged += m_OnGraphElementChanged;
-                    }
-                }
-            }
-
-            public sealed class GetScope : IDisposable
-            {
-                readonly GraphViewObjectHandler m_Handler;
-
-                public GetScope(GraphViewObjectHandler handler)
-                {
-                    m_Handler = handler;
-                    if (!m_Handler.m_SerializedObject.hasModifiedProperties)
-                        m_Handler.m_SerializedObject.UpdateIfRequiredOrScript();
-                }
-
-                void IDisposable.Dispose() { }
-
-                public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
-                {
-                    foreach (var i in m_Handler.m_GraphViewObject.SerializedGraphElements)
-                        if (i.Guid == guid)
-                            return i as GraphElementObject;
-                    return null;
-                }
-            }
-
-            public sealed class SetScope : IDisposable
-            {
-                readonly GraphViewObjectHandler m_Handler;
-                readonly bool m_WithoutUndo;
-                readonly HashSet<GraphElementObject> m_ToDeleteAssets = new HashSet<GraphElementObject>();
-                readonly bool m_IsModifying;
-
-                public SetScope(GraphViewObjectHandler handler, bool withoutUndo = false)
-                {
-                    m_Handler = handler;
-                    m_WithoutUndo = withoutUndo;
-                    m_IsModifying = m_Handler.m_SerializedObject.hasModifiedProperties;
-                    if (!m_IsModifying)
-                        m_Handler.m_SerializedObject.UpdateIfRequiredOrScript();
-                }
-
-                void IDisposable.Dispose()
-                {
-                    EditorApplication.delayCall += DelayDispose;
-                    if (!m_IsModifying && m_Handler.m_SerializedObject.hasModifiedProperties)
-                    {
-                        if (m_WithoutUndo)
-                        {
-                            m_Handler.m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
-                        }
-                        else
-                        {
-                            m_Handler.m_SerializedObject.ApplyModifiedProperties();
-                        }
-                    }
-                }
-
-                void DelayDispose()
-                {
-                    EditorApplication.delayCall -= DelayDispose;
-                    if (m_WithoutUndo)
-                    {
-                        foreach (var i in m_ToDeleteAssets)
-                        {
-                            if (i.GraphElementData is IAdditionalAssetHolder assetHolder)
-                            {
-                                foreach (var j in assetHolder.Assets)
-                                    DestroyImmediate(j, true);
-                            }
-                            DestroyImmediate(i, true);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var i in m_ToDeleteAssets)
-                        {
-                            if (i.GraphElementData is IAdditionalAssetHolder assetHolder)
-                            {
-                                foreach (var j in assetHolder.Assets)
-                                    Undo.DestroyObjectImmediate(j);
-                            }
-                            Undo.DestroyObjectImmediate(i);
-                        }
-                    }
-                    AssetDatabase.SaveAssets();
-                }
-
-                public void AddGraphElementObject(GraphElementObject graphElementObject)
-                {
-                    var path = AssetDatabase.GetAssetPath(m_Handler.m_GraphViewObject);
-                    graphElementObject.hideFlags &= ~HideFlags.DontSaveInEditor;
-                    AssetDatabase.AddObjectToAsset(graphElementObject, path);
-                    if (!m_WithoutUndo)
-                        Undo.RegisterCreatedObjectUndo(graphElementObject, $"Create {nameof(GraphElementObject)}");
-                    if (graphElementObject.GraphElementData is IAdditionalAssetHolder assetHolder)
-                    {
-                        foreach (var i in assetHolder.Assets)
-                        {
-                            if (AssetDatabase.Contains(i))
-                                continue;
-                            AssetDatabase.AddObjectToAsset(i, path);
-                            if (!m_WithoutUndo)
-                                Undo.RegisterCreatedObjectUndo(i, $"Create {i.name}");
-                        }
-                    }
-                    graphElementObject.onValueChanged += m_Handler.m_OnGraphElementChanged;
-                    ++m_Handler.m_SerializedGraphElementsProperty.arraySize;
-                    using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(m_Handler.m_SerializedGraphElementsProperty.arraySize - 1))
-                        sp.objectReferenceValue = graphElementObject;
-                    m_ToDeleteAssets.Remove(graphElementObject);
-                }
-
-                public void DeleteGraphElementObjects(HashSet<string> guids)
-                {
-                    var indices = new SortedSet<int>();
-                    var i = 0;
-                    foreach (var element in m_Handler.m_GraphViewObject.SerializedGraphElements)
-                    {
-                        if (element != null && guids.Contains(element.Guid))
-                            indices.Add(i);
-                        ++i;
-                    }
-                    foreach (var index in indices.Reverse())
-                    {
-                        using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(index))
-                        {
-                            if (sp.objectReferenceValue is GraphElementObject graphElementObject)
-                            {
-                                sp.objectReferenceValue = null;
-                                sp.DeleteCommand();
-                                graphElementObject.onValueChanged -= m_Handler.m_OnGraphElementChanged;
-                                m_ToDeleteAssets.Add(graphElementObject);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         readonly DefaultGraphView m_GraphView;
         readonly EditorWindow m_EditorWindow;
         readonly SearchWindowProvider m_SearchWindowProvider;
@@ -290,7 +74,6 @@ namespace MomomaAssets.GraphView
             isDisposed = true;
             EditorApplication.update -= Update;
             Selection.selectionChanged -= OnSelectionChanged;
-            //CreateGraphViewObjectHandler(null);
             DestroyImmediate(m_SearchWindowProvider);
         }
 
@@ -298,18 +81,15 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler != null)
             {
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+                if (selectable is GraphElement element)
                 {
-                    if (selectable is GraphElement element)
+                    var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(element.viewDataKey);
+                    if (graphElementObject != null && !Selection.Contains(graphElementObject))
                     {
-                        var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                        if (graphElementObject != null && !Selection.Contains(graphElementObject))
-                        {
-                            var ids = new int[Selection.instanceIDs.Length + 1];
-                            Array.Copy(Selection.instanceIDs, ids, Selection.instanceIDs.Length);
-                            ids[ids.Length - 1] = graphElementObject.GetInstanceID();
-                            Selection.instanceIDs = ids;
-                        }
+                        var ids = new int[Selection.instanceIDs.Length + 1];
+                        Array.Copy(Selection.instanceIDs, ids, Selection.instanceIDs.Length);
+                        ids[ids.Length - 1] = graphElementObject.GetInstanceID();
+                        Selection.instanceIDs = ids;
                     }
                 }
             }
@@ -324,19 +104,16 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler != null)
             {
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+                if (selectable is GraphElement element)
                 {
-                    if (selectable is GraphElement element)
+                    var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(element.viewDataKey);
+                    if (graphElementObject != null)
                     {
-                        var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                        if (graphElementObject != null)
-                        {
-                            var idSet = new HashSet<int>(Selection.instanceIDs);
-                            idSet.Remove(graphElementObject.GetInstanceID());
-                            var ids = new int[idSet.Count];
-                            idSet.CopyTo(ids);
-                            Selection.instanceIDs = ids;
-                        }
+                        var idSet = new HashSet<int>(Selection.instanceIDs);
+                        idSet.Remove(graphElementObject.GetInstanceID());
+                        var ids = new int[idSet.Count];
+                        idSet.CopyTo(ids);
+                        Selection.instanceIDs = ids;
                     }
                 }
             }
@@ -446,14 +223,11 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler == null)
                 return;
-            using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(group.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
             {
-                var graphElementObject = getScope.TryGetGraphElementObjectByGuid(group.viewDataKey);
-                if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
-                {
-                    Undo.RecordObject(graphElementObject, "Add elements to group");
-                    groupData.AddElements(elements.Select(i => i.viewDataKey));
-                }
+                Undo.RecordObject(graphElementObject, "Add elements to group");
+                groupData.AddElements(elements.Select(i => i.viewDataKey));
             }
         }
 
@@ -461,14 +235,13 @@ namespace MomomaAssets.GraphView
         {
             if (m_GraphViewObjectHandler == null)
                 return;
-            using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(group.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
             {
-                var graphElementObject = getScope.TryGetGraphElementObjectByGuid(group.viewDataKey);
-                if (graphElementObject != null && graphElementObject.GraphElementData is IGroupData groupData)
-                {
-                    Undo.RecordObject(graphElementObject, "Remove elements from group");
-                    groupData.RemoveElements(elements.Select(i => i.viewDataKey));
-                }
+                Undo.RecordObject(graphElementObject, "Remove elements from group");
+                groupData.RemoveElements(elements.Select(i => i.viewDataKey));
+                if (groupData.ElementCount == 0)
+                    m_GraphView.RemoveElement(group);
             }
         }
 
@@ -511,24 +284,19 @@ namespace MomomaAssets.GraphView
             }
             if (graphViewChange.movedElements != null && graphViewChange.movedElements.Count > 0)
             {
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+                foreach (var element in graphViewChange.movedElements)
                 {
-                    foreach (var element in graphViewChange.movedElements)
+                    if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(element.viewDataKey, out var serializedGraphElement))
+                        serializedGraphElement.Position = element.GetPosition();
+                    if (element is Scope scope)
                     {
-                        var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                        if (graphElementObject != null)
-                            graphElementObject.Position = element.GetPosition();
-                        if (element is Scope scope)
+                        foreach (var e in scope.containedElements)
                         {
-                            foreach (var e in scope.containedElements)
+                            if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(e.viewDataKey, out var child))
                             {
-                                graphElementObject = getScope.TryGetGraphElementObjectByGuid(e.viewDataKey);
-                                if (graphElementObject != null)
-                                {
-                                    var rect = graphElementObject.Position;
-                                    rect.position += graphViewChange.moveDelta;
-                                    graphElementObject.Position = rect;
-                                }
+                                var rect = child.Position;
+                                rect.position += graphViewChange.moveDelta;
+                                child.Position = rect;
                             }
                         }
                     }
@@ -621,7 +389,6 @@ namespace MomomaAssets.GraphView
             elementsToRemove.RemoveWhere(element => serializedGraphElements.ContainsKey(element.viewDataKey));
             m_GraphView.DeleteElements(elementsToRemove);
             var guids = m_GraphView.graphElements.ToList().ToDictionary(element => element.viewDataKey, element => element);
-            var index = 0;
             foreach (var serializedGraphElement in serializedGraphElements.OrderBy(i => i.Value.GraphElementData?.Priority ?? 0))
             {
                 var guid = serializedGraphElement.Key;
@@ -629,7 +396,6 @@ namespace MomomaAssets.GraphView
                     serializedGraphElement.Value.Deserialize(graphElement, m_GraphView);
                 else
                     serializedGraphElement.Value.Deserialize(m_GraphView);
-                ++index;
             }
         }
 
@@ -639,12 +405,8 @@ namespace MomomaAssets.GraphView
                 return;
             if (edge.input != null && edge.output != null)
             {
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
-                {
-                    var graphElementObject = getScope.TryGetGraphElementObjectByGuid(edge.viewDataKey);
-                    if (graphElementObject != null)
-                        graphElementObject.GraphElementData = new DefaultEdgeData(edge.input.viewDataKey, edge.output.viewDataKey);
-                }
+                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(edge.viewDataKey, out var serializedGraphElement))
+                    serializedGraphElement.GraphElementData = new DefaultEdgeData(edge.input.viewDataKey, edge.output.viewDataKey);
             }
         }
 
@@ -685,16 +447,13 @@ namespace MomomaAssets.GraphView
             if (m_GraphViewObjectHandler != null)
             {
                 var ids = new List<int>(selection.Count);
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
+                foreach (var selectable in selection)
                 {
-                    foreach (var selectable in selection)
+                    if (selectable is GraphElement element)
                     {
-                        if (selectable is GraphElement element)
-                        {
-                            var graphElementObject = getScope.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                            if (graphElementObject != null)
-                                ids.Add(graphElementObject.GetInstanceID());
-                        }
+                        var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(element.viewDataKey);
+                        if (graphElementObject != null)
+                            ids.Add(graphElementObject.GetInstanceID());
                     }
                 }
                 Selection.instanceIDs = ids.ToArray();
@@ -706,12 +465,8 @@ namespace MomomaAssets.GraphView
             var element = m_GraphView.GetElementByGuid(guid);
             if (m_GraphViewObjectHandler != null && element != null)
             {
-                using (var getScope = new GraphViewObjectHandler.GetScope(m_GraphViewObjectHandler))
-                {
-                    var graphElementObject = getScope.TryGetGraphElementObjectByGuid(guid);
-                    if (graphElementObject != null)
-                        graphElementObject.Deserialize(element, m_GraphView);
-                }
+                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(guid, out var serializedGraphElement))
+                    serializedGraphElement.Deserialize(element, m_GraphView);
             }
         }
 

@@ -8,6 +8,7 @@ using UnityEditor.Callbacks;
 
 namespace MomomaAssets.GraphView
 {
+    [DefaultExecutionOrder(-10)]
     public sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
     {
         [OnOpenAsset]
@@ -25,19 +26,17 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         GraphElementObject[] m_SerializedGraphElements = new GraphElementObject[0];
 
+        [NonSerialized]
+        Dictionary<string, ISerializedGraphElement> m_GuidtoSerializedGraphElements = new Dictionary<string, ISerializedGraphElement>();
+
         public event Action? onValueChanged;
         public Type? GraphViewType { get; private set; }
         public IReadOnlyList<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
+        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidtoSerializedGraphElements => m_GuidtoSerializedGraphElements;
 
         void OnValidate()
         {
             onValueChanged?.Invoke();
-        }
-
-        void OnEnable()
-        {
-            foreach(var i in m_SerializedGraphElements)
-                i.OnEnable();
         }
 
         void OnDestroy()
@@ -48,6 +47,9 @@ namespace MomomaAssets.GraphView
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             GraphViewType = Type.GetType(m_GraphViewTypeName);
+            m_GuidtoSerializedGraphElements.Clear();
+            foreach (var i in m_SerializedGraphElements)
+                m_GuidtoSerializedGraphElements.Add(i.Guid, i);
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }

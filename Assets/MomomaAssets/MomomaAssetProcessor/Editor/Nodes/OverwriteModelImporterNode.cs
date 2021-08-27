@@ -35,14 +35,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
 
-            public void OnDisable(bool isDestroying)
+            public void OnDisable()
             {
                 if (m_CachedEditor != null)
                 {
-                    m_CachedEditor.hideFlags = HideFlags.None;
                     DestroyImmediate(m_CachedEditor);
+                    m_CachedEditor = null;
                 }
-                m_CachedEditor = null;
             }
 
             public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
@@ -81,6 +80,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     m_Importer = Instantiate(AssetData.s_DefaultImporter);
                     m_Importer.name = AssetData.s_DefaultImporter.name;
+                    m_Importer.hideFlags = HideFlags.HideInHierarchy;
                 }
                 return new[] { m_Importer };
             }

@@ -113,7 +113,7 @@ namespace MomomaAssets.GraphView
             {
                 Editor.CreateCachedEditor(serializedObject.targetObjects, null, ref m_Editor);
                 RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
-                var field = new IMGUIContainer(() => OnGUIHandler()) { cullingEnabled = true };
+                var field = new IMGUIContainer(OnGUIHandler) { cullingEnabled = true };
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();
