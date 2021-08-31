@@ -1,16 +1,15 @@
-using System;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
+using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
 namespace MomomaAssets.GraphView
 {
-    sealed class NodeGUI : Node, IFieldHolder, INotifyValueChanged<bool>, IBindable
+    sealed class BindableNode : Node, IBindableGraphElement, INotifyValueChanged<bool>, IBindable
     {
         readonly INodeData m_Node;
 
@@ -42,14 +41,14 @@ namespace MomomaAssets.GraphView
         public IBinding? binding { get; set; }
         public string? bindingPath { get; set; }
 
-        public NodeGUI(INodeData nodeData) : base()
+        public BindableNode(INodeData nodeData) : base()
         {
             m_Node = nodeData;
             style.minWidth = 200f;
             style.maxWidth = 400f;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             var nodeTypeName = m_Node.Processor.GetType().Name;
-            title = Regex.Replace(nodeTypeName, "([a-z])([A-Z])", "$1 $2").Replace("Node", "");
+            title = ObjectNames.NicifyVariableName(nodeTypeName).Replace("Node", "");
             m_CollapseButton.schedule.Execute(FixCollapseButtonEnable).Every(0);
         }
 
@@ -111,16 +110,16 @@ namespace MomomaAssets.GraphView
             }
             else
             {
-                Editor.CreateCachedEditor(serializedObject.targetObjects, null, ref m_Editor);
                 RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
-                var field = new IMGUIContainer(OnGUIHandler) { cullingEnabled = true };
+                var field = new IMGUIContainer(() => OnGUIHandler(serializedObject.targetObjects)) { cullingEnabled = true };
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();
         }
 
-        void OnGUIHandler()
+        void OnGUIHandler(UnityObject[] targets)
         {
+            Editor.CreateCachedEditor(targets, null, ref m_Editor);
             EditorGUIUtility.wideMode = true;
             EditorGUIUtility.fieldWidth = 93f;
             EditorGUIUtility.labelWidth = 93f;

@@ -11,7 +11,7 @@ namespace MomomaAssets.GraphView
         public Port(Orientation portOrientation, Direction portDirection, Capacity portCapacity, Type type, IEdgeConnectorListener connectorListener)
          : base(portOrientation, portDirection, portCapacity, type)
         {
-            m_EdgeConnector = new EdgeConnector<DefaultEdge>(connectorListener);
+            m_EdgeConnector = new EdgeConnector<T>(connectorListener);
             this.AddManipulator(m_EdgeConnector);
         }
     }

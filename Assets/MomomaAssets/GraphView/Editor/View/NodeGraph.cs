@@ -17,6 +17,7 @@ namespace MomomaAssets.GraphView
         readonly EditorWindow m_EditorWindow;
         readonly SearchWindowProvider m_SearchWindowProvider;
         readonly VisualElement m_CreateGraphButton;
+        readonly VisualElement m_StartProcessButton;
         readonly Type m_NodeGraphType;
         readonly NodeGraphProcessor m_NodeGraphProcessor;
         readonly NodeGraphEditorData m_NodeGraphEditorData;
@@ -45,14 +46,15 @@ namespace MomomaAssets.GraphView
             var miniMap = new MiniMap();
             m_GraphView.Add(miniMap);
             miniMap.SetPosition(new Rect(0, 0, miniMap.maxWidth, miniMap.maxHeight));
-            m_GraphView.Add(new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } });
+            m_StartProcessButton = new Button(StartProcess) { text = "Process", style = { alignSelf = Align.FlexEnd } };
+            m_GraphView.Add(m_StartProcessButton);
             m_GraphView.AddManipulator(new SelectionDragger());
             m_GraphView.AddManipulator(new ContentDragger());
             m_GraphView.AddManipulator(new ContentZoomer());
             m_GraphView.AddManipulator(new RectangleSelector());
             m_GraphView.viewDataKey = m_NodeGraphEditorData.m_ViewDataKey;
             m_SearchWindowProvider = ScriptableObject.CreateInstance<SearchWindowProvider>();
-            m_SearchWindowProvider.addGraphElement += AddElement;
+            m_SearchWindowProvider.GraphViewCallbackReceiver = this;
             m_SearchWindowProvider.graphViewType = m_NodeGraphType;
             m_GraphView.nodeCreationRequest = CreateNode;
             m_CreateGraphButton = new VisualElement() { style = { position = Position.Absolute, flexDirection = FlexDirection.Row, justifyContent = Justify.Center } };
@@ -129,6 +131,7 @@ namespace MomomaAssets.GraphView
                 m_GraphViewObjectHandler = null;
                 m_GraphView.DeleteElements(m_GraphView.graphElements.ToList());
                 m_CreateGraphButton.visible = true;
+                m_StartProcessButton.visible = false;
                 return;
             }
             var graphViewObjectHandler = new GraphViewObjectHandler(graphViewObject, m_NodeGraphType, OnGraphElementChanged, FullReload, m_NodeGraphProcessor);
@@ -140,6 +143,7 @@ namespace MomomaAssets.GraphView
             }
             m_GraphViewObjectHandler = graphViewObjectHandler;
             m_CreateGraphButton.visible = false;
+            m_StartProcessButton.visible = true;
             FullReload();
         }
 
@@ -247,14 +251,6 @@ namespace MomomaAssets.GraphView
 
         GraphViewChange GraphViewChanged(GraphViewChange graphViewChange)
         {
-            if (graphViewChange.elementsToRemove != null)
-            {
-                foreach (var i in graphViewChange.elementsToRemove)
-                {
-                    if (i is IEdgeCallback edgeCallback)
-                        edgeCallback.onPortChanged -= OnPortChanged;
-                }
-            }
             if (m_GraphViewObjectHandler == null)
                 return graphViewChange;
             if (graphViewChange.edgesToCreate != null && graphViewChange.edgesToCreate.Count > 0)
@@ -263,15 +259,8 @@ namespace MomomaAssets.GraphView
                 {
                     foreach (var edge in graphViewChange.edgesToCreate)
                     {
-                        if (edge is IEdgeCallback edgeCallback)
-                        {
-                            var graphElementObject = CreateGraphElementObject(edge);
-                            if (edge.input != null && edge.output != null)
-                                graphElementObject.GraphElementData = new DefaultEdgeData(edge.input.viewDataKey, edge.output.viewDataKey);
-                            setScope.AddGraphElementObject(graphElementObject);
-                            edgeCallback.onPortChanged += OnPortChanged;
-                            m_GraphView.AddElement(edge);
-                        }
+                        var graphElementObject = CreateGraphElementObject(edge);
+                        setScope.AddGraphElementObject(graphElementObject);
                     }
                 }
             }
@@ -399,18 +388,7 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        void OnPortChanged(Edge edge)
-        {
-            if (edge.isGhostEdge || m_GraphViewObjectHandler == null)
-                return;
-            if (edge.input != null && edge.output != null)
-            {
-                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(edge.viewDataKey, out var serializedGraphElement))
-                    serializedGraphElement.GraphElementData = new DefaultEdgeData(edge.input.viewDataKey, edge.output.viewDataKey);
-            }
-        }
-
-        public void AddElement(IGraphElementData graphElementData, Vector2 screenMousePosition)
+        void IGraphViewCallbackReceiver.AddElement(IGraphElementData graphElementData, Vector2 screenMousePosition)
         {
             if (m_GraphViewObjectHandler == null)
                 throw new ArgumentNullException(nameof(m_GraphViewObjectHandler));
@@ -440,24 +418,6 @@ namespace MomomaAssets.GraphView
             var graphElementObject = ScriptableObject.CreateInstance<GraphElementObject>();
             graphElement.Serialize(graphElementObject, position);
             return graphElementObject;
-        }
-
-        void OnSelectedElementsChanged(List<ISelectable> selection)
-        {
-            if (m_GraphViewObjectHandler != null)
-            {
-                var ids = new List<int>(selection.Count);
-                foreach (var selectable in selection)
-                {
-                    if (selectable is GraphElement element)
-                    {
-                        var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(element.viewDataKey);
-                        if (graphElementObject != null)
-                            ids.Add(graphElementObject.GetInstanceID());
-                    }
-                }
-                Selection.instanceIDs = ids.ToArray();
-            }
         }
 
         void OnGraphElementChanged(string guid)

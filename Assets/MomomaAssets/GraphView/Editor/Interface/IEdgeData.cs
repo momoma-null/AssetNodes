@@ -3,9 +3,9 @@
 
 namespace MomomaAssets.GraphView
 {
-    public interface IEdgeData : IGraphElementData
+    interface IEdgeData : IGraphElementData
     {
-        string InputPortGuid { get; set; }
-        string OutputPortGuid { get; set; }
+        string InputPortGuid { get; }
+        string OutputPortGuid { get; }
     }
 }

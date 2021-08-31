@@ -15,7 +15,7 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    sealed class DefaultNodeData : INodeData, IAdditionalAssetHolder, ISerializationCallbackReceiver
+    sealed class NodeData : INodeData, IAdditionalAssetHolder, ISerializationCallbackReceiver
     {
         [SerializeField]
         bool m_Expanded = true;
@@ -37,7 +37,7 @@ namespace MomomaAssets.GraphView
         public IList<PortData> InputPorts => m_InputPorts;
         public IList<PortData> OutputPorts => m_OutputPorts;
 
-        public DefaultNodeData(INodeProcessor processor)
+        public NodeData(INodeProcessor processor)
         {
             m_Processor = processor;
             m_Processor.Initialize(this);
@@ -45,7 +45,7 @@ namespace MomomaAssets.GraphView
 
         public GraphElement Deserialize()
         {
-            var node = new NodeGUI(this);
+            var node = new BindableNode(this);
             PortDataToPort(InputPorts, node.inputContainer.Query<Port>().ToList());
             PortDataToPort(OutputPorts, node.outputContainer.Query<Port>().ToList());
             return node;
@@ -82,7 +82,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<DefaultEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
@@ -113,7 +113,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<DefaultEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }

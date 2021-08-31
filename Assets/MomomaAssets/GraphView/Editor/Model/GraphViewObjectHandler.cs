@@ -13,13 +13,14 @@ namespace MomomaAssets.GraphView
         public GraphViewObjectHandler(GraphViewObject graphViewObject, Type graphViewType, Action<string> onGraphElementChanged, Action onGraphViewChanged, NodeGraphProcessor nodeGraphProcessor)
         {
             m_GraphViewObject = graphViewObject;
+            m_SerializedGraphView = graphViewObject;
             m_SerializedObject = new SerializedObject(m_GraphViewObject);
             m_SerializedGraphElementsProperty = m_SerializedObject.FindProperty("m_SerializedGraphElements");
             using (var sp = m_SerializedObject.FindProperty("m_GraphViewTypeName"))
                 sp.stringValue = graphViewType.AssemblyQualifiedName;
             m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
             m_OnGraphElementChanged = onGraphElementChanged;
-            foreach (var element in m_GraphViewObject.SerializedGraphElements)
+            foreach (var element in m_SerializedGraphView.SerializedGraphElements)
             {
                 if (element is GraphElementObject graphElementObject)
                 {
@@ -36,20 +37,20 @@ namespace MomomaAssets.GraphView
         readonly Action<string> m_OnGraphElementChanged;
         readonly Action m_OnGraphViewChanged;
         readonly NodeGraphProcessor m_NodeGraphProcessor;
-
-        SerializedObject m_SerializedObject;
-        SerializedProperty m_SerializedGraphElementsProperty;
-        GraphViewObject m_GraphViewObject;
+        readonly SerializedObject m_SerializedObject;
+        readonly SerializedProperty m_SerializedGraphElementsProperty;
+        readonly GraphViewObject m_GraphViewObject;
+        readonly ISerializedGraphView m_SerializedGraphView;
 
         public bool IsValid => m_GraphViewObject != null;
-        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_GraphViewObject.GuidtoSerializedGraphElements;
+        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidToSerializedGraphElements => m_SerializedGraphView.GuidtoSerializedGraphElements;
         public Action StartProcess => () => { if (m_GraphViewObject != null) m_NodeGraphProcessor.StartProcess(m_GraphViewObject); };
 
         public void Dispose()
         {
             if (m_GraphViewObject != null)
             {
-                foreach (var element in m_GraphViewObject.SerializedGraphElements)
+                foreach (var element in m_SerializedGraphView.SerializedGraphElements)
                 {
                     if (element is GraphElementObject graphElementObject)
                     {
@@ -74,22 +75,20 @@ namespace MomomaAssets.GraphView
 
         public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
         {
-            if (m_GraphViewObject.GuidtoSerializedGraphElements.TryGetValue(guid, out var serializedGraphElement))
+            if (m_SerializedGraphView.GuidtoSerializedGraphElements.TryGetValue(guid, out var serializedGraphElement))
                 return serializedGraphElement as GraphElementObject;
             return null;
         }
 
         void UndoRedoPerformed()
         {
-            Undo.undoRedoPerformed -= UndoRedoPerformed;
-            Undo.undoRedoPerformed += UndoRedoPerformed;
             m_OnGraphViewChanged();
             RegisterAllValueChangedEvents();
         }
 
         void RegisterAllValueChangedEvents()
         {
-            foreach (var element in m_GraphViewObject.SerializedGraphElements)
+            foreach (var element in m_SerializedGraphView.SerializedGraphElements)
             {
                 if (element is GraphElementObject graphElementObject)
                 {
@@ -190,7 +189,7 @@ namespace MomomaAssets.GraphView
             {
                 var indices = new SortedSet<int>();
                 var i = 0;
-                foreach (var element in m_Handler.m_GraphViewObject.SerializedGraphElements)
+                foreach (var element in m_Handler.m_SerializedGraphView.SerializedGraphElements)
                 {
                     if (element != null && guids.Contains(element.Guid))
                         indices.Add(i);

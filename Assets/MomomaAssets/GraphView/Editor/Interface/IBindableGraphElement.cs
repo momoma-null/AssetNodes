@@ -4,7 +4,7 @@
 
 namespace MomomaAssets.GraphView
 {
-    public interface IFieldHolder
+    interface IBindableGraphElement
     {
         IGraphElementData GraphElementData { get; }
         void Bind(SerializedObject serializedObject);

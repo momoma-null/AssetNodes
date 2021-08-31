@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace MomomaAssets.GraphView
 {
-    public interface ISerializedGraphView
+    interface ISerializedGraphView
     {
         IReadOnlyList<ISerializedGraphElement> SerializedGraphElements { get; }
         IReadOnlyDictionary<string, ISerializedGraphElement> GuidtoSerializedGraphElements { get; }
     }
 
     [Serializable]
-    public sealed class SerializedGraphView : ISerializedGraphView, ISerializationCallbackReceiver
+    sealed class SerializedGraphView : ISerializedGraphView, ISerializationCallbackReceiver
     {
         public SerializedGraphView(List<SerializedGraphElement> serializedGraphElements) => m_SerializedGraphElements = serializedGraphElements;
 

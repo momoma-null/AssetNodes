@@ -30,11 +30,11 @@ namespace MomomaAssets.GraphView
 
         void GroupSelection(DropdownMenuAction action)
         {
-            var guids = new List<string>();
+            var guids = new List<string>(selection.Count);
             foreach (var i in selection)
                 if (i is Node node)
                     guids.Add(node.viewDataKey);
-            var data = new DefaultGroupData(guids.ToArray());
+            var data = new GroupData(guids);
             m_GraphViewCallbackReceiver.AddElement(data, action.eventInfo.mousePosition);
         }
 

@@ -11,7 +11,7 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    public class DefaultEdgeData : IEdgeData
+    class EdgeData : IEdgeData
     {
         [SerializeField]
         string m_InputPortGuid;
@@ -25,13 +25,13 @@ namespace MomomaAssets.GraphView
         public string InputPortGuid { get => m_InputPortGuid; set => m_InputPortGuid = value; }
         public string OutputPortGuid { get => m_OutputPortGuid; set => m_OutputPortGuid = value; }
 
-        public DefaultEdgeData(string input, string output)
+        public EdgeData(string input, string output)
         {
             m_InputPortGuid = input;
             m_OutputPortGuid = output;
         }
 
-        public GraphElement Deserialize() => new DefaultEdge(this);
+        public GraphElement Deserialize() => new BindableEdge(this);
 
         public void SetPosition(GraphElement graphElement, Rect position) => graphElement.SetPosition(position);
 
@@ -44,14 +44,14 @@ namespace MomomaAssets.GraphView
             {
                 edge.input?.Disconnect(edge);
                 edge.input = inputPort;
-                edge.input.Connect(edge);
+                edge.input?.Connect(edge);
             }
             var outputPort = graphView.GetPortByGuid(OutputPortGuid);
             if (edge.output != outputPort)
             {
                 edge.output?.Disconnect(edge);
                 edge.output = outputPort;
-                edge.output.Connect(edge);
+                edge.output?.Connect(edge);
             }
             if (edge.output == null || edge.input == null)
             {

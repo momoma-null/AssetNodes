@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
-    public interface IGraphElementEditor
+    interface IGraphElementEditor
     {
         bool UseDefaultVisualElement { get; }
         void OnEnable();
@@ -12,7 +12,7 @@ namespace MomomaAssets.GraphView
         void OnGUI(SerializedProperty property);
     }
 
-    public sealed class DefaultGraphElementEditor : IGraphElementEditor
+    sealed class DefaultGraphElementEditor : IGraphElementEditor
     {
         public bool UseDefaultVisualElement => true;
 

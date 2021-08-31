@@ -99,7 +99,7 @@ namespace MomomaAssets.GraphView
     }
 
     [Serializable]
-    public sealed class SerializedGraphElement : ISerializedGraphElement
+    sealed class SerializedGraphElement : ISerializedGraphElement
     {
         [SerializeField]
         string m_Guid = System.Guid.NewGuid().ToString();

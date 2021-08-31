@@ -31,7 +31,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 if (m_CachedEditor == null)
                 {
-                    m_CachedEditor = Editor.CreateEditor(m_Node.m_Importer);
+                    CreateEditorIfNecessary(m_Node.m_Importer);
                 }
             }
 
@@ -48,9 +48,29 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 using (var m_ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer)))
                 {
-                    Editor.CreateCachedEditor(m_ImporterProperty.objectReferenceValue, null, ref m_CachedEditor);
-                    m_CachedEditor.OnInspectorGUI();
+                    if (m_ImporterProperty.objectReferenceValue == null)
+                        return;
+                    CreateEditorIfNecessary(m_ImporterProperty.objectReferenceValue);
+                    m_CachedEditor?.OnInspectorGUI();
                 }
+            }
+
+            void CreateEditorIfNecessary(UnityObject? target)
+            {
+                if (target == null)
+                    return;
+                if (m_CachedEditor != null)
+                {
+                    if (m_CachedEditor.target == target)
+                        return;
+                    DestroyImmediate(m_CachedEditor);
+                }
+                var delegates = Undo.undoRedoPerformed.GetInvocationList();
+                m_CachedEditor = Editor.CreateEditor(target);
+                Undo.undoRedoPerformed = null;
+                foreach (var i in delegates)
+                    Undo.undoRedoPerformed += i as Undo.UndoRedoCallback;
+
             }
         }
 

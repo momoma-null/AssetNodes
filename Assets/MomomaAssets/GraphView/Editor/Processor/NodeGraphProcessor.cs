@@ -22,7 +22,7 @@ namespace MomomaAssets.GraphView
         public void StartProcess(GraphViewObject graphViewObject)
         {
             var portToNode = new Dictionary<string, string>();
-            var guidToSerializedGraphElements = graphViewObject.SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
+            var guidToSerializedGraphElements = (graphViewObject as ISerializedGraphView).SerializedGraphElements.Where(i => i != null && !string.IsNullOrEmpty(i.Guid)).ToDictionary(i => i.Guid, i => i as ISerializedGraphElement);
             foreach (var i in guidToSerializedGraphElements.Values)
             {
                 if (i.GraphElementData is INodeData nodeData)

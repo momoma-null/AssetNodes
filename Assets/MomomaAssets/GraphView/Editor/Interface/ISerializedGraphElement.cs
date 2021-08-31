@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 
@@ -12,7 +9,7 @@ namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
-    public interface ISerializedGraphElement
+    interface ISerializedGraphElement
     {
         string Guid { get; set; }
         Rect Position { get; set; }
@@ -20,16 +17,16 @@ namespace MomomaAssets.GraphView
         SerializedObject? SerializedObject { get; }
     }
 
-    public static class SerializedGraphElementExtensions
+    static class SerializedGraphElementExtensions
     {
         public static void Serialize<T>(this GraphElement graphElement, T serializedGraphElement, Rect position) where T : ISerializedGraphElement
         {
-            if (graphElement is IFieldHolder fieldHolder)
+            if (graphElement is IBindableGraphElement bindableGraphElement)
             {
-                serializedGraphElement.GraphElementData = fieldHolder.GraphElementData;
+                serializedGraphElement.GraphElementData = bindableGraphElement.GraphElementData;
                 if (serializedGraphElement.SerializedObject != null)
                 {
-                    fieldHolder.Bind(serializedGraphElement.SerializedObject);
+                    bindableGraphElement.Bind(serializedGraphElement.SerializedObject);
                 }
             }
             serializedGraphElement.Guid = graphElement.viewDataKey;
@@ -42,9 +39,9 @@ namespace MomomaAssets.GraphView
                 throw new ArgumentNullException(nameof(serializedGraphElement.GraphElementData));
             var graphElement = serializedGraphElement.GraphElementData.Deserialize();
             graphView.AddElement(graphElement);
-            if (serializedGraphElement.SerializedObject != null && graphElement is IFieldHolder fieldHolder)
+            if (serializedGraphElement.SerializedObject != null && graphElement is IBindableGraphElement bindableGraphElement)
             {
-                fieldHolder.Bind(serializedGraphElement.SerializedObject);
+                bindableGraphElement.Bind(serializedGraphElement.SerializedObject);
             }
             serializedGraphElement.Deserialize(graphElement, graphView);
             return graphElement;

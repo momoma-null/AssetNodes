@@ -8,13 +8,13 @@ using UnityEditor.Experimental.GraphView;
 
 namespace MomomaAssets.GraphView
 {
-    public sealed class DefaultGroup : Group, IFieldHolder
+    sealed class BindableGroup : Group, IBindableGraphElement
     {
         readonly IGroupData m_GroupData;
 
         public IGraphElementData GraphElementData => m_GroupData;
 
-        public DefaultGroup(IGroupData groupData) : base()
+        public BindableGroup(IGroupData groupData) : base()
         {
             m_GroupData = groupData;
             title = groupData.Name;
@@ -26,6 +26,7 @@ namespace MomomaAssets.GraphView
             var titleField = headerContainer.Q<TextField>();
             if (titleField != null)
             {
+                titleField.isDelayed = true;
                 var nameProperty = serializedObject.FindProperty("m_GraphElementData.m_Name");
                 titleField.BindProperty(nameProperty);
             }

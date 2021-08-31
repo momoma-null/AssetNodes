@@ -11,7 +11,7 @@ namespace MomomaAssets.GraphView
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
 
     [Serializable]
-    public class DefaultGroupData : IGroupData, ISerializationCallbackReceiver
+    class GroupData : IGroupData, ISerializationCallbackReceiver
     {
         [SerializeField]
         string m_Name = "New Group";
@@ -28,7 +28,7 @@ namespace MomomaAssets.GraphView
         public string Name => m_Name;
         public int ElementCount => m_IncludingGuidSet.Count;
 
-        public DefaultGroupData(IEnumerable<string> guids)
+        public GroupData(IEnumerable<string> guids)
         {
             m_IncludingGuidSet = new HashSet<string>(guids);
         }
@@ -37,11 +37,11 @@ namespace MomomaAssets.GraphView
 
         public void RemoveElements(IEnumerable<string> guids) => m_IncludingGuidSet.ExceptWith(guids);
 
-        public GraphElement Deserialize() => new DefaultGroup(this);
+        public GraphElement Deserialize() => new BindableGroup(this);
 
         public void SetPosition(GraphElement graphElement, Rect position)
         {
-            if (!(graphElement is DefaultGroup group))
+            if (!(graphElement is BindableGroup group))
                 throw new InvalidOperationException();
             group.SetPositionWhenDeserialization(position);
         }

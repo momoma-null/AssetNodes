@@ -6,7 +6,7 @@ using UnityEditor.Experimental.GraphView;
 
 namespace MomomaAssets.GraphView
 {
-    public interface IGraphElementData
+    interface IGraphElementData
     {
         int Priority { get; }
         IGraphElementEditor GraphElementEditor { get; }

@@ -9,8 +9,10 @@ using UnityEditor.Callbacks;
 namespace MomomaAssets.GraphView
 {
     [DefaultExecutionOrder(-10)]
-    public sealed class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
+    public sealed partial class GraphViewObject : ScriptableObject, ISerializedGraphView, ISerializationCallbackReceiver
     {
+        static readonly Dictionary<Type, HashSet<GraphViewObject>> s_AllGraphViewObjects = new Dictionary<Type, HashSet<GraphViewObject>>();
+
         [OnOpenAsset]
         static bool OnOpenAsset(int instanceID, int line)
         {
@@ -29,24 +31,54 @@ namespace MomomaAssets.GraphView
         [NonSerialized]
         Dictionary<string, ISerializedGraphElement> m_GuidtoSerializedGraphElements = new Dictionary<string, ISerializedGraphElement>();
 
-        public event Action? onValueChanged;
         public Type? GraphViewType { get; private set; }
-        public IReadOnlyList<ISerializedGraphElement> SerializedGraphElements => m_SerializedGraphElements;
-        public IReadOnlyDictionary<string, ISerializedGraphElement> GuidtoSerializedGraphElements => m_GuidtoSerializedGraphElements;
+        IReadOnlyList<ISerializedGraphElement> ISerializedGraphView.SerializedGraphElements => m_SerializedGraphElements;
+        IReadOnlyDictionary<string, ISerializedGraphElement> ISerializedGraphView.GuidtoSerializedGraphElements => m_GuidtoSerializedGraphElements;
 
-        void OnValidate()
+        public static IReadOnlyCollection<GraphViewObject> GetGraphViewObjects<T>() where T : EditorWindow
         {
-            onValueChanged?.Invoke();
+            if (s_AllGraphViewObjects.TryGetValue(typeof(T), out var objects))
+                return objects;
+            return Array.Empty<GraphViewObject>();
+        }
+
+        void Awake()
+        {
+            RegisterSelf();
         }
 
         void OnDestroy()
         {
-            onValueChanged = null;
+            if (GraphViewType != null)
+            {
+                if (s_AllGraphViewObjects.TryGetValue(GraphViewType, out var objects))
+                {
+                    objects.Remove(this);
+                }
+            }
+        }
+
+        void RegisterSelf()
+        {
+            if (GraphViewType != null)
+            {
+                if (!s_AllGraphViewObjects.TryGetValue(GraphViewType, out var objects))
+                {
+                    objects = new HashSet<GraphViewObject>();
+                    s_AllGraphViewObjects.Add(GraphViewType, objects);
+                }
+                objects.Add(this);
+            }
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            GraphViewType = Type.GetType(m_GraphViewTypeName);
+            var type = Type.GetType(m_GraphViewTypeName);
+            if (GraphViewType != type)
+            {
+                GraphViewType = type;
+                RegisterSelf();
+            }
             m_GuidtoSerializedGraphElements.Clear();
             foreach (var i in m_SerializedGraphElements)
                 m_GuidtoSerializedGraphElements.Add(i.Guid, i);

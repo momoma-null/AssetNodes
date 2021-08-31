@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MomomaAssets.GraphView
 {
-    public interface INodeData : IGraphElementData, IPortDataContainer
+    interface INodeData : IGraphElementData, IPortDataContainer
     {
         bool Expanded { get; }
         INodeProcessor Processor { get; }

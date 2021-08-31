@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MomomaAssets.GraphView
 {
-    public interface IGroupData : IGraphElementData
+    interface IGroupData : IGraphElementData
     {
         string Name { get; }
         int ElementCount { get; }
