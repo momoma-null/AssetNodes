@@ -55,7 +55,7 @@ namespace MomomaAssets.GraphView
             }
             if (edge.output == null || edge.input == null)
             {
-                graphView.RemoveElement(edge);
+                graphView.DeleteElements(new[] { edge });
             }
         }
 
