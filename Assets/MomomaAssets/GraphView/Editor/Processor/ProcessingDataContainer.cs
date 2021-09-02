@@ -30,16 +30,16 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        public T Get<T>(PortData portData, Func<T> defaultValue) where T : IProcessingData
+        public T Get<T>(PortData portData, Func<T> defaultValue, Func<T, T> copyValue) where T : IProcessingData
         {
             var id = portData.Id;
             if (m_ProcessingDatas.TryGetValue(id, out var data) && data is T t1)
-                return t1;
+                return copyValue(t1);
             if (m_InputToPreNodes.TryGetValue(id, out var preNodes))
                 foreach (var preNode in preNodes)
                     m_GetAction(preNode, this);
             if (m_ProcessingDatas.TryGetValue(id, out data) && data is T t2)
-                return t2;
+                return copyValue(t2);
             var t3 = defaultValue();
             m_ProcessingDatas[id] = t3;
             return t3;

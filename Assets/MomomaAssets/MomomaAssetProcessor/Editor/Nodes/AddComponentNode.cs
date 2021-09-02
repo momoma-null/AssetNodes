@@ -62,7 +62,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup);
             if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(m_MenuPath, out var componentType))
             {
                 var regex = new Regex(m_Regex);

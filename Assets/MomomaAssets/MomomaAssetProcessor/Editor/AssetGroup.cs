@@ -17,6 +17,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
     public static class AssetGroupExtension
     {
         public static AssetGroup NewAssetGroup(this INodeProcessor t) => new AssetGroup();
+        public static AssetGroup CopyAssetGroup(this INodeProcessor t, AssetGroup sourceGroup) => new AssetGroup(sourceGroup);
     }
 
     public sealed class AssetData

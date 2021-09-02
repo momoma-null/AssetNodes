@@ -15,49 +15,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [CreateElement("Group/Group by Type")]
     sealed class GroupByTypeNode : INodeProcessor
     {
-        static GroupByTypeNode()
-        {
-            INodeDataUtility.AddConstructor(() => new GroupByTypeNode());
-        }
-
-        GroupByTypeNode() { }
-
-        [SerializeField]
-        string[] m_Regexs = new string[1];
-
-        public INodeProcessorEditor ProcessorEditor { get; } = new GroupByTypeNodeEditor();
-
-        public void Initialize(IPortDataContainer portDataContainer)
-        {
-            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
-        }
-
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
-        {
-            var assetGroup = new AssetGroup(container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup));
-            for (var i = 0; i < m_Regexs.Length; ++i)
-            {
-                var assetTypeData = UnityObjectTypeUtility.GetAssetTypeData(portDataContainer.OutputPorts[i].PortTypeName);
-                var regex = new Regex(m_Regexs[i]);
-                var result = new AssetGroup();
-                foreach (var assets in assetGroup)
-                {
-                    var path = assets.AssetPath;
-                    var importer = AssetImporter.GetAtPath(path);
-                    if ((importer != null && assetTypeData.IsTarget(importer)) || assetTypeData.IsTarget(assets.MainAsset))
-                    {
-                        if (string.IsNullOrEmpty(m_Regexs[i]) || regex.Match(path).Success)
-                        {
-                            result.Add(assets);
-                        }
-                    }
-                }
-                assetGroup.ExceptWith(result);
-                container.Set(portDataContainer.OutputPorts[i], result);
-            }
-        }
-
         sealed class GroupByTypeNodeEditor : INodeProcessorEditor
         {
             ReorderableList? m_ReorderableList;
@@ -139,6 +96,49 @@ namespace MomomaAssets.GraphView.AssetProcessor
             bool CanRemove(ReorderableList list)
             {
                 return list.count > 1;
+            }
+        }
+
+        static GroupByTypeNode()
+        {
+            INodeDataUtility.AddConstructor(() => new GroupByTypeNode());
+        }
+
+        GroupByTypeNode() { }
+
+        [SerializeField]
+        string[] m_Regexs = new string[1];
+
+        public INodeProcessorEditor ProcessorEditor { get; } = new GroupByTypeNodeEditor();
+
+        public void Initialize(IPortDataContainer portDataContainer)
+        {
+            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            var assetGroup = new AssetGroup(container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup));
+            for (var i = 0; i < m_Regexs.Length; ++i)
+            {
+                var assetTypeData = UnityObjectTypeUtility.GetAssetTypeData(portDataContainer.OutputPorts[i].PortTypeName);
+                var regex = new Regex(m_Regexs[i]);
+                var result = new AssetGroup();
+                foreach (var assets in assetGroup)
+                {
+                    var path = assets.AssetPath;
+                    var importer = AssetImporter.GetAtPath(path);
+                    if ((importer != null && assetTypeData.IsTarget(importer)) || assetTypeData.IsTarget(assets.MainAsset))
+                    {
+                        if (string.IsNullOrEmpty(m_Regexs[i]) || regex.Match(path).Success)
+                        {
+                            result.Add(assets);
+                        }
+                    }
+                }
+                assetGroup.ExceptWith(result);
+                container.Set(portDataContainer.OutputPorts[i], result);
             }
         }
     }

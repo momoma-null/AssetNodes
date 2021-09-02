@@ -327,7 +327,9 @@ namespace MomomaAssets.GraphView
             foreach (var serializedGraphElement in serializedGraphElements)
             {
                 var rect = serializedGraphElement.Position;
-                if (allRect == Rect.zero)
+                if (rect.size == Vector2.zero)
+                    continue;
+                if (allRect.size == Vector2.zero)
                     allRect = rect;
                 else
                 {

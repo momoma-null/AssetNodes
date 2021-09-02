@@ -31,7 +31,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup);
             foreach (var asset in assetGroup)
             {
                 if (asset.MainAsset is PlayableAsset)

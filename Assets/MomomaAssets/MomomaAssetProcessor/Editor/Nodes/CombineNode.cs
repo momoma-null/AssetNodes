@@ -34,7 +34,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             var output = new AssetGroup();
             foreach (var i in portDataContainer.InputPorts)
-                output.UnionWith(container.Get(i, this.NewAssetGroup));
+                output.UnionWith(container.Get(i, this.NewAssetGroup, this.CopyAssetGroup));
             container.Set(portDataContainer.OutputPorts[0], output);
         }
 
