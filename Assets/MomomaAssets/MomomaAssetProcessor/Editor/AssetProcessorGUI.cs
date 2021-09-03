@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    sealed class AssetProcessorGUI : EditorWindow
+    internal sealed class AssetProcessorGUI : EditorWindow
     {
         [MenuItem("MomomaTools/Asset Processor", false, 500)]
         static void ShowWindow()

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 
@@ -7,7 +6,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
-    sealed class CoreAssetProcessor : AssetPostprocessor
+    internal sealed class CoreAssetProcessor : AssetPostprocessor
     {
         public static bool IsProcessing { get; private set; }
         public static IEnumerable<string> ImportedAssetsPaths { get; private set; } = Array.Empty<string>();
