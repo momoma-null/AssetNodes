@@ -20,6 +20,7 @@ namespace MomomaAssets.GraphView
 
         DefaultEdgeDataEditor? m_Editor;
 
+        public string GraphElementName => "Edge";
         public int Priority => 1;
         public IGraphElementEditor GraphElementEditor => m_Editor ?? (m_Editor = new DefaultEdgeDataEditor());
         public string InputPortGuid { get => m_InputPortGuid; set => m_InputPortGuid = value; }

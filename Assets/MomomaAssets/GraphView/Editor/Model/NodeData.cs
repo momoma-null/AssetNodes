@@ -29,6 +29,7 @@ namespace MomomaAssets.GraphView
         [NonSerialized]
         NodeDataEditor? m_NodeDataEditor;
 
+        public string GraphElementName => m_Processor.GetType().Name;
         public int Priority => 0;
         public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.ProcessorEditor));
         public IEnumerable<UnityObject> Assets => m_Processor is IAdditionalAssetHolder assetHolder ? assetHolder.Assets : Array.Empty<UnityObject>();

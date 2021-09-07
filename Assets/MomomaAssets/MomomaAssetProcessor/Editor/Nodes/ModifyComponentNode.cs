@@ -76,7 +76,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                     {
                                         if (!go.TryGetComponent(type, out var comp))
                                             comp = go.AddComponent(type);
-                                        var tempPreset = new Preset(comp);
+                                        var tempPreset = new Preset(comp) { hideFlags = HideFlags.HideInHierarchy };
                                         try
                                         {
                                             using (var tempSo = new SerializedObject(tempPreset))

@@ -8,6 +8,7 @@ namespace MomomaAssets.GraphView
 {
     interface IGraphElementData
     {
+        string GraphElementName { get; }
         int Priority { get; }
         IGraphElementEditor GraphElementEditor { get; }
         GraphElement Deserialize();

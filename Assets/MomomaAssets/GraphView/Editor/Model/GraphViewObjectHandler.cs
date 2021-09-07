@@ -10,7 +10,7 @@ namespace MomomaAssets.GraphView
 {
     sealed class GraphViewObjectHandler : IDisposable, IEquatable<GraphViewObjectHandler>
     {
-        public GraphViewObjectHandler(GraphViewObject graphViewObject, Type graphViewType, Action<string> onGraphElementChanged, Action onGraphViewChanged, NodeGraphProcessor nodeGraphProcessor)
+        public GraphViewObjectHandler(GraphViewObject graphViewObject, Type graphViewType, Action<ISerializedGraphElement> onGraphElementChanged, Action onGraphViewChanged, NodeGraphProcessor nodeGraphProcessor)
         {
             m_GraphViewObject = graphViewObject;
             m_SerializedGraphView = graphViewObject;
@@ -19,23 +19,17 @@ namespace MomomaAssets.GraphView
             using (var sp = m_SerializedObject.FindProperty("m_GraphViewTypeName"))
                 sp.stringValue = graphViewType.AssemblyQualifiedName;
             m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
-            m_OnGraphElementChanged = onGraphElementChanged;
-            foreach (var element in m_SerializedGraphView.SerializedGraphElements)
-            {
-                if (element is GraphElementObject graphElementObject)
-                {
-                    graphElementObject.onValueChanged += m_OnGraphElementChanged;
-                }
-            }
-            m_OnGraphViewChanged = onGraphViewChanged;
+            this.onGraphElementChanged = onGraphElementChanged;
+            this.onGraphViewChanged = onGraphViewChanged;
             m_NodeGraphProcessor = nodeGraphProcessor;
             Undo.undoRedoPerformed += UndoRedoPerformed;
+            Undo.postprocessModifications += PostprocessModifications;
         }
 
         ~GraphViewObjectHandler() => Dispose();
 
-        readonly Action<string> m_OnGraphElementChanged;
-        readonly Action m_OnGraphViewChanged;
+        readonly Action<ISerializedGraphElement> onGraphElementChanged;
+        readonly Action onGraphViewChanged;
         readonly NodeGraphProcessor m_NodeGraphProcessor;
         readonly SerializedObject m_SerializedObject;
         readonly SerializedProperty m_SerializedGraphElementsProperty;
@@ -48,17 +42,8 @@ namespace MomomaAssets.GraphView
 
         public void Dispose()
         {
-            if (m_GraphViewObject != null)
-            {
-                foreach (var element in m_SerializedGraphView.SerializedGraphElements)
-                {
-                    if (element is GraphElementObject graphElementObject)
-                    {
-                        graphElementObject.onValueChanged -= m_OnGraphElementChanged;
-                    }
-                }
-            }
             Undo.undoRedoPerformed -= UndoRedoPerformed;
+            Undo.postprocessModifications -= PostprocessModifications;
             m_SerializedGraphElementsProperty.Dispose();
             m_SerializedObject.Dispose();
         }
@@ -82,20 +67,22 @@ namespace MomomaAssets.GraphView
 
         void UndoRedoPerformed()
         {
-            m_OnGraphViewChanged();
-            RegisterAllValueChangedEvents();
+            onGraphViewChanged();
         }
 
-        void RegisterAllValueChangedEvents()
+        UndoPropertyModification[] PostprocessModifications(UndoPropertyModification[] modifications)
         {
-            foreach (var element in m_SerializedGraphView.SerializedGraphElements)
+            foreach (var i in modifications)
             {
-                if (element is GraphElementObject graphElementObject)
+                if (i.currentValue.target is ISerializedGraphElement serializedGraphElement)
                 {
-                    graphElementObject.onValueChanged -= m_OnGraphElementChanged;
-                    graphElementObject.onValueChanged += m_OnGraphElementChanged;
+                    if (m_SerializedGraphView.GuidtoSerializedGraphElements.ContainsKey(serializedGraphElement.Guid))
+                    {
+                        onGraphElementChanged(serializedGraphElement);
+                    }
                 }
             }
+            return modifications;
         }
 
         public sealed class SetScope : IDisposable
@@ -178,7 +165,6 @@ namespace MomomaAssets.GraphView
                             Undo.RegisterCreatedObjectUndo(i, $"Create {i.name}");
                     }
                 }
-                graphElementObject.onValueChanged += m_Handler.m_OnGraphElementChanged;
                 ++m_Handler.m_SerializedGraphElementsProperty.arraySize;
                 using (var sp = m_Handler.m_SerializedGraphElementsProperty.GetArrayElementAtIndex(m_Handler.m_SerializedGraphElementsProperty.arraySize - 1))
                     sp.objectReferenceValue = graphElementObject;
@@ -203,7 +189,6 @@ namespace MomomaAssets.GraphView
                         {
                             sp.objectReferenceValue = null;
                             sp.DeleteCommand();
-                            graphElementObject.onValueChanged -= m_Handler.m_OnGraphElementChanged;
                             m_ToDeleteAssets.Add(graphElementObject);
                         }
                     }

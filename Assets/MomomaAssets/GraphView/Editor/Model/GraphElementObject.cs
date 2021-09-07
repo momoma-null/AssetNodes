@@ -20,8 +20,6 @@ namespace MomomaAssets.GraphView
 
         SerializedObject? m_SerializedObject;
 
-        public event Action<string>? onValueChanged;
-
         public string Guid
         {
             get => m_Guid;
@@ -31,8 +29,6 @@ namespace MomomaAssets.GraphView
                 {
                     m_SerializedObject.Update();
                     using (var sp = m_SerializedObject.FindProperty(nameof(m_Guid)))
-                        sp.stringValue = value;
-                    using (var sp = m_SerializedObject.FindProperty("m_Name"))
                         sp.stringValue = value;
                     m_SerializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
@@ -64,19 +60,14 @@ namespace MomomaAssets.GraphView
                     m_SerializedObject.Update();
                     using (var sp = m_SerializedObject.FindProperty(nameof(m_GraphElementData)))
                         sp.managedReferenceValue = value;
+                    using (var sp = m_SerializedObject.FindProperty("m_Name"))
+                        sp.stringValue = value?.GraphElementName;
                     m_SerializedObject.ApplyModifiedProperties();
                 }
             }
         }
 
         public SerializedObject? SerializedObject => m_SerializedObject;
-
-        void OnValidate()
-        {
-            m_SerializedObject?.UpdateIfRequiredOrScript();
-            if (Event.current?.rawType != EventType.Layout)
-                onValueChanged?.Invoke(Guid);
-        }
 
         void Awake()
         {

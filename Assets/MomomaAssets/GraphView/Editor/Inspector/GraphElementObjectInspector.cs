@@ -36,11 +36,19 @@ namespace MomomaAssets.GraphView
             if (target is GraphElementObject graphElementObject)
             {
                 if (m_Editor != null && m_GraphElementDataProperty != null)
+                {
                     using (var prop = m_GraphElementDataProperty.Copy())
+                    using (var change = new EditorGUI.ChangeCheckScope())
+                    {
                         m_Editor.OnGUI(prop);
+                        if (change.changed)
+                        {
+                            serializedObject.ApplyModifiedProperties();
+                            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+                        }
+                    }
+                }
             }
-            if (serializedObject.hasModifiedProperties)
-                serializedObject.ApplyModifiedProperties();
         }
     }
 }

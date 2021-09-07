@@ -422,14 +422,11 @@ namespace MomomaAssets.GraphView
             return graphElementObject;
         }
 
-        void OnGraphElementChanged(string guid)
+        void OnGraphElementChanged(ISerializedGraphElement serializedGraphElement)
         {
-            var element = m_GraphView.GetElementByGuid(guid);
+            var element = m_GraphView.GetElementByGuid(serializedGraphElement.Guid);
             if (m_GraphViewObjectHandler != null && element != null)
-            {
-                if (m_GraphViewObjectHandler.GuidToSerializedGraphElements.TryGetValue(guid, out var serializedGraphElement))
-                    serializedGraphElement.Deserialize(element, m_GraphView);
-            }
+                serializedGraphElement.Deserialize(element, m_GraphView);
         }
 
         public void StartProcess()

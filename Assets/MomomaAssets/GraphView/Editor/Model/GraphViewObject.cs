@@ -49,13 +49,15 @@ namespace MomomaAssets.GraphView
 
         void OnDestroy()
         {
-            if (GraphViewType != null)
-            {
-                if (s_AllGraphViewObjects.TryGetValue(GraphViewType, out var objects))
-                {
-                    objects.Remove(this);
-                }
-            }
+            UnregisterSelf();
+        }
+
+        void OnEnable()
+        {
+            // to wait for the deserialization of GraphElementObject
+            m_GuidtoSerializedGraphElements.Clear();
+            foreach (var i in m_SerializedGraphElements)
+                m_GuidtoSerializedGraphElements.Add(i.Guid, i);
         }
 
         void RegisterSelf()
@@ -71,11 +73,23 @@ namespace MomomaAssets.GraphView
             }
         }
 
+        void UnregisterSelf()
+        {
+            if (GraphViewType != null)
+            {
+                if (s_AllGraphViewObjects.TryGetValue(GraphViewType, out var objects))
+                {
+                    objects.Remove(this);
+                }
+            }
+        }
+
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             var type = Type.GetType(m_GraphViewTypeName);
             if (GraphViewType != type)
             {
+                UnregisterSelf();
                 GraphViewType = type;
                 RegisterSelf();
             }
