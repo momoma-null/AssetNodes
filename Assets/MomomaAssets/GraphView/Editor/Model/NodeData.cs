@@ -44,13 +44,7 @@ namespace MomomaAssets.GraphView
             m_Processor.Initialize(this);
         }
 
-        public GraphElement Deserialize()
-        {
-            var node = new BindableNode(this);
-            PortDataToPort(InputPorts, node.inputContainer.Query<Port>().ToList());
-            PortDataToPort(OutputPorts, node.outputContainer.Query<Port>().ToList());
-            return node;
-        }
+        public GraphElement Deserialize() => new BindableNode(this);
 
         public void OnClone()
         {
@@ -83,7 +77,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
@@ -114,7 +108,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
@@ -135,14 +129,6 @@ namespace MomomaAssets.GraphView
                 node.RefreshExpandedState();
             node.schedule.Execute(() => node.expanded = m_Expanded).ExecuteLater(1);
             graphView.DeleteElements(toDeleteElements);
-        }
-
-        static void PortDataToPort(IEnumerable<PortData> portDatas, IEnumerable<Port> ports)
-        {
-            using (var e1 = portDatas.GetEnumerator())
-            using (var e2 = ports.GetEnumerator())
-                while (e1.MoveNext() && e2.MoveNext())
-                    e2.Current.viewDataKey = e1.Current.Id;
         }
 
         public void ReplaceGuid(Dictionary<string, string> guids)

@@ -38,7 +38,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     m_ReorderableList.onRemoveCallback = Remove;
                     m_ReorderableList.onCanRemoveCallback = CanRemove;
                 }
-                m_RegexsProperty = processorProperty.FindPropertyRelative(nameof(m_Regexs));
+                m_RegexsProperty = processorProperty.FindPropertyRelative(nameof(m_Regexes));
                 m_OutputPortsProperty = outputPortsProperty;
                 if (m_OutputPortsProperty.arraySize != m_ReorderableList.count)
                 {
@@ -107,39 +107,51 @@ namespace MomomaAssets.GraphView.AssetProcessor
         GroupByTypeNode() { }
 
         [SerializeField]
-        string[] m_Regexs = new string[1];
+        string[] m_Regexes = new string[1];
 
         public INodeProcessorEditor ProcessorEditor { get; } = new GroupByTypeNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
+            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+        }
+
+        sealed class Output
+        {
+            public AssetGroup assetGroup { get; } = new AssetGroup();
+            public Regex regex { get; }
+            public AssetTypeData assetTypeData { get; }
+
+            public Output(string regex, string typeName)
+            {
+                this.regex = new Regex(regex);
+                assetTypeData = UnityObjectTypeUtility.GetAssetTypeData(typeName);
+            }
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = new AssetGroup(container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup));
-            for (var i = 0; i < m_Regexs.Length; ++i)
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var outputs = new Output[portDataContainer.OutputPorts.Count];
+            for (var i = 0; i < outputs.Length; ++i)
+                outputs[i] = new Output(m_Regexes[i] ?? string.Empty, portDataContainer.OutputPorts[i].PortTypeName);
+            foreach (var assets in assetGroup)
             {
-                var assetTypeData = UnityObjectTypeUtility.GetAssetTypeData(portDataContainer.OutputPorts[i].PortTypeName);
-                var regex = new Regex(m_Regexs[i]);
-                var result = new AssetGroup();
-                foreach (var assets in assetGroup)
+                foreach (var o in outputs)
                 {
-                    var path = assets.AssetPath;
-                    var importer = AssetImporter.GetAtPath(path);
-                    if ((importer != null && assetTypeData.IsTarget(importer)) || assetTypeData.IsTarget(assets.MainAsset))
+                    if ((assets.Importer != null && o.assetTypeData.IsTarget(assets.Importer)) || o.assetTypeData.IsTarget(assets.MainAsset))
                     {
-                        if (string.IsNullOrEmpty(m_Regexs[i]) || regex.Match(path).Success)
+                        if (o.regex.Match(assets.AssetPath).Success)
                         {
-                            result.Add(assets);
+                            o.assetGroup.Add(assets);
+                            break;
                         }
                     }
                 }
-                assetGroup.ExceptWith(result);
-                container.Set(portDataContainer.OutputPorts[i], result);
             }
+            for (var i = 0; i < outputs.Length; ++i)
+                container.Set(portDataContainer.OutputPorts[i], outputs[i].assetGroup);
         }
     }
 }

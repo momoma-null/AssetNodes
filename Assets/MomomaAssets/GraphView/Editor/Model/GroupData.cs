@@ -53,7 +53,7 @@ namespace MomomaAssets.GraphView
                 throw new InvalidOperationException();
             if (m_IncludingGuidSet.Count == 0)
             {
-                graphView.RemoveElement(group);
+                graphView.DeleteElements(new[] { group });
                 return;
             }
             group.title = m_Name;

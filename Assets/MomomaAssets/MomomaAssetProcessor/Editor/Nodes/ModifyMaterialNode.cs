@@ -273,13 +273,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(Material)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(Material)));
+            portDataContainer.InputPorts.Add(new PortData(typeof(Material), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(Material), isMulti: true));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
             if (m_Shader != null)
             {
                 foreach (var assets in assetGroup)

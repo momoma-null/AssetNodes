@@ -8,41 +8,100 @@ namespace MomomaAssets.GraphView
     public sealed class ProcessingDataContainer
     {
         readonly Dictionary<string, IProcessingData> m_ProcessingDatas = new Dictionary<string, IProcessingData>();
-        readonly Action<string, ProcessingDataContainer> m_GetAction;
-        readonly IReadOnlyDictionary<string, HashSet<string>> m_InputToPreNodes;
-        readonly IReadOnlyDictionary<string, HashSet<string>> m_OutputToInputs;
+        readonly Action<INodeData, ProcessingDataContainer> getData;
+        readonly IReadOnlyDictionary<string, HashSet<string>> m_InputPortToOutputPorts;
+        readonly IReadOnlyDictionary<string, INodeData> m_OutputPortToNodeData;
 
-        public ProcessingDataContainer(Action<string, ProcessingDataContainer> getAction, IReadOnlyDictionary<string, HashSet<string>> inputToPreNodes, IReadOnlyDictionary<string, HashSet<string>> outputToInputs)
+        internal IReadOnlyCollection<INodeData> EndNodeDatas { get; }
+
+        internal ProcessingDataContainer(Action<INodeData, ProcessingDataContainer> getData, IReadOnlyDictionary<string, ISerializedGraphElement> guidToSerializedGraphElements)
         {
-            m_GetAction = getAction;
-            m_InputToPreNodes = inputToPreNodes;
-            m_OutputToInputs = outputToInputs;
+            this.getData = getData;
+            var outputPortToNodeData = new Dictionary<string, INodeData>();
+            foreach (var i in guidToSerializedGraphElements.Values)
+            {
+                if (i.GraphElementData is INodeData nodeData)
+                {
+                    foreach (var port in nodeData.OutputPorts)
+                    {
+                        outputPortToNodeData[port.Id] = nodeData;
+                    }
+                }
+            }
+            var connectedOutputPorts = new HashSet<string>();
+            var inputPortToOutputPorts = new Dictionary<string, HashSet<string>>();
+            foreach (var i in guidToSerializedGraphElements.Values)
+            {
+                if (i.GraphElementData is IEdgeData edgeData)
+                {
+                    connectedOutputPorts.Add(edgeData.OutputPortGuid);
+                    if (!inputPortToOutputPorts.TryGetValue(edgeData.InputPortGuid, out var outputPorts))
+                    {
+                        outputPorts = new HashSet<string>();
+                        inputPortToOutputPorts.Add(edgeData.InputPortGuid, outputPorts);
+                    }
+                    outputPorts.Add(edgeData.OutputPortGuid);
+                }
+            }
+            var endNodeDatas = new HashSet<INodeData>();
+            foreach (var i in guidToSerializedGraphElements.Values)
+            {
+                if (i.GraphElementData is INodeData nodeData)
+                {
+                    var isEndNode = true;
+                    foreach (var port in nodeData.OutputPorts)
+                    {
+                        if (connectedOutputPorts.Contains(port.Id))
+                        {
+                            isEndNode = false;
+                            break;
+                        }
+                    }
+                    if (isEndNode)
+                        endNodeDatas.Add(nodeData);
+                }
+            }
+            m_OutputPortToNodeData = outputPortToNodeData;
+            m_InputPortToOutputPorts = inputPortToOutputPorts;
+            EndNodeDatas = endNodeDatas;
         }
 
         public void Set<T>(PortData portData, T data) where T : IProcessingData
         {
-            var id = portData.Id;
-            m_ProcessingDatas[id] = data;
-            if (m_OutputToInputs.TryGetValue(id, out var inputs))
-            {
-                foreach (var i in inputs)
-                    m_ProcessingDatas[i] = data;
-            }
+            m_ProcessingDatas[portData.Id] = data;
         }
 
-        public T Get<T>(PortData portData, Func<T> defaultValue, Func<T, T> copyValue) where T : IProcessingData
+        public T Get<T>(PortData portData, Func<IEnumerable<T>, T> combine) where T : IProcessingData
         {
             var id = portData.Id;
             if (m_ProcessingDatas.TryGetValue(id, out var data) && data is T t1)
-                return copyValue(t1);
-            if (m_InputToPreNodes.TryGetValue(id, out var preNodes))
-                foreach (var preNode in preNodes)
-                    m_GetAction(preNode, this);
-            if (m_ProcessingDatas.TryGetValue(id, out data) && data is T t2)
-                return copyValue(t2);
-            var t3 = defaultValue();
-            m_ProcessingDatas[id] = t3;
-            return t3;
+                return t1;
+            var oDatas = new List<T>();
+            if (m_InputPortToOutputPorts.TryGetValue(id, out var outputPorts))
+            {
+                oDatas.Capacity = outputPorts.Count;
+                foreach (var o in outputPorts)
+                {
+                    if (m_ProcessingDatas.TryGetValue(o, out var oData) && oData is T t2)
+                    {
+                        oDatas.Add(t2);
+                    }
+                    else
+                    {
+                        if (m_OutputPortToNodeData.TryGetValue(o, out var nodeData))
+                        {
+                            getData(nodeData, this);
+                            if (m_ProcessingDatas.TryGetValue(o, out oData) && oData is T t3)
+                            {
+                                oDatas.Add(t3);
+                            }
+                        }
+                    }
+                }
+            }
+            var t4 = combine(oDatas);
+            m_ProcessingDatas[id] = t4;
+            return t4;
         }
     }
 }

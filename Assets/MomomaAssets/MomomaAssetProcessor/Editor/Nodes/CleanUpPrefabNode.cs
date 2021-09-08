@@ -24,13 +24,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject)));
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject), isMulti: true));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
             foreach (var asset in assetGroup)
             {
                 var prefabHash = new HashSet<GameObject>();
@@ -91,7 +90,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }

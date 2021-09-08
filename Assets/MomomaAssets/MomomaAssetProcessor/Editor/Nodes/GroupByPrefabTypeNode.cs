@@ -23,15 +23,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Regular)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Model)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Variant)));
+            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Regular), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Model), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Variant), isMulti: true));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], this.NewAssetGroup, this.CopyAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();

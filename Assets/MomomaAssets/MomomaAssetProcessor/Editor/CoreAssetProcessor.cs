@@ -13,9 +13,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(AssetDatabase.StartAssetEditing, () =>
             {
+                AssetDatabase.SaveAssets();
                 AssetDatabase.StopAssetEditing();
                 AssetDatabase.Refresh();
-                AssetDatabase.SaveAssets();
             },
             EditorUtility.UnloadUnusedAssetsImmediate);
 

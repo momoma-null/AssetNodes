@@ -23,6 +23,7 @@ namespace MomomaAssets.GraphView
         public string PortTypeName => m_PortType;
         public string PortName => m_PortName;
         public string Id { get => m_Id; set => m_Id = value; }
+        public bool IsMulti => m_IsMulti;
 
         public PortData(Type type, string name = "", bool isMulti = false, string? id = null)
         {

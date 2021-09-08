@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -8,16 +9,18 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     public sealed class AssetGroup : HashSet<AssetData>, IProcessingData
     {
+        public static Func<IEnumerable<AssetGroup>, AssetGroup> combineAssetGroup = assetGroups =>
+        {
+            var combined = new AssetGroup();
+            foreach (var i in assetGroups)
+                combined.UnionWith(i);
+            return combined;
+        };
+
         public AssetGroup() { }
         public AssetGroup(IEnumerable<AssetData> source) : base(source) { }
 
         public string GropuName { get; set; } = "";
-    }
-
-    public static class AssetGroupExtension
-    {
-        public static AssetGroup NewAssetGroup(this INodeProcessor t) => new AssetGroup();
-        public static AssetGroup CopyAssetGroup(this INodeProcessor t, AssetGroup sourceGroup) => new AssetGroup(sourceGroup);
     }
 
     public sealed class AssetData

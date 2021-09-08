@@ -26,15 +26,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject)));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject)));
+            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var output = new AssetGroup();
             foreach (var i in portDataContainer.InputPorts)
-                output.UnionWith(container.Get(i, this.NewAssetGroup, this.CopyAssetGroup));
+                output.UnionWith(container.Get(i, AssetGroup.combineAssetGroup));
             container.Set(portDataContainer.OutputPorts[0], output);
         }
 
