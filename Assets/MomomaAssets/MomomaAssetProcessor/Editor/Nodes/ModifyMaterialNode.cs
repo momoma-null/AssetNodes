@@ -22,8 +22,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [Serializable]
         struct FloatValue : IPropertyValue
         {
+            [SerializeField]
             bool enabled;
+            [SerializeField]
             string propertyName;
+            [SerializeField]
             float floatValue;
 
             public bool Enabled { get => enabled; set => enabled = value; }
@@ -44,8 +47,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [Serializable]
         struct ColorValue : IPropertyValue
         {
+            [SerializeField]
             bool enabled;
+            [SerializeField]
             string propertyName;
+            [SerializeField]
             Color colorValue;
 
             public bool Enabled { get => enabled; set => enabled = value; }
@@ -66,8 +72,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [Serializable]
         struct VectorValue : IPropertyValue
         {
+            [SerializeField]
             bool enabled;
+            [SerializeField]
             string propertyName;
+            [SerializeField]
             Vector4 vectorValue;
 
             public bool Enabled { get => enabled; set => enabled = value; }
@@ -88,10 +97,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [Serializable]
         struct TextureValue : IPropertyValue
         {
+            [SerializeField]
             bool enabled;
+            [SerializeField]
             string propertyName;
+            [SerializeField]
             Texture objectReferenceValue;
+            [SerializeField]
             Vector2 scale;
+            [SerializeField]
             Vector2 offset;
 
             public bool Enabled { get => enabled; set => enabled = value; }
