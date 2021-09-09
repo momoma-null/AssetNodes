@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -21,7 +21,7 @@ namespace MomomaAssets.GraphView
         [NonSerialized]
         HashSet<string> m_IncludingGuidSet;
 
-        DefaultGraphElementEditor? m_Editor;
+        DefaultGraphElementEditor m_Editor;
 
         public string GraphElementName => $"{m_Name} Group";
         public int Priority => 1;

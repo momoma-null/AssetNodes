@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -121,7 +121,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
-            Action<GameObject>? process = null;
+            Action<GameObject> process = null;
             foreach (var setting in m_Properties)
             {
                 switch (setting.PropertyType)

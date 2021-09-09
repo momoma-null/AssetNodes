@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityObject = UnityEngine.Object;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -18,7 +18,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             readonly OverwriteTextureImporterNode m_Node;
 
-            Editor? m_CachedEditor;
+            Editor m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
 
@@ -69,9 +69,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         OverwriteTextureImporterNode() { }
 
         [SerializeField]
-        TextureImporter? m_Importer = null;
+        TextureImporter m_Importer = null;
 
-        OverwriteTextureImporterNodeEditor? m_Editor;
+        OverwriteTextureImporterNodeEditor m_Editor;
 
         public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new OverwriteTextureImporterNodeEditor(this));
         public IEnumerable<UnityObject> Assets

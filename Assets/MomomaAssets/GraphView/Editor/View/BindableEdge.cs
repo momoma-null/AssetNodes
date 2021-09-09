@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -87,7 +87,7 @@ namespace MomomaAssets.GraphView
         readonly IEdgeData m_EdgeData;
         readonly PersistentPortData m_InputPort;
         readonly PersistentPortData m_OutputPort;
-        GraphView? m_GraphView;
+        GraphView m_GraphView;
 
         public IGraphElementData GraphElementData => m_EdgeData;
 

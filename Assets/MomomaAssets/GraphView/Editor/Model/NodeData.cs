@@ -8,7 +8,7 @@ using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -27,7 +27,7 @@ namespace MomomaAssets.GraphView
         INodeProcessor m_Processor;
 
         [NonSerialized]
-        NodeDataEditor? m_NodeDataEditor;
+        NodeDataEditor m_NodeDataEditor;
 
         public string GraphElementName => m_Processor.GetType().Name;
         public int Priority => 0;

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -13,8 +13,8 @@ namespace MomomaAssets.GraphView
     {
         string Guid { get; set; }
         Rect Position { get; set; }
-        IGraphElementData? GraphElementData { get; set; }
-        SerializedObject? SerializedObject { get; }
+        IGraphElementData GraphElementData { get; set; }
+        SerializedObject SerializedObject { get; }
     }
 
     static class SerializedGraphElementExtensions

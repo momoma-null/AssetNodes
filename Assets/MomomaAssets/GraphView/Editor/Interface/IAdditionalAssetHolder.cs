@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {

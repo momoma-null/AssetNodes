@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityObject = UnityEngine.Object;
 using ReorderableList = UnityEditorInternal.ReorderableList;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -17,10 +17,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class GroupByTypeNodeEditor : INodeProcessorEditor
         {
-            ReorderableList? m_ReorderableList;
+            ReorderableList m_ReorderableList;
 
-            SerializedProperty? m_RegexsProperty;
-            SerializedProperty? m_OutputPortsProperty;
+            SerializedProperty m_RegexsProperty;
+            SerializedProperty m_OutputPortsProperty;
 
             public bool UseDefaultVisualElement => false;
 

@@ -1,5 +1,5 @@
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -38,7 +38,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 AssetTypeData.Create<AnimationClip>("AnimationClip"),
                 AssetTypeData.Create<AudioClip, AudioImporter>("AudioClip"),
                 AssetTypeData.Create<UnityEngine.Audio.AudioMixer>("AudioMixer"),
-                AssetTypeData.Create<ComputeShader, ComputeShaderImporter>("ComputeShader"),
+                AssetTypeData.Create<ComputeShader>("ComputeShader"),
                 AssetTypeData.Create<Font, TrueTypeFontImporter>("Font"),
                 AssetTypeData.Create<GUISkin>("GUISkin"),
                 AssetTypeData.Create<Material>("Material"),

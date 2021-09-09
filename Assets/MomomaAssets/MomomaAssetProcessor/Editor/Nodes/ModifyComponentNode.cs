@@ -6,7 +6,7 @@ using UnityEditor.Presets;
 using UnityObject = UnityEngine.Object;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -17,8 +17,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
-            Preset? m_Preset;
-            Editor? m_CachedEditor;
+            Preset m_Preset;
+            Editor m_CachedEditor;
             string m_OldMenuPath = "";
 
             public bool UseDefaultVisualElement => false;
@@ -121,9 +121,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         bool m_IncludeChildren = false;
         [SerializeField]
-        Preset? m_Preset = null;
+        Preset m_Preset = null;
 
-        ModifyComponentNodeEditor? m_Editor = null;
+        ModifyComponentNodeEditor m_Editor = null;
 
         public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyComponentNodeEditor(this));
         public IEnumerable<UnityObject> Assets

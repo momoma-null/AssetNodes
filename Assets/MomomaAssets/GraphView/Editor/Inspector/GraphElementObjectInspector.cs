@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -9,8 +9,8 @@ namespace MomomaAssets.GraphView
     [DefaultExecutionOrder(-9)]
     sealed class GraphElementObjectInspector : Editor
     {
-        IGraphElementEditor? m_Editor;
-        SerializedProperty? m_GraphElementDataProperty;
+        IGraphElementEditor m_Editor;
+        SerializedProperty m_GraphElementDataProperty;
 
         void OnEnable()
         {

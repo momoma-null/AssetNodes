@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -14,9 +14,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         }
 
         [SerializeField]
-        NodeGraphEditorData? m_Data;
+        NodeGraphEditorData m_Data;
 
-        NodeGraph? m_NodeGraph;
+        NodeGraph m_NodeGraph;
 
         void OnEnable()
         {

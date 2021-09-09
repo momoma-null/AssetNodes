@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -70,9 +70,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     if ((assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0 || !(assets.MainAsset is GameObject))
                         continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    var root = PrefabUtility.LoadPrefabContents(assets.AssetPath);
+                    try
                     {
-                        var root = scope.prefabContentsRoot;
                         foreach (var go in m_IncludeChildren ? root.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject) : new[] { root })
                         {
                             if (regex.Match(go.name).Success)
@@ -81,6 +81,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                     go.AddComponent(componentType);
                             }
                         }
+                    }
+                    finally
+                    {
+                        PrefabUtility.SaveAsPrefabAsset(root, assets.AssetPath);
+                        PrefabUtility.UnloadPrefabContents(root);
                     }
                 }
             }

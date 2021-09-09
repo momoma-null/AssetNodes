@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -137,8 +137,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             readonly ModifyMaterialNode m_Node;
 
-            MaterialEditor? m_MaterialEditor;
-            Material? m_Material;
+            MaterialEditor m_MaterialEditor;
+            Material m_Material;
 
             public ModifyMaterialNodeEditor(ModifyMaterialNode node)
             {
@@ -277,11 +277,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ModifyMaterialNode() { }
 
         [SerializeField]
-        Shader? m_Shader;
+        Shader m_Shader;
         [SerializeReference]
         IPropertyValue[] m_PropertyValues = Array.Empty<IPropertyValue>();
 
-        ModifyMaterialNodeEditor? m_Editor;
+        ModifyMaterialNodeEditor m_Editor;
 
         public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyMaterialNodeEditor(this));
 

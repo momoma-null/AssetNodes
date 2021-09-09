@@ -1,14 +1,14 @@
 ﻿using System;
 using UnityEditor.ProjectWindowCallback;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
     sealed class EndNameEditCallback : EndNameEditAction
     {
-        public event Action<string>? OnEndNameEdit;
-        public event Action? OnCancelled;
+        public event Action<string> OnEndNameEdit;
+        public event Action OnCancelled;
 
         public override void Action(int instanceId, string pathName, string resourceFile)
         {

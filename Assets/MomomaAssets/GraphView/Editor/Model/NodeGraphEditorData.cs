@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -9,7 +9,7 @@ namespace MomomaAssets.GraphView
     public sealed class NodeGraphEditorData
     {
         [SerializeField]
-        internal GraphViewObject? m_SelectedGraphViewObject;
+        internal GraphViewObject m_SelectedGraphViewObject;
         [SerializeField]
         internal string m_ViewDataKey = Guid.NewGuid().ToString();
     }

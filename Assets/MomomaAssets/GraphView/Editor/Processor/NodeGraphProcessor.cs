@@ -1,16 +1,16 @@
 ﻿using System;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
     public sealed class NodeGraphProcessor
     {
-        readonly Action? PreProcess;
-        readonly Action? PostProcess;
-        readonly Action? Completed;
+        readonly Action PreProcess;
+        readonly Action PostProcess;
+        readonly Action Completed;
 
-        public NodeGraphProcessor(Action? preProcess = null, Action? postProcess = null, Action? completed = null)
+        public NodeGraphProcessor(Action preProcess = null, Action postProcess = null, Action completed = null)
         {
             PreProcess = preProcess;
             PostProcess = postProcess;

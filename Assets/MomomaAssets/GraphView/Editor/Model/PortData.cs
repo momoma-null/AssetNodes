@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -25,7 +25,7 @@ namespace MomomaAssets.GraphView
         public string Id { get => m_Id; set => m_Id = value; }
         public bool IsMulti => m_IsMulti;
 
-        public PortData(Type type, string name = "", bool isMulti = false, string? id = null)
+        public PortData(Type type, string name = "", bool isMulti = false, string id = null)
         {
             m_PortType = type.AssemblyQualifiedName;
             m_PortName = name;

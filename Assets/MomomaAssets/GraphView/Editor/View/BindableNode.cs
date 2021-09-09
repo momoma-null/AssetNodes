@@ -5,7 +5,7 @@ using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -13,7 +13,7 @@ namespace MomomaAssets.GraphView
     {
         readonly INodeData m_Node;
 
-        Editor? m_Editor;
+        Editor m_Editor;
 
         public IGraphElementData GraphElementData => m_Node;
         public bool value
@@ -38,8 +38,8 @@ namespace MomomaAssets.GraphView
                 }
             }
         }
-        public IBinding? binding { get; set; }
-        public string? bindingPath { get; set; }
+        public IBinding binding { get; set; }
+        public string bindingPath { get; set; }
 
         public BindableNode(INodeData nodeData) : base()
         {
@@ -111,7 +111,7 @@ namespace MomomaAssets.GraphView
             else
             {
                 RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
-                var field = new IMGUIContainer(() => OnGUIHandler(serializedObject.targetObjects)) { cullingEnabled = true };
+                var field = new IMGUIContainer(() => OnGUIHandler(serializedObject.targetObjects));
                 extensionContainer.Add(field);
             }
             RefreshExpandedState();

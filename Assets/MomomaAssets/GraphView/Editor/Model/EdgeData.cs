@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -18,7 +18,7 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         string m_OutputPortGuid;
 
-        DefaultEdgeDataEditor? m_Editor;
+        DefaultEdgeDataEditor m_Editor;
 
         public string GraphElementName => "Edge";
         public int Priority => 1;

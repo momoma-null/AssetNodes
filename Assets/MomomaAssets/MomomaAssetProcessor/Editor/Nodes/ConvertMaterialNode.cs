@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -20,9 +20,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ConvertMaterialNode() { }
 
         [SerializeField]
-        Shader? m_SourceShader;
+        Shader m_SourceShader;
         [SerializeField]
-        Shader? m_DestinationShader;
+        Shader m_DestinationShader;
 
         public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 

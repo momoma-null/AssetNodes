@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         bool m_AutoReload = false;
 
         [SerializeField]
-        DefaultAsset? m_Folder;
+        DefaultAsset m_Folder;
 
         public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
 

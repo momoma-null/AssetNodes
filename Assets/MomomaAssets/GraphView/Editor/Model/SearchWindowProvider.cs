@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -11,10 +11,10 @@ namespace MomomaAssets.GraphView
 
     sealed class SearchWindowProvider : ScriptableObject, ISearchWindowProvider
     {
-        public IGraphViewCallbackReceiver? GraphViewCallbackReceiver { get; set; }
+        public IGraphViewCallbackReceiver GraphViewCallbackReceiver { get; set; }
         public Type graphViewType { get; set; } = typeof(GraphView);
 
-        List<SearchTreeEntry>? m_SearchTree;
+        List<SearchTreeEntry> m_SearchTree;
 
         void Awake()
         {

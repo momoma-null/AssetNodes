@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -58,7 +58,7 @@ namespace MomomaAssets.GraphView
             AssetDatabase.CreateAsset(m_GraphViewObject, pathName);
         }
 
-        public GraphElementObject? TryGetGraphElementObjectByGuid(string guid)
+        public GraphElementObject TryGetGraphElementObjectByGuid(string guid)
         {
             if (m_SerializedGraphView.GuidtoSerializedGraphElements.TryGetValue(guid, out var serializedGraphElement))
                 return serializedGraphElement as GraphElementObject;

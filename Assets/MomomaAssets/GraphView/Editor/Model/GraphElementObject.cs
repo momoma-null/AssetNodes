@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -16,9 +16,9 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         Rect m_Position = Rect.zero;
         [SerializeReference]
-        IGraphElementData? m_GraphElementData;
+        IGraphElementData m_GraphElementData;
 
-        SerializedObject? m_SerializedObject;
+        SerializedObject m_SerializedObject;
 
         public string Guid
         {
@@ -50,7 +50,7 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        public IGraphElementData? GraphElementData
+        public IGraphElementData GraphElementData
         {
             get => m_GraphElementData;
             set
@@ -67,7 +67,7 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        public SerializedObject? SerializedObject => m_SerializedObject;
+        public SerializedObject SerializedObject => m_SerializedObject;
 
         void Awake()
         {
@@ -97,12 +97,12 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         Rect m_Position;
         [SerializeReference]
-        IGraphElementData? m_GraphElementData;
+        IGraphElementData m_GraphElementData;
 
         public string Guid { get => m_Guid; set => m_Guid = value; }
         public Rect Position { get => m_Position; set => m_Position = value; }
-        public IGraphElementData? GraphElementData { get => m_GraphElementData; set => m_GraphElementData = value; }
-        public SerializedObject? SerializedObject => null;
+        public IGraphElementData GraphElementData { get => m_GraphElementData; set => m_GraphElementData = value; }
+        public SerializedObject SerializedObject => null;
 
         public SerializedGraphElement() { }
     }

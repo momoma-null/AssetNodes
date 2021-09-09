@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -28,7 +28,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public UnityObject MainAsset { get; }
         public UnityObject[] AllAssets { get; }
         public string AssetPath { get; }
-        public AssetImporter? Importer { get; }
+        public AssetImporter Importer { get; }
 
         public AssetData(string path)
         {

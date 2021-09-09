@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -22,7 +22,7 @@ namespace MomomaAssets.GraphView
         readonly NodeGraphProcessor m_NodeGraphProcessor;
         readonly NodeGraphEditorData m_NodeGraphEditorData;
 
-        GraphViewObjectHandler? m_GraphViewObjectHandler = null;
+        GraphViewObjectHandler m_GraphViewObjectHandler = null;
         bool isDisposed = false;
 
         List<ISelectable> ISelection.selection => m_GraphView.selection;
@@ -121,7 +121,7 @@ namespace MomomaAssets.GraphView
             }
         }
 
-        void CreateGraphViewObjectHandler(GraphViewObject? graphViewObject)
+        void CreateGraphViewObjectHandler(GraphViewObject graphViewObject)
         {
             if (!isDisposed)
                 m_NodeGraphEditorData.m_SelectedGraphViewObject = graphViewObject;

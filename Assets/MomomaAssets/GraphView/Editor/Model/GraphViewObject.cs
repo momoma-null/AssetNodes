@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
@@ -31,7 +31,7 @@ namespace MomomaAssets.GraphView
         [NonSerialized]
         Dictionary<string, ISerializedGraphElement> m_GuidtoSerializedGraphElements = new Dictionary<string, ISerializedGraphElement>();
 
-        public Type? GraphViewType { get; private set; }
+        public Type GraphViewType { get; private set; }
         IReadOnlyList<ISerializedGraphElement> ISerializedGraphView.SerializedGraphElements => m_SerializedGraphElements;
         IReadOnlyDictionary<string, ISerializedGraphElement> ISerializedGraphView.GuidtoSerializedGraphElements => m_GuidtoSerializedGraphElements;
 
