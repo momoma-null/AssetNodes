@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {
