@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Experimental.GraphView;
 
+#nullable enable
+
 namespace MomomaAssets.GraphView
 {
     using GraphView = UnityEditor.Experimental.GraphView.GraphView;
