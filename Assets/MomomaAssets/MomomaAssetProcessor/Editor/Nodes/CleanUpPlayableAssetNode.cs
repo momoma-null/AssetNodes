@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Playables;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
