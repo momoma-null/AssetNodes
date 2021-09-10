@@ -22,10 +22,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject), isMulti: true));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Regular), isMulti: true));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Model), isMulti: true));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), nameof(PrefabAssetType.Variant), isMulti: true));
+            portDataContainer.AddInputPort<GameObject>(isMulti: true);
+            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Regular), true);
+            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Model), true);
+            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Variant), true);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)

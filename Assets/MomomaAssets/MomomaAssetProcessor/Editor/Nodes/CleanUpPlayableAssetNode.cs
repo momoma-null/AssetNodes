@@ -24,7 +24,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+            portDataContainer.AddInputPort<UnityObject>(isMulti: true);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
@@ -32,7 +32,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
             foreach (var asset in assetGroup)
             {
-                if (asset.MainAsset is PlayableAsset)
+                if (asset.MainAssetType == typeof(PlayableAsset))
                 {
                     var remaindAssets = new HashSet<UnityObject>(asset.AllAssets);
                     remaindAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));

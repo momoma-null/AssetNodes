@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MomomaAssets.GraphView
 {
     [Serializable]
-    public sealed class PortData : ISerializationCallbackReceiver
+    public sealed class PortData
     {
         public static string GetNewId() => Guid.NewGuid().ToString();
 
@@ -25,20 +25,12 @@ namespace MomomaAssets.GraphView
         public string Id { get => m_Id; set => m_Id = value; }
         public bool IsMulti => m_IsMulti;
 
-        public PortData(Type type, string name = "", bool isMulti = false, string? id = null)
+        public PortData(Type type, string name = "", bool isMulti = false)
         {
             m_PortType = type.AssemblyQualifiedName;
             m_PortName = name;
             m_IsMulti = isMulti;
-            m_Id = id ?? GetNewId();
+            m_Id = GetNewId();
         }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            if (string.IsNullOrEmpty(m_Id))
-                m_Id = GetNewId();
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }

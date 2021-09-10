@@ -56,8 +56,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(GameObject), isMulti: true));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(GameObject), isMulti: true));
+            portDataContainer.AddInputPort<GameObject>(isMulti: true);
+            portDataContainer.AddOutputPort<GameObject>(isMulti: true);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
@@ -68,7 +68,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 var regex = new Regex(m_Regex);
                 foreach (var assets in assetGroup)
                 {
-                    if ((assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0 || !(assets.MainAsset is GameObject))
+                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
                     using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
                     {
