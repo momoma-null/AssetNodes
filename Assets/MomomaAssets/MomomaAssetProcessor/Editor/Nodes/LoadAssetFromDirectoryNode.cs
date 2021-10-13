@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -12,6 +13,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
     [CreateElement("Load/From Directory")]
     sealed class LoadAssetFromDirectoryNode : INodeProcessor
     {
+        enum ReloadMode
+        {
+            None,
+            AutoReloadImported,
+            AutoReloadAll
+        }
+
         static LoadAssetFromDirectoryNode()
         {
             INodeDataUtility.AddConstructor(() => new LoadAssetFromDirectoryNode());
@@ -20,7 +28,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         LoadAssetFromDirectoryNode() { }
 
         [SerializeField]
-        bool m_AutoReload = false;
+        ReloadMode m_AutoReload;
         [SerializeField]
         bool m_UseAsTest = false;
         [SerializeField]
@@ -36,12 +44,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = new AssetGroup();
-            if (!CoreAssetProcessor.IsProcessing || m_AutoReload)
+            if (!(CoreAssetProcessor.IsProcessing && m_AutoReload == ReloadMode.None))
             {
                 if (m_Folder != null)
                 {
                     var folderPath = AssetDatabase.GetAssetPath(m_Folder);
-                    if (CoreAssetProcessor.IsProcessing)
+                    if (CoreAssetProcessor.IsProcessing && m_AutoReload == ReloadMode.AutoReloadImported)
                     {
                         foreach (var path in CoreAssetProcessor.ImportedAssetsPaths)
                         {
@@ -51,7 +59,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                     else
                     {
-                        if (!CoreAssetProcessor.IsTesting || m_UseAsTest)
+                        if ((!CoreAssetProcessor.IsProcessing && (!CoreAssetProcessor.IsTesting || m_UseAsTest))
+                          || (CoreAssetProcessor.IsProcessing && m_AutoReload == ReloadMode.AutoReloadAll && CoreAssetProcessor.ImportedAssetsPaths.Any(path => path.StartsWith(folderPath))))
                         {
                             var guids = AssetDatabase.FindAssets("", new[] { folderPath });
                             var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
