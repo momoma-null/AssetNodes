@@ -21,7 +21,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         bool m_AutoReload = false;
-
+        [SerializeField]
+        bool m_UseAsTest = false;
         [SerializeField]
         DefaultAsset m_Folder;
 
@@ -29,7 +30,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+            portDataContainer.AddOutputPort<UnityObject>(isMulti: true);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
@@ -50,9 +51,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                     else
                     {
-                        var guids = AssetDatabase.FindAssets("", new[] { folderPath });
-                        var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
-                        assetGroup.UnionWith(assets);
+                        if (!CoreAssetProcessor.IsTesting || m_UseAsTest)
+                        {
+                            var guids = AssetDatabase.FindAssets("", new[] { folderPath });
+                            var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
+                            assetGroup.UnionWith(assets);
+                        }
                     }
                 }
             }

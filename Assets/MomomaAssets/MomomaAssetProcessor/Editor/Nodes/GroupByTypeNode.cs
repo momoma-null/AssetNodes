@@ -113,8 +113,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.InputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
-            portDataContainer.OutputPorts.Add(new PortData(typeof(UnityObject), isMulti: true));
+            portDataContainer.AddInputPort<UnityObject>(isMulti: true);
+            portDataContainer.AddOutputPort<UnityObject>(isMulti: true);
         }
 
         sealed class Output
@@ -140,7 +140,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 foreach (var o in outputs)
                 {
-                    if ((assets.Importer != null && o.assetTypeData.IsTarget(assets.Importer)) || o.assetTypeData.IsTarget(assets.MainAsset))
+                    if (o.assetTypeData.AssetType == assets.MainAssetType || (assets.Importer != null && o.assetTypeData.IsTarget(assets.Importer)))
                     {
                         if (o.regex.Match(assets.AssetPath).Success)
                         {

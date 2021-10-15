@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
@@ -18,27 +19,24 @@ namespace MomomaAssets.GraphView.AssetProcessor
         };
 
         public AssetGroup() { }
-        public AssetGroup(IEnumerable<AssetData> source) : base(source) { }
-
-        public string GropuName { get; set; } = "";
     }
 
     public sealed class AssetData
     {
-        public UnityObject MainAsset { get; }
-        public UnityObject[] AllAssets { get; }
+        Type? m_MainAssetType;
+        UnityObject? m_MainAsset;
+        UnityObject[]? m_AllAssets;
+        AssetImporter? m_Importer;
+
+        public Type MainAssetType => m_MainAssetType ?? (m_MainAssetType = AssetDatabase.GetMainAssetTypeAtPath(AssetPath));
+        public UnityObject MainAsset => m_MainAsset ?? (m_MainAsset = AssetDatabase.LoadMainAssetAtPath(AssetPath));
+        public IEnumerable<UnityObject> AllAssets => m_AllAssets ?? (m_AllAssets = (Path.GetExtension(AssetPath) == ".unity") ? new UnityObject[] { MainAsset } : AssetDatabase.LoadAllAssetsAtPath(AssetPath));
         public string AssetPath { get; }
-        public AssetImporter Importer { get; }
+        public AssetImporter? Importer => m_Importer ?? (m_Importer = AssetImporter.GetAtPath(AssetPath));
 
         public AssetData(string path)
         {
-            MainAsset = AssetDatabase.LoadMainAssetAtPath(path);
-            if (MainAsset is SceneAsset)
-                AllAssets = new UnityObject[0];
-            else
-                AllAssets = AssetDatabase.LoadAllAssetsAtPath(path);
             AssetPath = path;
-            Importer = AssetImporter.GetAtPath(path);
         }
 
         public IEnumerable<T> GetAssetsFromType<T>() where T : UnityObject

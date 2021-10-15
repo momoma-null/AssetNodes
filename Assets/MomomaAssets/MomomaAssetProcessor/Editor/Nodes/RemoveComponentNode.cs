@@ -3,17 +3,18 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
+using static UnityEngine.Object;
 
-//#nullable enable
+#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
     [InitializeOnLoad]
-    [CreateElement("Modify/Add Component")]
-    sealed class AddComponentNode : INodeProcessor
+    [CreateElement("Modify/Remove Component")]
+    sealed class RemoveComponentNode : INodeProcessor
     {
-        sealed class AddComponentNodeEditor : INodeProcessorEditor
+        sealed class RemoveComponentNodeEditor : INodeProcessorEditor
         {
             public bool UseDefaultVisualElement => false;
 
@@ -38,12 +39,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static AddComponentNode()
+        static RemoveComponentNode()
         {
-            INodeDataUtility.AddConstructor(() => new AddComponentNode());
+            INodeDataUtility.AddConstructor(() => new RemoveComponentNode());
         }
 
-        AddComponentNode() { }
+        RemoveComponentNode() { }
 
         [SerializeField]
         bool m_IncludeChildren = false;
@@ -52,7 +53,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_MenuPath = "";
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new AddComponentNodeEditor();
+        public INodeProcessorEditor ProcessorEditor { get; } = new RemoveComponentNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
@@ -70,22 +71,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
-                    var root = PrefabUtility.LoadPrefabContents(assets.AssetPath);
-                    try
+                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
                     {
+                        var root = scope.prefabContentsRoot;
                         foreach (var go in m_IncludeChildren ? root.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject) : new[] { root })
                         {
                             if (regex.Match(go.name).Success)
                             {
-                                if (go.GetComponent(componentType) == null)
-                                    go.AddComponent(componentType);
+                                if (go.TryGetComponent(componentType, out var comp))
+                                    DestroyImmediate(comp, true);
                             }
                         }
-                    }
-                    finally
-                    {
-                        PrefabUtility.SaveAsPrefabAsset(root, assets.AssetPath);
-                        PrefabUtility.UnloadPrefabContents(root);
                     }
                 }
             }

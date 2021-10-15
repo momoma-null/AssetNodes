@@ -35,14 +35,18 @@ namespace MomomaAssets.GraphView
         public IEnumerable<UnityObject> Assets => m_Processor is IAdditionalAssetHolder assetHolder ? assetHolder.Assets : Array.Empty<UnityObject>();
         public bool Expanded => m_Expanded;
         public INodeProcessor Processor => m_Processor;
-        public IList<PortData> InputPorts => m_InputPorts;
-        public IList<PortData> OutputPorts => m_OutputPorts;
+        public IReadOnlyList<PortData> InputPorts => m_InputPorts;
+        public IReadOnlyList<PortData> OutputPorts => m_OutputPorts;
 
         public NodeData(INodeProcessor processor)
         {
             m_Processor = processor;
             m_Processor.Initialize(this);
         }
+
+        public void AddInputPort<T>(string name = "", bool isMulti = false) => m_InputPorts.Add(new PortData(typeof(T), name, isMulti));
+
+        public void AddOutputPort<T>(string name = "", bool isMulti = false) => m_OutputPorts.Add(new PortData(typeof(T), name, isMulti));
 
         public GraphElement Deserialize() => new BindableNode(this);
 

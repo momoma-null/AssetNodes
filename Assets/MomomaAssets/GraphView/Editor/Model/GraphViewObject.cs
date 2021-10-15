@@ -42,22 +42,27 @@ namespace MomomaAssets.GraphView
             return Array.Empty<GraphViewObject>();
         }
 
-        void Awake()
+        [InitializeOnLoadMethod]
+        static void Initialize()
         {
-            RegisterSelf();
-        }
-
-        void OnDestroy()
-        {
-            UnregisterSelf();
+            foreach(var guid in AssetDatabase.FindAssets($"t:{nameof(GraphViewObject)}"))
+            {
+                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+            }
         }
 
         void OnEnable()
         {
+            RegisterSelf();
             // to wait for the deserialization of GraphElementObject
             m_GuidtoSerializedGraphElements.Clear();
             foreach (var i in m_SerializedGraphElements)
                 m_GuidtoSerializedGraphElements.Add(i.Guid, i);
+        }
+
+        void OnDisable()
+        {
+            UnregisterSelf();
         }
 
         void RegisterSelf()

@@ -9,6 +9,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
     internal sealed class CoreAssetProcessor : AssetPostprocessor
     {
         public static bool IsProcessing { get; private set; }
+        public static bool IsTesting { get; internal set; }
         public static IEnumerable<string> ImportedAssetsPaths { get; private set; } = Array.Empty<string>();
 
         public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(AssetDatabase.StartAssetEditing, () =>
