@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor.Tests
 {

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -71,9 +71,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    var root = PrefabUtility.LoadPrefabContents(assets.AssetPath);
+                    try
                     {
-                        var root = scope.prefabContentsRoot;
                         foreach (var go in m_IncludeChildren ? root.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject) : new[] { root })
                         {
                             if (regex.Match(go.name).Success)
@@ -83,9 +83,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             }
                         }
                     }
+                    finally
+                    {
+                        PrefabUtility.SaveAsPrefabAsset(root, assets.AssetPath);
+                        PrefabUtility.UnloadPrefabContents(root);
+                    }
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
         }
     }
 }
+ 
