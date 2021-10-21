@@ -14,13 +14,27 @@ namespace MomomaAssets.GraphView
 
     public class DefaultNodeProcessorEditor : INodeProcessorEditor
     {
-        readonly DefaultGraphElementEditor m_DefaultGraphElementEditor = new DefaultGraphElementEditor();
+        public bool UseDefaultVisualElement => true;
 
-        public bool UseDefaultVisualElement => m_DefaultGraphElementEditor.UseDefaultVisualElement;
-
-        public void OnEnable() => m_DefaultGraphElementEditor.OnEnable();
-        public void OnDisable() => m_DefaultGraphElementEditor.OnDisable();
+        public void OnEnable() { }
+        public void OnDisable() { }
         public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
-                    => m_DefaultGraphElementEditor.OnGUI(processorProperty);
+        {
+            using (var property = processorProperty.Copy())
+            using (var endProperty = property.GetEndProperty(false))
+            {
+                if (property.NextVisible(true))
+                {
+                    while (true)
+                    {
+                        if (SerializedProperty.EqualContents(property, endProperty))
+                            break;
+                        EditorGUILayout.PropertyField(property, true);
+                        if (!property.NextVisible(false))
+                            break;
+                    }
+                }
+            }
+        }
     }
 }

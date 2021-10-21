@@ -18,11 +18,8 @@ namespace MomomaAssets.GraphView
         [SerializeField]
         string m_OutputPortGuid;
 
-        DefaultEdgeDataEditor? m_Editor;
-
         public string GraphElementName => "Edge";
         public int Priority => 1;
-        public IGraphElementEditor GraphElementEditor => m_Editor ?? (m_Editor = new DefaultEdgeDataEditor());
         public string InputPortGuid { get => m_InputPortGuid; set => m_InputPortGuid = value; }
         public string OutputPortGuid { get => m_OutputPortGuid; set => m_OutputPortGuid = value; }
 
@@ -76,19 +73,28 @@ namespace MomomaAssets.GraphView
             m_OutputPortGuid = newGuid;
         }
 
-        sealed class DefaultEdgeDataEditor : IGraphElementEditor
+        sealed class EdgeDataEditor : BaseGraphElementEditor
         {
-            public bool UseDefaultVisualElement => false;
-
-            public void OnEnable() { }
-            public void OnDisable() { }
-
-            public void OnGUI(SerializedProperty property)
+            [GraphElementEditorFactory]
+            static void Entry(IEntryDelegate<GenerateGraphElementEditor> factories)
             {
-                EditorGUILayout.LabelField("Input", property.FindPropertyRelative(nameof(m_InputPortGuid)).stringValue);
-                EditorGUILayout.LabelField("Output", property.FindPropertyRelative(nameof(m_OutputPortGuid)).stringValue);
+                factories.Add(typeof(EdgeData), (data, property) => new EdgeDataEditor(property));
+            }
+
+            readonly SerializedProperty _InputPortProperty;
+            readonly SerializedProperty _OutputPortProperty;
+
+            EdgeDataEditor(SerializedProperty property)
+            {
+                _InputPortProperty = property.FindPropertyRelative(nameof(m_InputPortGuid));
+                _OutputPortProperty = property.FindPropertyRelative(nameof(m_OutputPortGuid));
+            }
+
+            public override void OnGUI()
+            {
+                EditorGUILayout.LabelField("Input", _InputPortProperty?.stringValue);
+                EditorGUILayout.LabelField("Output", _OutputPortProperty?.stringValue);
             }
         }
-
     }
 }

@@ -87,7 +87,8 @@ namespace MomomaAssets.GraphView
             extensionContainer.Clear();
             serializedObject.Update();
             this.BindProperty(serializedObject.FindProperty("m_GraphElementData.m_Expanded"));
-            if (m_Node.GraphElementEditor.UseDefaultVisualElement)
+            var graphElementEditor = GraphElementEditorFactory.GetEditor(m_Node, serializedObject.FindProperty("m_GraphElementData"));
+            if (graphElementEditor.UseDefaultVisualElement)
             {
                 using (var iterator = serializedObject.FindProperty("m_GraphElementData.m_Processor"))
                 using (var endProperty = iterator.GetEndProperty(false))
