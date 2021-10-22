@@ -16,25 +16,37 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class RemoveComponentNodeEditor : INodeProcessorEditor
         {
+            [NodeProcessorEditorFactory]
+            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            {
+                factories.Add(typeof(RemoveComponentNode), (data, property, inputProperty, outputProperty) => new RemoveComponentNodeEditor(property));
+            }
+
+            readonly SerializedProperty _IncludeChildrenProperty;
+            readonly SerializedProperty _RegexProperty;
+            readonly SerializedProperty _MenuPathProperty;
+
             public bool UseDefaultVisualElement => false;
+
+            RemoveComponentNodeEditor(SerializedProperty processorProperty)
+            {
+                _IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren));
+                _RegexProperty = processorProperty.FindPropertyRelative(nameof(m_Regex));
+                _MenuPathProperty = processorProperty.FindPropertyRelative(nameof(m_MenuPath));
+            }
 
             public void OnEnable() { }
             public void OnDisable() { }
 
-            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            public void OnGUI()
             {
-                using (var m_IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren)))
-                using (var m_RegexProperty = processorProperty.FindPropertyRelative(nameof(m_Regex)))
-                using (var m_MenuPathProperty = processorProperty.FindPropertyRelative(nameof(m_MenuPath)))
+                EditorGUILayout.PropertyField(_IncludeChildrenProperty);
+                EditorGUILayout.PropertyField(_RegexProperty);
+                EditorGUI.BeginChangeCheck();
+                var newPath = UnityObjectTypeUtility.ComponentTypePopup(_MenuPathProperty.stringValue);
+                if (EditorGUI.EndChangeCheck())
                 {
-                    EditorGUILayout.PropertyField(m_IncludeChildrenProperty);
-                    EditorGUILayout.PropertyField(m_RegexProperty);
-                    EditorGUI.BeginChangeCheck();
-                    var newPath = UnityObjectTypeUtility.ComponentTypePopup(m_MenuPathProperty.stringValue);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        m_MenuPathProperty.stringValue = newPath;
-                    }
+                    _MenuPathProperty.stringValue = newPath;
                 }
             }
         }
@@ -52,8 +64,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         string m_Regex = "";
         [SerializeField]
         string m_MenuPath = "";
-
-        public INodeProcessorEditor ProcessorEditor { get; } = new RemoveComponentNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

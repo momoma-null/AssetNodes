@@ -26,9 +26,6 @@ namespace MomomaAssets.GraphView
         [SerializeReference]
         INodeProcessor m_Processor;
 
-        [NonSerialized]
-        NodeDataEditor? m_NodeDataEditor;
-
         public string GraphElementName => m_Processor.GetType().Name;
         public int Priority => 0;
         public IEnumerable<UnityObject> Assets => m_Processor is IAdditionalAssetHolder assetHolder ? assetHolder.Assets : Array.Empty<UnityObject>();
@@ -188,26 +185,23 @@ namespace MomomaAssets.GraphView
                 factories.Add(typeof(NodeData), (data, property) => data is NodeData nodeData ? new NodeDataEditor(nodeData, property) : throw new InvalidOperationException());
             }
 
-            readonly INodeProcessorEditor m_ProcessorEditor;
-            readonly SerializedProperty m_ProcessorProperty;
-            readonly SerializedProperty m_InputPortsProperty;
-            readonly SerializedProperty m_OutputPortsProperty;
+            readonly INodeProcessorEditor _ProcessorEditor;
 
             NodeDataEditor(NodeData nodeData, SerializedProperty property)
             {
-                m_ProcessorEditor = nodeData.Processor.ProcessorEditor;
-                m_ProcessorProperty = property.FindPropertyRelative(nameof(m_Processor));
-                m_InputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
-                m_OutputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
+                var processorProperty = property.FindPropertyRelative(nameof(m_Processor));
+                var inputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
+                var outputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
+                _ProcessorEditor = NodeProcessorEditorFactory.GetEditor(nodeData.Processor, processorProperty, inputPortsProperty, outputPortsProperty);
             }
 
-            public override void OnEnable() => m_ProcessorEditor.OnEnable();
+            public override void OnEnable() => _ProcessorEditor.OnEnable();
 
-            public override void OnDisable() => m_ProcessorEditor.OnDisable();
+            public override void OnDisable() => _ProcessorEditor.OnDisable();
 
             public override void OnGUI()
             {
-                m_ProcessorEditor.OnGUI(m_ProcessorProperty, m_InputPortsProperty, m_OutputPortsProperty);
+                _ProcessorEditor.OnGUI();
             }
         }
     }

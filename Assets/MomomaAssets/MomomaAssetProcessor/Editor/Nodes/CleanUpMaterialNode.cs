@@ -18,8 +18,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         CleanUpMaterialNode() { }
 
-        public INodeProcessorEditor ProcessorEditor => new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<Material>(isMulti: true);

@@ -34,8 +34,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         DefaultAsset? m_Folder;
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddOutputPort<UnityObject>(isMulti: true);

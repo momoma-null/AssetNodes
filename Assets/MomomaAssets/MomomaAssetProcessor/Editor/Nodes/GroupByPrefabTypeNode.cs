@@ -18,8 +18,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         GroupByPrefabTypeNode() { }
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<GameObject>(isMulti: true);

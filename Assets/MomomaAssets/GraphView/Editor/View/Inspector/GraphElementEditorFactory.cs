@@ -10,11 +10,11 @@ namespace MomomaAssets.GraphView
 
     static class GraphElementEditorFactory
     {
-        sealed class EntryGraphElementEditorFactory : IEntryDelegate<GenerateGraphElementEditor>
+        sealed class EntryEditorFactory : IEntryDelegate<GenerateGraphElementEditor>
         {
             public readonly Dictionary<Type, GenerateGraphElementEditor> factories;
 
-            public EntryGraphElementEditorFactory(int capacity = 0)
+            public EntryEditorFactory(int capacity = 0)
             {
                 factories = new Dictionary<Type, GenerateGraphElementEditor>(capacity);
             }
@@ -30,7 +30,7 @@ namespace MomomaAssets.GraphView
         static GraphElementEditorFactory()
         {
             var methods = TypeCache.GetMethodsWithAttribute<GraphElementEditorFactoryAttribute>();
-            var factories = new EntryGraphElementEditorFactory(methods.Count);
+            var factories = new EntryEditorFactory(methods.Count);
             var parameters = new object[] { factories };
             foreach (var methodInfo in methods)
                 methodInfo.Invoke(null, parameters);

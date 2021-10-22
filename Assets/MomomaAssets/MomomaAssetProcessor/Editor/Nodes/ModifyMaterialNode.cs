@@ -131,26 +131,36 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         sealed class ModifyMaterialNodeEditor : INodeProcessorEditor
         {
+            [NodeProcessorEditorFactory]
+            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            {
+                factories.Add(typeof(ModifyMaterialNode), (data, property, inputProperty, outputProperty) => data is ModifyMaterialNode node ? new ModifyMaterialNodeEditor(node, property) : throw new InvalidOperationException());
+            }
+
             static readonly Material[] s_MaterialArray = new Material[1];
 
             public bool UseDefaultVisualElement => false;
 
-            readonly ModifyMaterialNode m_Node;
+            readonly ModifyMaterialNode _Node;
+            readonly SerializedProperty _ShaderProperty;
+            readonly SerializedProperty _PropertyValuesProperty;
 
             MaterialEditor? m_MaterialEditor;
             Material? m_Material;
 
-            public ModifyMaterialNodeEditor(ModifyMaterialNode node)
+            public ModifyMaterialNodeEditor(ModifyMaterialNode node, SerializedProperty processorProperty)
             {
-                m_Node = node;
+                _Node = node;
+                _ShaderProperty = processorProperty.FindPropertyRelative(nameof(m_Shader));
+                _PropertyValuesProperty = processorProperty.FindPropertyRelative(nameof(m_PropertyValues));
             }
 
             public void OnEnable()
             {
-                if (m_Material == null && m_Node.m_Shader != null)
+                if (m_Material == null && _Node.m_Shader != null)
                 {
-                    m_Material = new Material(m_Node.m_Shader) { hideFlags = HideFlags.DontSave };
-                    foreach (var i in m_Node.m_PropertyValues)
+                    m_Material = new Material(_Node.m_Shader) { hideFlags = HideFlags.DontSave };
+                    foreach (var i in _Node.m_PropertyValues)
                         i?.SetPropertyValue(m_Material);
                 }
                 if (m_MaterialEditor == null)
@@ -173,95 +183,91 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
 
-            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            public void OnGUI()
             {
-                using (var m_ShaderProperty = processorProperty.FindPropertyRelative(nameof(m_Shader)))
-                using (var m_PropertyValuesProperty = processorProperty.FindPropertyRelative(nameof(m_PropertyValues)))
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(_ShaderProperty);
+                var changed = EditorGUI.EndChangeCheck();
+                if ((m_Material == null || changed) && _ShaderProperty.objectReferenceValue is Shader shader)
                 {
-                    EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(m_ShaderProperty);
-                    var changed = EditorGUI.EndChangeCheck();
-                    if ((m_Material == null || changed) && m_ShaderProperty.objectReferenceValue is Shader shader)
-                    {
-                        if (m_Material == null)
-                            m_Material = new Material(shader);
-                        else
-                            m_Material.shader = shader;
-                        m_PropertyValuesProperty.arraySize = 0;
-                    }
                     if (m_Material == null)
-                        return;
-                    s_MaterialArray[0] = m_Material;
-                    var materialProperties = MaterialEditor.GetMaterialProperties(s_MaterialArray);
-                    m_PropertyValuesProperty.arraySize = materialProperties.Length;
-                    var propertyValues = m_Node.m_PropertyValues;
-                    EditorGUILayout.LabelField("Property Values", EditorStyles.boldLabel);
-                    EditorGUIUtility.labelWidth = 0;
-                    EditorGUIUtility.fieldWidth = 0;
-                    for (var i = 0; i < m_PropertyValuesProperty.arraySize; ++i)
+                        m_Material = new Material(shader);
+                    else
+                        m_Material.shader = shader;
+                    _PropertyValuesProperty.arraySize = 0;
+                }
+                if (m_Material == null)
+                    return;
+                s_MaterialArray[0] = m_Material;
+                var materialProperties = MaterialEditor.GetMaterialProperties(s_MaterialArray);
+                _PropertyValuesProperty.arraySize = materialProperties.Length;
+                var propertyValues = _Node.m_PropertyValues;
+                EditorGUILayout.LabelField("Property Values", EditorStyles.boldLabel);
+                EditorGUIUtility.labelWidth = 0;
+                EditorGUIUtility.fieldWidth = 0;
+                for (var i = 0; i < _PropertyValuesProperty.arraySize; ++i)
+                {
+                    using (var element = _PropertyValuesProperty.GetArrayElementAtIndex(i))
                     {
-                        using (var element = m_PropertyValuesProperty.GetArrayElementAtIndex(i))
+                        var materialProperty = materialProperties[i];
+                        IPropertyValue propertyValue;
+                        switch (materialProperty.type)
                         {
-                            var materialProperty = materialProperties[i];
-                            IPropertyValue propertyValue;
-                            switch (materialProperty.type)
+                            case MaterialProperty.PropType.Float:
+                            case MaterialProperty.PropType.Range:
+                                if (changed || !(i < propertyValues.Length && propertyValues[i] is FloatValue floatValue))
+                                {
+                                    floatValue = new FloatValue();
+                                    if (Event.current.type != EventType.Layout)
+                                        element.managedReferenceValue = floatValue;
+                                }
+                                propertyValue = floatValue;
+                                break;
+                            case MaterialProperty.PropType.Color:
+                                if (changed || !(i < propertyValues.Length && propertyValues[i] is ColorValue colorValue))
+                                {
+                                    colorValue = new ColorValue();
+                                    if (Event.current.type != EventType.Layout)
+                                        element.managedReferenceValue = colorValue;
+                                }
+                                propertyValue = colorValue;
+                                break;
+                            case MaterialProperty.PropType.Vector:
+                                if (changed || !(i < propertyValues.Length && propertyValues[i] is VectorValue vectorValue))
+                                {
+                                    vectorValue = new VectorValue();
+                                    if (Event.current.type != EventType.Layout)
+                                        element.managedReferenceValue = vectorValue;
+                                }
+                                propertyValue = vectorValue;
+                                break;
+                            case MaterialProperty.PropType.Texture:
+                                if (changed || !(i < propertyValues.Length && propertyValues[i] is TextureValue textureValue))
+                                {
+                                    textureValue = new TextureValue();
+                                    if (Event.current.type != EventType.Layout)
+                                        element.managedReferenceValue = textureValue;
+                                }
+                                propertyValue = textureValue;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(materialProperty.type));
+                        }
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            var newEnabled = EditorGUILayout.Toggle(propertyValue.Enabled, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight));
+                            using (new EditorGUI.DisabledScope(!propertyValue.Enabled))
                             {
-                                case MaterialProperty.PropType.Float:
-                                case MaterialProperty.PropType.Range:
-                                    if (changed || !(i < propertyValues.Length && propertyValues[i] is FloatValue floatValue))
-                                    {
-                                        floatValue = new FloatValue();
-                                        if (Event.current.type != EventType.Layout)
-                                            element.managedReferenceValue = floatValue;
-                                    }
-                                    propertyValue = floatValue;
-                                    break;
-                                case MaterialProperty.PropType.Color:
-                                    if (changed || !(i < propertyValues.Length && propertyValues[i] is ColorValue colorValue))
-                                    {
-                                        colorValue = new ColorValue();
-                                        if (Event.current.type != EventType.Layout)
-                                            element.managedReferenceValue = colorValue;
-                                    }
-                                    propertyValue = colorValue;
-                                    break;
-                                case MaterialProperty.PropType.Vector:
-                                    if (changed || !(i < propertyValues.Length && propertyValues[i] is VectorValue vectorValue))
-                                    {
-                                        vectorValue = new VectorValue();
-                                        if (Event.current.type != EventType.Layout)
-                                            element.managedReferenceValue = vectorValue;
-                                    }
-                                    propertyValue = vectorValue;
-                                    break;
-                                case MaterialProperty.PropType.Texture:
-                                    if (changed || !(i < propertyValues.Length && propertyValues[i] is TextureValue textureValue))
-                                    {
-                                        textureValue = new TextureValue();
-                                        if (Event.current.type != EventType.Layout)
-                                            element.managedReferenceValue = textureValue;
-                                    }
-                                    propertyValue = textureValue;
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException(nameof(materialProperty.type));
+                                if (m_MaterialEditor == null)
+                                    m_MaterialEditor = Editor.CreateEditor(m_Material, typeof(MaterialEditor)) as MaterialEditor;
+                                m_MaterialEditor?.ShaderProperty(materialProperty, materialProperty.displayName);
                             }
-                            using (new EditorGUILayout.HorizontalScope())
+                            if (EditorGUI.EndChangeCheck())
                             {
-                                EditorGUI.BeginChangeCheck();
-                                var newEnabled = EditorGUILayout.Toggle(propertyValue.Enabled, GUILayout.MaxWidth(EditorGUIUtility.singleLineHeight));
-                                using (new EditorGUI.DisabledScope(!propertyValue.Enabled))
-                                {
-                                    if (m_MaterialEditor == null)
-                                        m_MaterialEditor = Editor.CreateEditor(m_Material, typeof(MaterialEditor)) as MaterialEditor;
-                                    m_MaterialEditor?.ShaderProperty(materialProperty, materialProperty.displayName);
-                                }
-                                if (EditorGUI.EndChangeCheck())
-                                {
-                                    propertyValue.Enabled = newEnabled;
-                                    propertyValue.CopyFromMaterialProperty(materialProperty);
-                                    element.managedReferenceValue = propertyValue;
-                                }
+                                propertyValue.Enabled = newEnabled;
+                                propertyValue.CopyFromMaterialProperty(materialProperty);
+                                element.managedReferenceValue = propertyValue;
                             }
                         }
                     }
@@ -282,8 +288,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         IPropertyValue[] m_PropertyValues = Array.Empty<IPropertyValue>();
 
         ModifyMaterialNodeEditor? m_Editor;
-
-        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyMaterialNodeEditor(this));
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

@@ -17,47 +17,53 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class GroupByTypeNodeEditor : INodeProcessorEditor
         {
-            ReorderableList? m_ReorderableList;
+            [NodeProcessorEditorFactory]
+            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            {
+                factories.Add(typeof(GroupByTypeNode), (data, property, inputProperty, outputProperty) => new GroupByTypeNodeEditor(property, inputProperty, outputProperty));
+            }
 
-            SerializedProperty? m_RegexsProperty;
-            SerializedProperty? m_OutputPortsProperty;
+            readonly ReorderableList _ReorderableList;
+            readonly SerializedProperty _RegexsProperty;
+            readonly SerializedProperty _OutputPortsProperty;
 
             public bool UseDefaultVisualElement => false;
+
+            GroupByTypeNodeEditor(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            {
+                _ReorderableList = new ReorderableList(new List<string>(), typeof(string), true, false, true, true);
+                _ReorderableList.drawElementCallback = DrawElement;
+                _ReorderableList.onReorderCallbackWithDetails = Reorder;
+                _ReorderableList.onAddCallback = Add;
+                _ReorderableList.onRemoveCallback = Remove;
+                _ReorderableList.onCanRemoveCallback = CanRemove;
+                _RegexsProperty = processorProperty.FindPropertyRelative(nameof(m_Regexes));
+                _OutputPortsProperty = outputPortsProperty;
+                for (var i = 0; i < _OutputPortsProperty.arraySize; ++i)
+                        _ReorderableList.list.Add(null);
+            }
 
             public void OnEnable() { }
             public void OnDisable() { }
 
-            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            public void OnGUI()
             {
-                if (m_ReorderableList == null)
+                if (_OutputPortsProperty.arraySize != _ReorderableList.count)
                 {
-                    m_ReorderableList = new ReorderableList(new List<string>(), typeof(string), true, false, true, true);
-                    m_ReorderableList.drawElementCallback = DrawElement;
-                    m_ReorderableList.onReorderCallbackWithDetails = Reorder;
-                    m_ReorderableList.onAddCallback = Add;
-                    m_ReorderableList.onRemoveCallback = Remove;
-                    m_ReorderableList.onCanRemoveCallback = CanRemove;
+                    _ReorderableList.list.Clear();
+                    for (var i = 0; i < _OutputPortsProperty.arraySize; ++i)
+                        _ReorderableList.list.Add(null);
                 }
-                m_RegexsProperty = processorProperty.FindPropertyRelative(nameof(m_Regexes));
-                m_OutputPortsProperty = outputPortsProperty;
-                if (m_OutputPortsProperty.arraySize != m_ReorderableList.count)
-                {
-                    m_ReorderableList.list.Clear();
-                    for (var i = 0; i < m_OutputPortsProperty.arraySize; ++i)
-                        m_ReorderableList.list.Add(null);
-                }
-                m_ReorderableList.DoLayoutList();
+                _ReorderableList.DoLayoutList();
             }
 
             void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
             {
-                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
-                    return;
                 rect.width *= 0.5f;
-                using (var regexProperty = m_RegexsProperty.GetArrayElementAtIndex(index))
+                using (var regexProperty = _RegexsProperty.GetArrayElementAtIndex(index))
                     regexProperty.stringValue = EditorGUI.TextField(rect, regexProperty.stringValue);
                 rect.x += rect.width;
-                using (var element = m_OutputPortsProperty.GetArrayElementAtIndex(index))
+                using (var element = _OutputPortsProperty.GetArrayElementAtIndex(index))
                 using (var portTypeProperty = element.FindPropertyRelative("m_PortType"))
                 {
                     EditorGUI.BeginChangeCheck();
@@ -69,27 +75,23 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
             void Reorder(ReorderableList list, int oldIndex, int newIndex)
             {
-                m_RegexsProperty?.MoveArrayElement(oldIndex, newIndex);
-                m_OutputPortsProperty?.MoveArrayElement(oldIndex, newIndex);
+                _RegexsProperty.MoveArrayElement(oldIndex, newIndex);
+                _OutputPortsProperty.MoveArrayElement(oldIndex, newIndex);
             }
 
             void Add(ReorderableList list)
             {
-                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
-                    return;
-                ++m_OutputPortsProperty.arraySize;
-                m_RegexsProperty.arraySize = m_OutputPortsProperty.arraySize;
+                ++_OutputPortsProperty.arraySize;
+                _RegexsProperty.arraySize = _OutputPortsProperty.arraySize;
                 list.list.Add(null);
             }
 
             void Remove(ReorderableList list)
             {
-                if (m_RegexsProperty == null || m_OutputPortsProperty == null)
+                if (_OutputPortsProperty.arraySize == 0)
                     return;
-                if (m_OutputPortsProperty.arraySize == 0)
-                    return;
-                m_RegexsProperty.DeleteArrayElementAtIndex(list.index);
-                m_OutputPortsProperty.DeleteArrayElementAtIndex(list.index);
+                _RegexsProperty.DeleteArrayElementAtIndex(list.index);
+                _OutputPortsProperty.DeleteArrayElementAtIndex(list.index);
                 list.list.RemoveAt(list.index);
             }
 
@@ -108,8 +110,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         [SerializeField]
         string[] m_Regexes = new string[1];
-
-        public INodeProcessorEditor ProcessorEditor { get; } = new GroupByTypeNodeEditor();
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

@@ -23,8 +23,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Shader? m_DestinationShader;
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<Material>(isMulti: true);

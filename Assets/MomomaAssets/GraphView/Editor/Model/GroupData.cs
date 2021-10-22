@@ -21,8 +21,6 @@ namespace MomomaAssets.GraphView
         [NonSerialized]
         HashSet<string> m_IncludingGuidSet;
 
-        DefaultGraphElementEditor? m_Editor;
-
         public string GraphElementName => $"{m_Name} Group";
         public int Priority => 1;
         public string Name => m_Name;

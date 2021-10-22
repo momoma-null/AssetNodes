@@ -25,8 +25,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         ExportPackageOptions m_Options;
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<UnityObject>(isMulti: true);
@@ -37,7 +35,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
             if (assetGroup.Count > 0)
             {
-                AssetDatabase.ExportPackage(assetGroup.Select(asset => asset.AssetPath).ToArray(), m_UnityPackageName);
+                AssetDatabase.ExportPackage(assetGroup.Select(asset => asset.AssetPath).ToArray(), m_UnityPackageName, m_Options);
             }
         }
     }

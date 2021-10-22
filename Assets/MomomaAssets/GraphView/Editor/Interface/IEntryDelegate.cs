@@ -4,7 +4,7 @@ using System;
 
 namespace MomomaAssets.GraphView
 {
-    interface IEntryDelegate<T> where T : Delegate
+    public interface IEntryDelegate<T> where T : Delegate
     {
         void Add(Type type, T function);
     }

@@ -19,8 +19,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         FindMissingReferenceNode() { }
 
-        public INodeProcessorEditor ProcessorEditor => new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<UnityObject>(isMulti: true);

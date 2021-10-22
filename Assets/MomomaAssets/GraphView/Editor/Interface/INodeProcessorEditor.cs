@@ -9,18 +9,25 @@ namespace MomomaAssets.GraphView
         bool UseDefaultVisualElement { get; }
         void OnEnable();
         void OnDisable();
-        void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty);
+        void OnGUI();
     }
 
-    public class DefaultNodeProcessorEditor : INodeProcessorEditor
+    class DefaultNodeProcessorEditor : INodeProcessorEditor
     {
+        readonly SerializedProperty _ProcessorProperty;
+
         public bool UseDefaultVisualElement => true;
+
+        public DefaultNodeProcessorEditor(SerializedProperty processorProperty)
+        {
+            _ProcessorProperty = processorProperty;
+        }
 
         public void OnEnable() { }
         public void OnDisable() { }
-        public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+        public void OnGUI()
         {
-            using (var property = processorProperty.Copy())
+            using (var property = _ProcessorProperty.Copy())
             using (var endProperty = property.GetEndProperty(false))
             {
                 if (property.NextVisible(true))

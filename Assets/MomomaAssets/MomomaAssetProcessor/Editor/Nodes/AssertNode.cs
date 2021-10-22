@@ -22,8 +22,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_Message = "{0} is an invalid asset";
 
-        public INodeProcessorEditor ProcessorEditor => new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<UnityObject>(isMulti: true);
