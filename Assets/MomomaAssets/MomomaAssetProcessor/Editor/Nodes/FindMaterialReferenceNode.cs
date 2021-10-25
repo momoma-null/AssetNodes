@@ -20,6 +20,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             Any
         }
 
+        [Serializable]
         struct TextureReference
         {
             public string _PropertyName;
@@ -28,6 +29,54 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         sealed class FindMaterialReferenceNodeEditor : INodeProcessorEditor
         {
+            [CustomPropertyDrawer(typeof(TextureReference))]
+            sealed class TextureReferenceDrawer : PropertyDrawer
+            {
+                static GUIContent[] s_PropertyNames = Array.Empty<GUIContent>();
+                static int[] s_PropertyHashes = Array.Empty<int>();
+
+                public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+                {
+                    using (var propertyNameProperty = property.FindPropertyRelative(nameof(TextureReference._PropertyName)))
+                    using (var comparisonModeProperty = property.FindPropertyRelative(nameof(TextureReference._ComparisonMode)))
+                    {
+                        position.width *= 0.5f;
+                        EditorGUI.BeginChangeCheck();
+                        var propertyHash = EditorGUI.IntPopup(position, propertyNameProperty.stringValue.GetHashCode(), s_PropertyNames, s_PropertyHashes);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            var index = Array.IndexOf(s_PropertyHashes, propertyHash);
+                            if (0 <= index && index < s_PropertyNames.Length)
+                            {
+                                propertyNameProperty.stringValue = s_PropertyNames[index].text;
+                            }
+                        }
+                        position.x += position.width;
+                        EditorGUI.PropertyField(position, comparisonModeProperty, GUIContent.none);
+                    }
+                }
+
+                public sealed class PopupScope : IDisposable
+                {
+                    readonly GUIContent[] _PropertyNames;
+                    readonly int[] _PropertyHashes;
+
+                    public PopupScope(GUIContent[] propertyNames, int[] propertyHashes)
+                    {
+                        _PropertyNames = s_PropertyNames;
+                        _PropertyHashes = s_PropertyHashes;
+                        s_PropertyNames = propertyNames;
+                        s_PropertyHashes = propertyHashes;
+                    }
+
+                    void IDisposable.Dispose()
+                    {
+                        s_PropertyNames = _PropertyNames;
+                        s_PropertyHashes = _PropertyHashes;
+                    }
+                }
+            }
+
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
@@ -37,7 +86,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             readonly SerializedProperty _ShaderProperty;
             readonly SerializedProperty _TextureReferencesProperty;
 
-            GUIContent[] _ProeprtyNames = Array.Empty<GUIContent>();
+            GUIContent[] _PropertyNames = Array.Empty<GUIContent>();
             int[] _PropertyHashes = Array.Empty<int>();
             int _PropertiesHash;
 
@@ -60,30 +109,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 if (EditorGUI.EndChangeCheck() || _PropertiesHash != currentHash)
                 {
                     _PropertiesHash = currentHash;
-                    RebuildPopup(shader, out _ProeprtyNames, out _PropertyHashes);
+                    RebuildPopup(shader, out _PropertyNames, out _PropertyHashes);
                 }
                 if (EditorGUI.EndChangeCheck())
                 {
                     _TextureReferencesProperty.ClearArray();
                 }
-                for (var i = 0; i < _TextureReferencesProperty.arraySize; ++i)
+                using(new TextureReferenceDrawer.PopupScope(_PropertyNames, _PropertyHashes))
                 {
-                    using (var element = _TextureReferencesProperty.GetArrayElementAtIndex(i))
-                    using (var propertyNameProperty = element.FindPropertyRelative(nameof(TextureReference._PropertyName)))
-                    using (var comparisonModeProperty = element.FindPropertyRelative(nameof(TextureReference._ComparisonMode)))
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        EditorGUI.BeginChangeCheck();
-                        var propertyHash = EditorGUILayout.IntPopup(propertyNameProperty.stringValue.GetHashCode(), _ProeprtyNames, _PropertyHashes);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            var index = Array.IndexOf(_PropertyHashes, propertyHash);
-                            if (0 <= index && index < _ProeprtyNames.Length)
-                            {
-                                propertyNameProperty.stringValue = _ProeprtyNames[index].text;
-                            }
-                        }
-                    }
+                    EditorGUILayout.PropertyField(_TextureReferencesProperty);
                 }
             }
 
