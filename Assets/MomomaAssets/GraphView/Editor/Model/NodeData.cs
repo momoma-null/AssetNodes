@@ -26,12 +26,8 @@ namespace MomomaAssets.GraphView
         [SerializeReference]
         INodeProcessor m_Processor;
 
-        [NonSerialized]
-        NodeDataEditor m_NodeDataEditor;
-
         public string GraphElementName => m_Processor.GetType().Name;
         public int Priority => 0;
-        public IGraphElementEditor GraphElementEditor => m_NodeDataEditor ?? (m_NodeDataEditor = new NodeDataEditor(m_Processor.ProcessorEditor));
         public IEnumerable<UnityObject> Assets => m_Processor is IAdditionalAssetHolder assetHolder ? assetHolder.Assets : Array.Empty<UnityObject>();
         public bool Expanded => m_Expanded;
         public INodeProcessor Processor => m_Processor;
@@ -181,28 +177,31 @@ namespace MomomaAssets.GraphView
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 
-        sealed class NodeDataEditor : IGraphElementEditor
+        sealed class NodeDataEditor : BaseGraphElementEditor
         {
-            INodeProcessorEditor m_ProcessorEditor;
-
-            public NodeDataEditor(INodeProcessorEditor processorEditor)
+            [GraphElementEditorFactory]
+            static void Entry(IEntryDelegate<GenerateGraphElementEditor> factories)
             {
-                m_ProcessorEditor = processorEditor;
+                factories.Add(typeof(NodeData), (data, property) => data is NodeData nodeData ? new NodeDataEditor(nodeData, property) : throw new InvalidOperationException());
             }
 
-            public bool UseDefaultVisualElement => m_ProcessorEditor.UseDefaultVisualElement;
+            readonly INodeProcessorEditor _ProcessorEditor;
 
-            public void OnEnable() => m_ProcessorEditor.OnEnable();
-            public void OnDisable() => m_ProcessorEditor.OnDisable();
-
-            public void OnGUI(SerializedProperty property)
+            NodeDataEditor(NodeData nodeData, SerializedProperty property)
             {
-                using (var m_ProcessorProperty = property.FindPropertyRelative(nameof(m_Processor)))
-                using (var m_InputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts)))
-                using (var m_OutputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts)))
-                {
-                    m_ProcessorEditor.OnGUI(m_ProcessorProperty, m_InputPortsProperty, m_OutputPortsProperty);
-                }
+                var processorProperty = property.FindPropertyRelative(nameof(m_Processor));
+                var inputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
+                var outputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
+                _ProcessorEditor = NodeProcessorEditorFactory.GetEditor(nodeData.Processor, processorProperty, inputPortsProperty, outputPortsProperty);
+            }
+
+            public override void OnEnable() => _ProcessorEditor.OnEnable();
+
+            public override void OnDisable() => _ProcessorEditor.OnDisable();
+
+            public override void OnGUI()
+            {
+                _ProcessorEditor.OnGUI();
             }
         }
     }

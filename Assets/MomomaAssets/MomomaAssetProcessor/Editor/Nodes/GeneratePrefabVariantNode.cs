@@ -26,8 +26,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_VariantPrefabPath = "Assets/$1_Variant.prefab";
 
-        public INodeProcessorEditor ProcessorEditor { get; } = new DefaultNodeProcessorEditor();
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<GameObject>(isMulti: true);

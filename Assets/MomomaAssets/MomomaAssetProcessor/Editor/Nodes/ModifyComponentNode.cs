@@ -17,22 +17,32 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
+            [NodeProcessorEditorFactory]
+            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            {
+                factories.Add(typeof(ModifyComponentNode), (data, property, inputProperty, outputProperty) => new ModifyComponentNodeEditor(property));
+            }
+
+            readonly SerializedProperty _IncludeChildrenProperty;
+            readonly SerializedProperty _PresetProperty;
+
             Preset m_Preset;
             Editor m_CachedEditor;
             string m_OldMenuPath = "";
 
             public bool UseDefaultVisualElement => false;
 
-            public ModifyComponentNodeEditor(ModifyComponentNode node)
+            public ModifyComponentNodeEditor(SerializedProperty processorProperty)
             {
-                m_Preset = node.m_Preset;
+                _IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren));
+                _PresetProperty = processorProperty.FindPropertyRelative(nameof(m_Preset));
             }
 
             public void OnEnable()
             {
                 if (m_CachedEditor == null)
                 {
-                    m_CachedEditor = Editor.CreateEditor(m_Preset);
+                    m_CachedEditor = Editor.CreateEditor(_PresetProperty.objectReferenceValue);
                 }
             }
 
@@ -45,68 +55,64 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
 
-            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            public void OnGUI()
             {
-                using (var m_IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren)))
-                using (var m_PresetProperty = processorProperty.FindPropertyRelative(nameof(m_Preset)))
+                EditorGUILayout.PropertyField(_IncludeChildrenProperty);
+                if (_PresetProperty.objectReferenceValue is Preset preset)
                 {
-                    EditorGUILayout.PropertyField(m_IncludeChildrenProperty);
-                    if (m_PresetProperty.objectReferenceValue is Preset preset)
+                    using (var presetSo = new SerializedObject(preset))
+                    using (var m_NativeTypeIDProperty = presetSo.FindProperty("m_TargetType.m_NativeTypeID"))
+                    using (var m_ManagedTypePPtrProperty = presetSo.FindProperty("m_TargetType.m_ManagedTypePPtr"))
                     {
-                        using (var presetSo = new SerializedObject(preset))
-                        using (var m_NativeTypeIDProperty = presetSo.FindProperty("m_TargetType.m_NativeTypeID"))
-                        using (var m_ManagedTypePPtrProperty = presetSo.FindProperty("m_TargetType.m_ManagedTypePPtr"))
+                        var menuPath = (m_ManagedTypePPtrProperty.objectReferenceValue is MonoScript monoScript) ? UnityObjectTypeUtility.GetMenuPath(monoScript) : UnityObjectTypeUtility.GetMenuPath(m_NativeTypeIDProperty.intValue);
+                        EditorGUI.BeginChangeCheck();
+                        menuPath = UnityObjectTypeUtility.ComponentTypePopup(menuPath, true);
+                        if (menuPath != m_OldMenuPath)
                         {
-                            var menuPath = (m_ManagedTypePPtrProperty.objectReferenceValue is MonoScript monoScript) ? UnityObjectTypeUtility.GetMenuPath(monoScript) : UnityObjectTypeUtility.GetMenuPath(m_NativeTypeIDProperty.intValue);
-                            EditorGUI.BeginChangeCheck();
-                            menuPath = UnityObjectTypeUtility.ComponentTypePopup(menuPath, true);
-                            if (menuPath != m_OldMenuPath)
+                            if (m_CachedEditor != null)
+                                DestroyImmediate(m_CachedEditor);
+                            m_CachedEditor = null;
+                        }
+                        m_OldMenuPath = menuPath;
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
                             {
-                                if (m_CachedEditor != null)
-                                    DestroyImmediate(m_CachedEditor);
-                                m_CachedEditor = null;
-                            }
-                            m_OldMenuPath = menuPath;
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
+                                var go = new GameObject();
+                                try
                                 {
-                                    var go = new GameObject();
+                                    if (!go.TryGetComponent(type, out var comp))
+                                        comp = go.AddComponent(type);
+                                    var tempPreset = new Preset(comp) { hideFlags = HideFlags.HideInHierarchy };
                                     try
                                     {
-                                        if (!go.TryGetComponent(type, out var comp))
-                                            comp = go.AddComponent(type);
-                                        var tempPreset = new Preset(comp) { hideFlags = HideFlags.HideInHierarchy };
-                                        try
+                                        using (var tempSo = new SerializedObject(tempPreset))
+                                        using (var iterator = tempSo.GetIterator())
                                         {
-                                            using (var tempSo = new SerializedObject(tempPreset))
-                                            using (var iterator = tempSo.GetIterator())
+                                            iterator.Next(true);
+                                            while (true)
                                             {
-                                                iterator.Next(true);
-                                                while (true)
-                                                {
-                                                    presetSo.CopyFromSerializedProperty(iterator);
-                                                    if (!iterator.Next(false))
-                                                        break;
-                                                }
-                                                presetSo.ApplyModifiedProperties();
+                                                presetSo.CopyFromSerializedProperty(iterator);
+                                                if (!iterator.Next(false))
+                                                    break;
                                             }
-                                        }
-                                        finally
-                                        {
-                                            DestroyImmediate(tempPreset);
+                                            presetSo.ApplyModifiedProperties();
                                         }
                                     }
                                     finally
                                     {
-                                        DestroyImmediate(go);
+                                        DestroyImmediate(tempPreset);
                                     }
+                                }
+                                finally
+                                {
+                                    DestroyImmediate(go);
                                 }
                             }
                         }
-                        Editor.CreateCachedEditor(preset, null, ref m_CachedEditor);
-                        m_CachedEditor.OnInspectorGUI();
                     }
+                    Editor.CreateCachedEditor(preset, null, ref m_CachedEditor);
+                    m_CachedEditor.OnInspectorGUI();
                 }
             }
         }
@@ -123,9 +129,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Preset m_Preset = null;
 
-        ModifyComponentNodeEditor m_Editor = null;
-
-        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new ModifyComponentNodeEditor(this));
         public IEnumerable<UnityObject> Assets
         {
             get

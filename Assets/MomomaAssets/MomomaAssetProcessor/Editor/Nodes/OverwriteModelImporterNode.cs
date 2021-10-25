@@ -16,22 +16,28 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         sealed class OverwriteModelImporterNodeEditor : INodeProcessorEditor
         {
-            readonly OverwriteModelImporterNode m_Node;
+            [NodeProcessorEditorFactory]
+            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            {
+                factories.Add(typeof(OverwriteModelImporterNode), (data, property, inputProperty, outputProperty) => new OverwriteModelImporterNodeEditor(property));
+            }
+
+            readonly SerializedProperty _ImporterProperty;
 
             Editor m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
 
-            public OverwriteModelImporterNodeEditor(OverwriteModelImporterNode node)
+            OverwriteModelImporterNodeEditor(SerializedProperty processorProperty)
             {
-                m_Node = node;
+                _ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer));
             }
 
             public void OnEnable()
             {
                 if (m_CachedEditor == null)
                 {
-                    CreateEditorIfNecessary(m_Node.m_Importer);
+                    CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue);
                 }
             }
 
@@ -44,15 +50,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
 
-            public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
+            public void OnGUI()
             {
-                using (var m_ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer)))
-                {
-                    if (m_ImporterProperty.objectReferenceValue == null)
-                        return;
-                    CreateEditorIfNecessary(m_ImporterProperty.objectReferenceValue);
-                    m_CachedEditor?.OnInspectorGUI();
-                }
+                if (_ImporterProperty.objectReferenceValue == null)
+                    return;
+                CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue);
+                m_CachedEditor?.OnInspectorGUI();
             }
 
             void CreateEditorIfNecessary(UnityObject target)
@@ -89,9 +92,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         ModelImporter m_Importer = null;
 
-        OverwriteModelImporterNodeEditor m_Editor;
-
-        public INodeProcessorEditor ProcessorEditor => m_Editor ?? (m_Editor = new OverwriteModelImporterNodeEditor(this));
         public IEnumerable<UnityObject> Assets
         {
             get

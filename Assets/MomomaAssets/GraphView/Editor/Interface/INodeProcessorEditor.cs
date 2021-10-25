@@ -9,18 +9,39 @@ namespace MomomaAssets.GraphView
         bool UseDefaultVisualElement { get; }
         void OnEnable();
         void OnDisable();
-        void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty);
+        void OnGUI();
     }
 
-    public class DefaultNodeProcessorEditor : INodeProcessorEditor
+    class DefaultNodeProcessorEditor : INodeProcessorEditor
     {
-        readonly DefaultGraphElementEditor m_DefaultGraphElementEditor = new DefaultGraphElementEditor();
+        readonly SerializedProperty _ProcessorProperty;
 
-        public bool UseDefaultVisualElement => m_DefaultGraphElementEditor.UseDefaultVisualElement;
+        public bool UseDefaultVisualElement => true;
 
-        public void OnEnable() => m_DefaultGraphElementEditor.OnEnable();
-        public void OnDisable() => m_DefaultGraphElementEditor.OnDisable();
-        public void OnGUI(SerializedProperty processorProperty, SerializedProperty inputPortsProperty, SerializedProperty outputPortsProperty)
-                    => m_DefaultGraphElementEditor.OnGUI(processorProperty);
+        public DefaultNodeProcessorEditor(SerializedProperty processorProperty)
+        {
+            _ProcessorProperty = processorProperty;
+        }
+
+        public void OnEnable() { }
+        public void OnDisable() { }
+        public void OnGUI()
+        {
+            using (var property = _ProcessorProperty.Copy())
+            using (var endProperty = property.GetEndProperty(false))
+            {
+                if (property.NextVisible(true))
+                {
+                    while (true)
+                    {
+                        if (SerializedProperty.EqualContents(property, endProperty))
+                            break;
+                        EditorGUILayout.PropertyField(property, true);
+                        if (!property.NextVisible(false))
+                            break;
+                    }
+                }
+            }
+        }
     }
 }

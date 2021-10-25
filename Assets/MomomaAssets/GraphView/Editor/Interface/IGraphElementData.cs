@@ -10,7 +10,6 @@ namespace MomomaAssets.GraphView
     {
         string GraphElementName { get; }
         int Priority { get; }
-        IGraphElementEditor GraphElementEditor { get; }
         GraphElement Deserialize();
         void SetPosition(GraphElement graphElement, Rect position);
         void DeserializeOverwrite(GraphElement graphElement, UnityEditor.Experimental.GraphView.GraphView graphView);

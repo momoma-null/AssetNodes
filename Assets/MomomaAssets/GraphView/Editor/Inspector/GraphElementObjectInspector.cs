@@ -9,23 +9,20 @@ namespace MomomaAssets.GraphView
     [DefaultExecutionOrder(-9)]
     sealed class GraphElementObjectInspector : Editor
     {
-        IGraphElementEditor m_Editor;
-        SerializedProperty m_GraphElementDataProperty;
+        BaseGraphElementEditor m_Editor;
 
         void OnEnable()
         {
-            m_GraphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
-            if (target is GraphElementObject graphElementObject)
+            if (target is GraphElementObject graphElementObject && graphElementObject.GraphElementData != null)
             {
-                m_Editor = graphElementObject.GraphElementData?.GraphElementEditor;
+                var graphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
+                m_Editor = GraphElementEditorFactory.GetEditor(graphElementObject.GraphElementData, graphElementDataProperty);
+                m_Editor.OnEnable();
             }
-            m_Editor?.OnEnable();
         }
 
         void OnDisable()
         {
-            m_GraphElementDataProperty?.Dispose();
-            m_GraphElementDataProperty = null;
             m_Editor?.OnDisable();
             m_Editor = null;
         }
@@ -33,19 +30,15 @@ namespace MomomaAssets.GraphView
         public override void OnInspectorGUI()
         {
             serializedObject.UpdateIfRequiredOrScript();
-            if (target is GraphElementObject graphElementObject)
+            if (m_Editor != null)
             {
-                if (m_Editor != null && m_GraphElementDataProperty != null)
+                using (var change = new EditorGUI.ChangeCheckScope())
                 {
-                    using (var prop = m_GraphElementDataProperty.Copy())
-                    using (var change = new EditorGUI.ChangeCheckScope())
+                    m_Editor.OnGUI();
+                    if (change.changed)
                     {
-                        m_Editor.OnGUI(prop);
-                        if (change.changed)
-                        {
-                            serializedObject.ApplyModifiedProperties();
-                            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
-                        }
+                        serializedObject.ApplyModifiedProperties();
+                        UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
                     }
                 }
             }
