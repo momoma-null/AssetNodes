@@ -1,14 +1,13 @@
+using System;
 using UnityEditor;
 
 #nullable enable
 
 namespace MomomaAssets.GraphView
 {
-    public interface INodeProcessorEditor
+    public interface INodeProcessorEditor : IDisposable
     {
         bool UseDefaultVisualElement { get; }
-        void OnEnable();
-        void OnDisable();
         void OnGUI();
     }
 
@@ -18,13 +17,13 @@ namespace MomomaAssets.GraphView
 
         public bool UseDefaultVisualElement => true;
 
-        public DefaultNodeProcessorEditor(SerializedProperty processorProperty)
+        public DefaultNodeProcessorEditor(SerializedNodeProcessor serializedNodeProcessor)
         {
-            _ProcessorProperty = processorProperty;
+            _ProcessorProperty = serializedNodeProcessor.GetProcessorProperty();
         }
 
-        public void OnEnable() { }
-        public void OnDisable() { }
+        public void Dispose() { }
+
         public void OnGUI()
         {
             using (var property = _ProcessorProperty.Copy())

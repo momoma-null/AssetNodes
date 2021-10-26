@@ -19,34 +19,26 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(OverwriteTextureImporterNode), (data, property, inputProperty, outputProperty) => new OverwriteTextureImporterNodeEditor(property));
+                factories.Add(typeof(OverwriteTextureImporterNode), (data, serializedPropertyList) => new OverwriteTextureImporterNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _ImporterProperty;
 
-            Editor? m_CachedEditor;
+            Editor m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
 
             OverwriteTextureImporterNodeEditor(SerializedProperty processorProperty)
             {
                 _ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer));
+                 m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
             }
 
-            public void OnEnable()
-            {
-                if (m_CachedEditor == null)
-                {
-                    m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
-                }
-            }
-
-            public void OnDisable()
+            public void Dispose()
             {
                 if (m_CachedEditor != null)
                 {
                     DestroyImmediate(m_CachedEditor);
-                    m_CachedEditor = null;
                 }
             }
 

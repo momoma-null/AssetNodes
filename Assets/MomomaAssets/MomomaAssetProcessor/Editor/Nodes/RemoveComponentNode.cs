@@ -19,7 +19,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(RemoveComponentNode), (data, property, inputProperty, outputProperty) => new RemoveComponentNodeEditor(property));
+                factories.Add(typeof(RemoveComponentNode), (data, serializedPropertyList) => new RemoveComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _IncludeChildrenProperty;
@@ -35,8 +35,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 _MenuPathProperty = processorProperty.FindPropertyRelative(nameof(m_MenuPath));
             }
 
-            public void OnEnable() { }
-            public void OnDisable() { }
+            public void Dispose() { }
 
             public void OnGUI()
             {

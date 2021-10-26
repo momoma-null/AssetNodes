@@ -19,34 +19,26 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(OverwriteModelImporterNode), (data, property, inputProperty, outputProperty) => new OverwriteModelImporterNodeEditor(property));
+                factories.Add(typeof(OverwriteModelImporterNode), (data, serializedPropertyList) => new OverwriteModelImporterNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _ImporterProperty;
 
-            Editor? m_CachedEditor;
+            Editor m_CachedEditor;
 
             public bool UseDefaultVisualElement => false;
 
             OverwriteModelImporterNodeEditor(SerializedProperty processorProperty)
             {
                 _ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer));
+                m_CachedEditor = CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue, null);
             }
 
-            public void OnEnable()
-            {
-                if (m_CachedEditor == null)
-                {
-                    CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue);
-                }
-            }
-
-            public void OnDisable()
+            public void Dispose()
             {
                 if (m_CachedEditor != null)
                 {
                     DestroyImmediate(m_CachedEditor);
-                    m_CachedEditor = null;
                 }
             }
 
@@ -54,26 +46,24 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 if (_ImporterProperty.objectReferenceValue == null)
                     return;
-                CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue);
+                m_CachedEditor = CreateEditorIfNecessary(_ImporterProperty.objectReferenceValue, m_CachedEditor);
                 m_CachedEditor?.OnInspectorGUI();
             }
 
-            void CreateEditorIfNecessary(UnityObject? target)
+            static Editor CreateEditorIfNecessary(UnityObject target, Editor? currentEditor)
             {
-                if (target == null)
-                    return;
-                if (m_CachedEditor != null)
+                if (currentEditor != null)
                 {
-                    if (m_CachedEditor.target == target)
-                        return;
-                    DestroyImmediate(m_CachedEditor);
+                    if (currentEditor.target == target)
+                        return currentEditor;
+                    DestroyImmediate(currentEditor);
                 }
                 var delegates = Undo.undoRedoPerformed.GetInvocationList();
-                m_CachedEditor = Editor.CreateEditor(target);
+                var newEditor = Editor.CreateEditor(target);
                 Undo.undoRedoPerformed = null;
                 foreach (var i in delegates)
                     Undo.undoRedoPerformed += i as Undo.UndoRedoCallback;
-
+                return newEditor;
             }
         }
 

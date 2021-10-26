@@ -20,15 +20,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(ModifyComponentNode), (data, property, inputProperty, outputProperty) => new ModifyComponentNodeEditor(property));
+                factories.Add(typeof(ModifyComponentNode), (data, serializedPropertyList) => new ModifyComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _IncludeChildrenProperty;
             readonly SerializedProperty _PresetProperty;
 
-            Preset? m_Preset;
-            Editor? m_CachedEditor;
-            string m_OldMenuPath = "";
+            Editor m_CachedEditor;
+            string m_OldMenuPath = string.Empty;
 
             public bool UseDefaultVisualElement => false;
 
@@ -36,22 +35,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 _IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren));
                 _PresetProperty = processorProperty.FindPropertyRelative(nameof(m_Preset));
+                m_CachedEditor = Editor.CreateEditor(_PresetProperty.objectReferenceValue);
             }
 
-            public void OnEnable()
-            {
-                if (m_CachedEditor == null)
-                {
-                    m_CachedEditor = Editor.CreateEditor(_PresetProperty.objectReferenceValue);
-                }
-            }
-
-            public void OnDisable()
+            public void Dispose()
             {
                 if (m_CachedEditor != null)
                 {
                     DestroyImmediate(m_CachedEditor);
-                    m_CachedEditor = null;
                 }
             }
 
@@ -71,7 +62,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         {
                             if (m_CachedEditor != null)
                                 DestroyImmediate(m_CachedEditor);
-                            m_CachedEditor = null;
                         }
                         m_OldMenuPath = menuPath;
                         if (EditorGUI.EndChangeCheck())

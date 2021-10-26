@@ -6,7 +6,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
-    public delegate INodeProcessorEditor GenerateNodeProcessorEditor(INodeProcessor nodeProcessor, SerializedProperty property, SerializedProperty inputProperty, SerializedProperty outputProperty);
+    public delegate INodeProcessorEditor GenerateNodeProcessorEditor(INodeProcessor nodeProcessor, SerializedNodeProcessor serializedNodeProcessor);
 
     static class NodeProcessorEditorFactory
     {
@@ -37,13 +37,13 @@ namespace MomomaAssets.GraphView
             s_Factories = factories.factories;
         }
 
-        public static INodeProcessorEditor GetEditor(INodeProcessor processor, SerializedProperty property, SerializedProperty inputProperty, SerializedProperty outputProperty)
+        public static INodeProcessorEditor GetEditor(INodeProcessor processor, SerializedNodeProcessor serializedNodeProcessor)
         {
             if (s_Factories.TryGetValue(processor.GetType(), out var factory))
             {
-                return factory(processor, property, inputProperty, outputProperty);
+                return factory(processor, serializedNodeProcessor);
             }
-            return new DefaultNodeProcessorEditor(property);
+            return new DefaultNodeProcessorEditor(serializedNodeProcessor);
         }
     }
 }

@@ -80,7 +80,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(FindMaterialReferenceNode), (data, property, inputProperty, outputProperty) => new FindMaterialReferenceNodeEditor(property));
+                factories.Add(typeof(FindMaterialReferenceNode), (data, serializedNodeProcessor) => new FindMaterialReferenceNodeEditor(serializedNodeProcessor.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _ShaderProperty;
@@ -98,8 +98,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 _TextureReferencesProperty = processorProperty.FindPropertyRelative(nameof(m_TextureReferences));
             }
 
-            public void OnEnable() { }
-            public void OnDisable() { }
+            public void Dispose() { }
+
             public void OnGUI()
             {
                 EditorGUI.BeginChangeCheck();
@@ -115,7 +115,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 {
                     _TextureReferencesProperty.ClearArray();
                 }
-                using(new TextureReferenceDrawer.PopupScope(_PropertyNames, _PropertyHashes))
+                using (new TextureReferenceDrawer.PopupScope(_PropertyNames, _PropertyHashes))
                 {
                     EditorGUILayout.PropertyField(_TextureReferencesProperty);
                 }

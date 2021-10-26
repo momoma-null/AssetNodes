@@ -134,7 +134,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             [NodeProcessorEditorFactory]
             static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
             {
-                factories.Add(typeof(ModifyMaterialNode), (data, property, inputProperty, outputProperty) => data is ModifyMaterialNode node ? new ModifyMaterialNodeEditor(node, property) : throw new InvalidOperationException());
+                factories.Add(typeof(ModifyMaterialNode), (data, serializedPropertyList) => data is ModifyMaterialNode node ? new ModifyMaterialNodeEditor(node, serializedPropertyList.GetProcessorProperty()) : throw new InvalidOperationException());
             }
 
             static readonly Material[] s_MaterialArray = new Material[1];
@@ -153,23 +153,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 _Node = node;
                 _ShaderProperty = processorProperty.FindPropertyRelative(nameof(m_Shader));
                 _PropertyValuesProperty = processorProperty.FindPropertyRelative(nameof(m_PropertyValues));
-            }
-
-            public void OnEnable()
-            {
                 if (m_Material == null && _Node.m_Shader != null)
                 {
                     m_Material = new Material(_Node.m_Shader) { hideFlags = HideFlags.DontSave };
                     foreach (var i in _Node.m_PropertyValues)
                         i?.SetPropertyValue(m_Material);
-                }
-                if (m_MaterialEditor == null)
-                {
                     m_MaterialEditor = Editor.CreateEditor(m_Material, typeof(MaterialEditor)) as MaterialEditor;
                 }
             }
 
-            public void OnDisable()
+            public void Dispose()
             {
                 if (m_Material != null)
                 {
