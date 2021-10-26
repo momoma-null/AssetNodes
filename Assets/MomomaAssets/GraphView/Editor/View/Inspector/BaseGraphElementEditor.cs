@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 
@@ -5,13 +6,11 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
-    abstract class BaseGraphElementEditor
+    abstract class BaseGraphElementEditor : IDisposable
     {
         protected BaseGraphElementEditor() { }
-
         public virtual bool UseDefaultVisualElement => false;
-        public virtual void OnEnable() { }
-        public virtual void OnDisable() { }
+        public virtual void Dispose() { }
         public abstract void OnGUI();
     }
 

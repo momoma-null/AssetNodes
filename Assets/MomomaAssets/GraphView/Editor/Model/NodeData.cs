@@ -187,17 +187,17 @@ namespace MomomaAssets.GraphView
 
             readonly INodeProcessorEditor _ProcessorEditor;
 
+            public override bool UseDefaultVisualElement => _ProcessorEditor.UseDefaultVisualElement;
+
             NodeDataEditor(NodeData nodeData, SerializedProperty property)
             {
                 var processorProperty = property.FindPropertyRelative(nameof(m_Processor));
                 var inputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
                 var outputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
-                _ProcessorEditor = NodeProcessorEditorFactory.GetEditor(nodeData.Processor, processorProperty, inputPortsProperty, outputPortsProperty);
+                _ProcessorEditor = NodeProcessorEditorFactory.GetEditor(nodeData.Processor, new SerializedNodeProcessor(processorProperty, inputPortsProperty, outputPortsProperty));
             }
 
-            public override void OnEnable() => _ProcessorEditor.OnEnable();
-
-            public override void OnDisable() => _ProcessorEditor.OnDisable();
+            public override void Dispose() => _ProcessorEditor.Dispose();
 
             public override void OnGUI()
             {

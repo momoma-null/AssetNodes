@@ -17,13 +17,12 @@ namespace MomomaAssets.GraphView
             {
                 var graphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
                 m_Editor = GraphElementEditorFactory.GetEditor(graphElementObject.GraphElementData, graphElementDataProperty);
-                m_Editor.OnEnable();
             }
         }
 
         void OnDisable()
         {
-            m_Editor?.OnDisable();
+            m_Editor?.Dispose();
             m_Editor = null;
         }
 
