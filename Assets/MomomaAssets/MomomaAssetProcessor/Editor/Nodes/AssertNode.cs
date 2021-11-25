@@ -8,15 +8,9 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Log/Assert")]
+    [CreateElement(typeof(AssetProcessorGUI), "Log/Assert")]
     sealed class AssertNode : INodeProcessor
     {
-        static AssertNode()
-        {
-            INodeDataUtility.AddConstructor(() => new AssertNode());
-        }
-
         AssertNode() { }
 
         [SerializeField]
@@ -34,6 +28,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 Debug.LogAssertionFormat(assets.MainAsset, m_Message, assets.MainAsset.name);
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

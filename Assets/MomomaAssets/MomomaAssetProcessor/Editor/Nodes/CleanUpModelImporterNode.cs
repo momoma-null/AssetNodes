@@ -8,15 +8,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Clean up/Model Importer")]
+    [CreateElement(typeof(AssetProcessorGUI), "Clean up/Model Importer")]
     sealed class CleanUpModelImporterNode : INodeProcessor
     {
-        static CleanUpModelImporterNode()
-        {
-            INodeDataUtility.AddConstructor(() => new CleanUpModelImporterNode());
-        }
-
         CleanUpModelImporterNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -56,6 +50,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

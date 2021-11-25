@@ -11,16 +11,15 @@ using ReorderableList = UnityEditorInternal.ReorderableList;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Group/Group by Type")]
+    [CreateElement(typeof(AssetProcessorGUI), "Group/Group by Type")]
     sealed class GroupByTypeNode : INodeProcessor
     {
         sealed class GroupByTypeNodeEditor : INodeProcessorEditor
         {
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(GroupByTypeNode), (data, serializedNodeProcessor) => new GroupByTypeNodeEditor(serializedNodeProcessor));
+                NodeProcessorEditorFactory.EntryEditorFactory<GroupByTypeNode>((data, serializedNodeProcessor) => new GroupByTypeNodeEditor(serializedNodeProcessor));
             }
 
             readonly ReorderableList _ReorderableList;
@@ -98,11 +97,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static GroupByTypeNode()
-        {
-            INodeDataUtility.AddConstructor(() => new GroupByTypeNode());
-        }
-
         GroupByTypeNode() { }
 
         [SerializeField]
@@ -149,6 +143,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             for (var i = 0; i < outputs.Length; ++i)
                 container.Set(portDataContainer.OutputPorts[i], outputs[i].assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

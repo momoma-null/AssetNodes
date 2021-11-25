@@ -10,16 +10,15 @@ using static UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Modify/Remove Component")]
+    [CreateElement(typeof(AssetProcessorGUI), "Modify/Remove Component")]
     sealed class RemoveComponentNode : INodeProcessor
     {
         sealed class RemoveComponentNodeEditor : INodeProcessorEditor
         {
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(RemoveComponentNode), (data, serializedPropertyList) => new RemoveComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
+                NodeProcessorEditorFactory.EntryEditorFactory<RemoveComponentNode>((data, serializedPropertyList) => new RemoveComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _IncludeChildrenProperty;
@@ -48,11 +47,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     _MenuPathProperty.stringValue = newPath;
                 }
             }
-        }
-
-        static RemoveComponentNode()
-        {
-            INodeDataUtility.AddConstructor(() => new RemoveComponentNode());
         }
 
         RemoveComponentNode() { }
@@ -100,6 +94,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

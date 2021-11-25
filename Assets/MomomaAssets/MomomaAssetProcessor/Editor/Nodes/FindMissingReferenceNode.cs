@@ -8,15 +8,9 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Find/Missing Reference")]
+    [CreateElement(typeof(AssetProcessorGUI), "Find/Missing Reference")]
     sealed class FindMissingReferenceNode : INodeProcessor
     {
-        static FindMissingReferenceNode()
-        {
-            INodeDataUtility.AddConstructor(() => new FindMissingReferenceNode());
-        }
-
         FindMissingReferenceNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -80,6 +74,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             return found;
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

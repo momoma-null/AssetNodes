@@ -7,15 +7,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Group/Group by PrefabType")]
+    [CreateElement(typeof(AssetProcessorGUI), "Group/Group by PrefabType")]
     sealed class GroupByPrefabTypeNode : INodeProcessor
     {
-        static GroupByPrefabTypeNode()
-        {
-            INodeDataUtility.AddConstructor(() => new GroupByPrefabTypeNode());
-        }
-
         GroupByPrefabTypeNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -44,6 +38,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             container.Set(portDataContainer.OutputPorts[0], regulars);
             container.Set(portDataContainer.OutputPorts[1], models);
             container.Set(portDataContainer.OutputPorts[2], variants);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

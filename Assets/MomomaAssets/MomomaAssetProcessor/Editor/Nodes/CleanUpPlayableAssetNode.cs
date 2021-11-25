@@ -9,15 +9,9 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Clean up/Playable Asset")]
+    [CreateElement(typeof(AssetProcessorGUI), "Clean up/Playable Asset")]
     sealed class CleanUpPlayableAssetNode : INodeProcessor
     {
-        static CleanUpPlayableAssetNode()
-        {
-            INodeDataUtility.AddConstructor(() => new CleanUpPlayableAssetNode());
-        }
-
         CleanUpPlayableAssetNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -41,6 +35,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

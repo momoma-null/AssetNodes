@@ -10,16 +10,15 @@ using static UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Importer/Model")]
+    [CreateElement(typeof(AssetProcessorGUI), "Importer/Model")]
     sealed class OverwriteModelImporterNode : INodeProcessor, IAdditionalAssetHolder
     {
         sealed class OverwriteModelImporterNodeEditor : INodeProcessorEditor
         {
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(OverwriteModelImporterNode), (data, serializedPropertyList) => new OverwriteModelImporterNodeEditor(serializedPropertyList.GetProcessorProperty()));
+                NodeProcessorEditorFactory.EntryEditorFactory<OverwriteModelImporterNode>((data, serializedPropertyList) => new OverwriteModelImporterNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _ImporterProperty;
@@ -70,11 +69,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         sealed class AssetData
         {
             public static readonly ModelImporter s_DefaultImporter = Resources.Load<ModelImporter>("MomomaAssetProcessor/ModelImporter");
-        }
-
-        static OverwriteModelImporterNode()
-        {
-            INodeDataUtility.AddConstructor(() => new OverwriteModelImporterNode());
         }
 
         OverwriteModelImporterNode() { }
@@ -142,6 +136,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

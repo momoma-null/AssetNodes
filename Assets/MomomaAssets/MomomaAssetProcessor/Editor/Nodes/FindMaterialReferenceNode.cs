@@ -10,8 +10,7 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Find/Material Reference")]
+    [CreateElement(typeof(AssetProcessorGUI), "Find/Material Reference")]
     sealed class FindMaterialReferenceNode : INodeProcessor
     {
         enum ComparisonMode
@@ -78,9 +77,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
 
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(FindMaterialReferenceNode), (data, serializedNodeProcessor) => new FindMaterialReferenceNodeEditor(serializedNodeProcessor.GetProcessorProperty()));
+                NodeProcessorEditorFactory.EntryEditorFactory<FindMaterialReferenceNode>((data, serializedNodeProcessor) => new FindMaterialReferenceNodeEditor(serializedNodeProcessor.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _ShaderProperty;
@@ -156,11 +155,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static FindMaterialReferenceNode()
-        {
-            INodeDataUtility.AddConstructor(() => new FindMaterialReferenceNode());
-        }
-
         FindMaterialReferenceNode() { }
 
         [SerializeField]
@@ -206,6 +200,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], outAssetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

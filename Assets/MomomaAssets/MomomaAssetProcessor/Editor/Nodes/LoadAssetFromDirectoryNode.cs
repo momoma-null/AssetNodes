@@ -9,8 +9,7 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Load/From Directory")]
+    [CreateElement(typeof(AssetProcessorGUI), "Load/From Directory")]
     sealed class LoadAssetFromDirectoryNode : INodeProcessor
     {
         enum ReloadMode
@@ -18,11 +17,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             None,
             AutoReloadImported,
             AutoReloadAll
-        }
-
-        static LoadAssetFromDirectoryNode()
-        {
-            INodeDataUtility.AddConstructor(() => new LoadAssetFromDirectoryNode());
         }
 
         LoadAssetFromDirectoryNode() { }
@@ -68,6 +62,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

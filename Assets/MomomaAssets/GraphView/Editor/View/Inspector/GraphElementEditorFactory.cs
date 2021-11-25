@@ -1,49 +1,50 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 
 //#nullable enable
 
 namespace MomomaAssets.GraphView
 {
-    delegate BaseGraphElementEditor GenerateGraphElementEditor(IGraphElementData graphElementData, SerializedProperty property);
+    delegate BaseGraphElementEditor CreateGraphElementEditor<T>(T graphElementData, SerializedProperty property) where T : IGraphElementData;
 
     static class GraphElementEditorFactory
     {
-        sealed class EntryEditorFactory : IEntryDelegate<GenerateGraphElementEditor>
+        static class CachedFactory<T> where T : IGraphElementData
         {
-            public readonly Dictionary<Type, GenerateGraphElementEditor> factories;
-
-            public EntryEditorFactory(int capacity = 0)
-            {
-                factories = new Dictionary<Type, GenerateGraphElementEditor>(capacity);
-            }
-
-            public void Add(Type type, GenerateGraphElementEditor function)
-            {
-                factories.Add(type, function);
-            }
+            public static CreateGraphElementEditor<T> factory;
         }
 
-        static readonly IReadOnlyDictionary<Type, GenerateGraphElementEditor> s_Factories;
+        sealed class FunctionProxy : IFunctionContainer<IGraphElementData, BaseGraphElementEditor>
+        {
+            SerializedProperty _property;
+
+            public FunctionProxy(SerializedProperty property)
+            {
+                _property = property;
+            }
+
+            public BaseGraphElementEditor DoFunction<T>(T arg) where T : IGraphElementData
+            {
+                return CachedFactory<T>.factory?.Invoke(arg, _property) ?? new DefaultGraphElementEditor(_property);
+            }
+        }
 
         static GraphElementEditorFactory()
         {
             var methods = TypeCache.GetMethodsWithAttribute<GraphElementEditorFactoryAttribute>();
-            var factories = new EntryEditorFactory(methods.Count);
-            var parameters = new object[] { factories };
             foreach (var methodInfo in methods)
-                methodInfo.Invoke(null, parameters);
-            s_Factories = factories.factories;
+                methodInfo.Invoke(null, Array.Empty<object>());
         }
 
-        public static BaseGraphElementEditor GetEditor(IGraphElementData graphElementData, SerializedProperty property)
+        public static void EntryEditorFactory<T>(CreateGraphElementEditor<T> createGraphElementEditor) where T : IGraphElementData
         {
-            if (s_Factories.TryGetValue(graphElementData.GetType(), out var factory))
-            {
-                return factory(graphElementData, property);
-            }
-            return new DefaultGraphElementEditor(property);
+            CachedFactory<T>.factory = createGraphElementEditor;
+        }
+
+        public static BaseGraphElementEditor CreateEditor(IGraphElementData graphElementData, SerializedProperty property)
+        {
+            var functionProxy = new FunctionProxy(property);
+            return graphElementData.DoFunction(functionProxy);
         }
     }
 }

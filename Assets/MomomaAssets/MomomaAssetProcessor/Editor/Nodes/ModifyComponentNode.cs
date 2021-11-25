@@ -11,16 +11,15 @@ using static UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Modify/Component")]
+    [CreateElement(typeof(AssetProcessorGUI), "Modify/Component")]
     sealed class ModifyComponentNode : INodeProcessor, IAdditionalAssetHolder
     {
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(ModifyComponentNode), (data, serializedPropertyList) => new ModifyComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
+                NodeProcessorEditorFactory.EntryEditorFactory<ModifyComponentNode>((data, serializedPropertyList) => new ModifyComponentNodeEditor(serializedPropertyList.GetProcessorProperty()));
             }
 
             readonly SerializedProperty _IncludeChildrenProperty;
@@ -107,11 +106,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static ModifyComponentNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ModifyComponentNode());
-        }
-
         ModifyComponentNode() { }
 
         [SerializeField]
@@ -167,6 +161,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }
