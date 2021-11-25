@@ -153,6 +153,11 @@ namespace MomomaAssets.GraphView
             }
         }
 
+        public T DoFunction<T>(IFunctionContainer<IGraphElementData, T> function)
+        {
+            return function.DoFunction(this);
+        }
+
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             var ports = new HashSet<string>();
@@ -180,9 +185,9 @@ namespace MomomaAssets.GraphView
         sealed class NodeDataEditor : BaseGraphElementEditor
         {
             [GraphElementEditorFactory]
-            static void Entry(IEntryDelegate<GenerateGraphElementEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(NodeData), (data, property) => data is NodeData nodeData ? new NodeDataEditor(nodeData, property) : throw new InvalidOperationException());
+                GraphElementEditorFactory.EntryEditorFactory<NodeData>((data, property) => new NodeDataEditor(data, property));
             }
 
             readonly INodeProcessorEditor _ProcessorEditor;
@@ -194,7 +199,7 @@ namespace MomomaAssets.GraphView
                 var processorProperty = property.FindPropertyRelative(nameof(m_Processor));
                 var inputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
                 var outputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
-                _ProcessorEditor = NodeProcessorEditorFactory.GetEditor(nodeData.Processor, new SerializedNodeProcessor(processorProperty, inputPortsProperty, outputPortsProperty));
+                _ProcessorEditor = NodeProcessorEditorFactory.CreateEditor(nodeData.Processor, new SerializedNodeProcessor(processorProperty, inputPortsProperty, outputPortsProperty));
             }
 
             public override void Dispose() => _ProcessorEditor.Dispose();

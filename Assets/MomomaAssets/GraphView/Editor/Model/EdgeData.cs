@@ -73,12 +73,17 @@ namespace MomomaAssets.GraphView
             m_OutputPortGuid = newGuid;
         }
 
+        public T DoFunction<T>(IFunctionContainer<IGraphElementData, T> function)
+        {
+            return function.DoFunction(this);
+        }
+
         sealed class EdgeDataEditor : BaseGraphElementEditor
         {
             [GraphElementEditorFactory]
-            static void Entry(IEntryDelegate<GenerateGraphElementEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(EdgeData), (data, property) => new EdgeDataEditor(property));
+                GraphElementEditorFactory.EntryEditorFactory<EdgeData>((data, property) => new EdgeDataEditor(property));
             }
 
             readonly SerializedProperty _InputPortProperty;

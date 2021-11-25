@@ -32,18 +32,8 @@ namespace MomomaAssets.GraphView
                 return m_SearchTree;
             m_SearchTree = new List<SearchTreeEntry>();
             m_SearchTree.Add(new SearchTreeGroupEntry(new GUIContent("Create Node")));
-            var nodes = new SortedList<string, Func<INodeProcessor>>(INodeDataUtility.Constructors.Count);
-            foreach (var ctor in INodeDataUtility.Constructors)
-            {
-                var node = ctor();
-                foreach (var attr in node.GetType().GetCustomAttributes(typeof(CreateElementAttribute), false))
-                {
-                    if (attr is CreateElementAttribute createElement)
-                    {
-                        nodes.Add(createElement.MenuPath, ctor);
-                    }
-                }
-            }
+            var ctors = NodeProcessorUtility.GetConstructors(graphViewType);
+            var nodes = new SortedList<string, Func<INodeProcessor>>(ctors);
             var groupPaths = new HashSet<string>();
             foreach (var node in nodes)
             {

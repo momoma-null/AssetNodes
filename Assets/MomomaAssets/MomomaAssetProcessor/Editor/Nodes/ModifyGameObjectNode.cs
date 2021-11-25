@@ -7,15 +7,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Modify/GameObject")]
+    [CreateElement(typeof(AssetProcessorGUI), "Modify/GameObject")]
     sealed class ModifyGameObjectNode : INodeProcessor
     {
-        static ModifyGameObjectNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ModifyGameObjectNode());
-        }
-
         ModifyGameObjectNode() { }
 
         enum PropertyType
@@ -184,6 +178,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

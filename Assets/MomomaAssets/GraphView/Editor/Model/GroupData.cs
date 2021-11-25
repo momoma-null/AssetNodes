@@ -78,6 +78,11 @@ namespace MomomaAssets.GraphView
             m_IncludingGuidSet = newSet;
         }
 
+        public T DoFunction<T>(IFunctionContainer<IGraphElementData, T> function)
+        {
+            return function.DoFunction(this);
+        }
+
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             if (m_IncludingGuidSet == null)

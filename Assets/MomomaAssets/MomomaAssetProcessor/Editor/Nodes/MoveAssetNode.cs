@@ -10,15 +10,9 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("File/Move Asset")]
+    [CreateElement(typeof(AssetProcessorGUI), "File/Move Asset")]
     sealed class MoveAssetNode : INodeProcessor
     {
-        static MoveAssetNode()
-        {
-            INodeDataUtility.AddConstructor(() => new MoveAssetNode());
-        }
-
         MoveAssetNode() { }
 
         [SerializeField]
@@ -49,6 +43,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 AssetDatabase.MoveAsset(srcPath, dstPath);
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

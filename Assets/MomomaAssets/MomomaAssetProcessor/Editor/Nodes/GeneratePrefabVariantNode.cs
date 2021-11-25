@@ -10,15 +10,9 @@ using static UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Generate/Prefab Variant")]
+    [CreateElement(typeof(AssetProcessorGUI), "Generate/Prefab Variant")]
     sealed class GeneratePrefabVariantNode : INodeProcessor
     {
-        static GeneratePrefabVariantNode()
-        {
-            INodeDataUtility.AddConstructor(() => new GeneratePrefabVariantNode());
-        }
-
         GeneratePrefabVariantNode() { }
 
         [SerializeField]
@@ -68,6 +62,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
             container.Set(portDataContainer.OutputPorts[1], variants);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

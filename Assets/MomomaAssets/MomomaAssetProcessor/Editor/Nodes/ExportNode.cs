@@ -9,15 +9,9 @@ using UnityObject = UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("IO/Export Unitypackage")]
+    [CreateElement(typeof(AssetProcessorGUI), "IO/Export Unitypackage")]
     sealed class ExportNode : INodeProcessor
     {
-        static ExportNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ExportNode());
-        }
-
         ExportNode() { }
 
         [SerializeField]
@@ -37,6 +31,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 AssetDatabase.ExportPackage(assetGroup.Select(asset => asset.AssetPath).ToArray(), m_UnityPackageName, m_Options);
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace MomomaAssets.GraphView
             if (target is GraphElementObject graphElementObject && graphElementObject.GraphElementData != null)
             {
                 var graphElementDataProperty = serializedObject.FindProperty("m_GraphElementData");
-                m_Editor = GraphElementEditorFactory.GetEditor(graphElementObject.GraphElementData, graphElementDataProperty);
+                m_Editor = GraphElementEditorFactory.CreateEditor(graphElementObject.GraphElementData, graphElementDataProperty);
             }
         }
 

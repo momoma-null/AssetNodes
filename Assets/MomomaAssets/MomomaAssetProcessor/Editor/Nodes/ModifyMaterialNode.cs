@@ -8,8 +8,7 @@ using static UnityEngine.Object;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Modify/Material")]
+    [CreateElement(typeof(AssetProcessorGUI), "Modify/Material")]
     sealed class ModifyMaterialNode : INodeProcessor
     {
         interface IPropertyValue
@@ -132,9 +131,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
         sealed class ModifyMaterialNodeEditor : INodeProcessorEditor
         {
             [NodeProcessorEditorFactory]
-            static void Entry(IEntryDelegate<GenerateNodeProcessorEditor> factories)
+            static void Entry()
             {
-                factories.Add(typeof(ModifyMaterialNode), (data, serializedPropertyList) => data is ModifyMaterialNode node ? new ModifyMaterialNodeEditor(node, serializedPropertyList.GetProcessorProperty()) : throw new InvalidOperationException());
+                NodeProcessorEditorFactory.EntryEditorFactory<ModifyMaterialNode>((data, serializedPropertyList) => new ModifyMaterialNodeEditor(data, serializedPropertyList.GetProcessorProperty()));
             }
 
             static readonly Material[] s_MaterialArray = new Material[1];
@@ -268,11 +267,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
-        static ModifyMaterialNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ModifyMaterialNode());
-        }
-
         ModifyMaterialNode() { }
 
         [SerializeField]
@@ -310,6 +304,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

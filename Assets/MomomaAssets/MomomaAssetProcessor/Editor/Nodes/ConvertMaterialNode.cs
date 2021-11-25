@@ -7,15 +7,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Modify/Convert Material")]
+    [CreateElement(typeof(AssetProcessorGUI), "Modify/Convert Material")]
     sealed class ConvertMaterialNode : INodeProcessor
     {
-        static ConvertMaterialNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ConvertMaterialNode());
-        }
-
         ConvertMaterialNode() { }
 
         [SerializeField]
@@ -47,6 +41,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

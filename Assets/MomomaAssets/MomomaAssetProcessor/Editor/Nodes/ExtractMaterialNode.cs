@@ -8,15 +8,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Importer/Extract Material")]
+    [CreateElement(typeof(AssetProcessorGUI), "Importer/Extract Material")]
     sealed class ExtractMaterialNode : INodeProcessor
     {
-        static ExtractMaterialNode()
-        {
-            INodeDataUtility.AddConstructor(() => new ExtractMaterialNode());
-        }
-
         ExtractMaterialNode() { }
 
         [SerializeField]
@@ -59,6 +53,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 }
             }
             container.Set(portDataContainer.OutputPorts[0], assetGroup);
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }

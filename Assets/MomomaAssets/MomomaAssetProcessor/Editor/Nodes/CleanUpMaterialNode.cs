@@ -7,15 +7,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Clean up/Material")]
+    [CreateElement(typeof(AssetProcessorGUI), "Clean up/Material")]
     sealed class CleanUpMaterialNode : INodeProcessor
     {
-        static CleanUpMaterialNode()
-        {
-            INodeDataUtility.AddConstructor(() => new CleanUpMaterialNode());
-        }
-
         CleanUpMaterialNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -40,6 +34,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
 
         static void RemoveProperties(SerializedProperty props, Material mat)

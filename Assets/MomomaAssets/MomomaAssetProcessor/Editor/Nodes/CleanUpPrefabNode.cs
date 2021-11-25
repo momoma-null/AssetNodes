@@ -9,15 +9,9 @@ using UnityEditor;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [InitializeOnLoad]
-    [CreateElement("Clean up/Prefab")]
+    [CreateElement(typeof(AssetProcessorGUI), "Clean up/Prefab")]
     sealed class CleanUpPrefabNode : INodeProcessor
     {
-        static CleanUpPrefabNode()
-        {
-            INodeDataUtility.AddConstructor(() => new CleanUpPrefabNode());
-        }
-
         CleanUpPrefabNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
@@ -88,6 +82,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
         }
     }
 }
