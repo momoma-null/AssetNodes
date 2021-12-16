@@ -45,7 +45,7 @@ namespace MomomaAssets.GraphView
         [InitializeOnLoadMethod]
         static void Initialize()
         {
-            foreach(var guid in AssetDatabase.FindAssets($"t:{nameof(GraphViewObject)}"))
+            foreach (var guid in AssetDatabase.FindAssets($"t:{nameof(GraphViewObject)}"))
             {
                 AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
             }
@@ -53,14 +53,13 @@ namespace MomomaAssets.GraphView
 
         void OnEnable()
         {
-            RegisterSelf();
             // to wait for the deserialization of GraphElementObject
             m_GuidtoSerializedGraphElements.Clear();
             foreach (var i in m_SerializedGraphElements)
                 m_GuidtoSerializedGraphElements.Add(i.Guid, i);
         }
 
-        void OnDisable()
+        void OnDestroy()
         {
             UnregisterSelf();
         }
