@@ -25,6 +25,7 @@ namespace MomomaAssets.GraphView
             {
                 GetData(i, container);
             }
+            container.Clear();
             Completed?.Invoke();
         }
 

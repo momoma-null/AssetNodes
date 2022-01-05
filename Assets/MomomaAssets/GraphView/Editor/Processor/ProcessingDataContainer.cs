@@ -66,6 +66,11 @@ namespace MomomaAssets.GraphView
             EndNodeDatas = endNodeDatas;
         }
 
+        internal void Clear()
+        {
+            m_ProcessingDatas.Clear();
+        }
+
         public void Set<T>(PortData portData, T data) where T : IProcessingData
         {
             m_ProcessingDatas[portData.Id] = data;
