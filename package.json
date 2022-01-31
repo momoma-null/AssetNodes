@@ -1,0 +1,12 @@
+{
+  "name": "com.momoma.asset-processor",
+  "displayName": "Momoma Asset Processor",
+  "version": "1.0.0",
+  "unity": "2020.3",
+  "description": "An editor extension that allows you to create node graphs for automatic processing of assets.",
+  "repository": {
+    "url": "https://github.com/momoma-null/MomomaAssetProcessor.git",
+    "type": "git"
+  },
+  "type": "tool"
+}
