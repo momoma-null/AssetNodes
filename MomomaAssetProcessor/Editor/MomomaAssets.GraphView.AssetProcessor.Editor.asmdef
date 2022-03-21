@@ -1,0 +1,26 @@
+{
+    "name": "MomomaAssets.GraphView.AssetProcessor.Editor",
+    "rootNamespace": "MomomaAssets.GraphView.AssetProcessor",
+    "references": [
+        "GUID:025cbc9cf40919e4287de87075aabce6",
+        "GUID:4d4adb8c0edc4fe48bad1fa5becd3095",
+        "GUID:69448af7b92c7f342b298e06a37122aa"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}
