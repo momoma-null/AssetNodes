@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.Presets;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 using static UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
@@ -48,61 +48,45 @@ namespace MomomaAssets.GraphView.AssetProcessor
             public void OnGUI()
             {
                 EditorGUILayout.PropertyField(_IncludeChildrenProperty);
-                if (_PresetProperty.objectReferenceValue is Preset preset)
+                string menuPath;
+                using (var presetSo = new SerializedObject(_PresetProperty.objectReferenceValue))
+                using (var m_NativeTypeIDProperty = presetSo.FindProperty("m_TargetType.m_NativeTypeID"))
+                using (var m_ManagedTypePPtrProperty = presetSo.FindProperty("m_TargetType.m_ManagedTypePPtr"))
+                    menuPath = (m_ManagedTypePPtrProperty.objectReferenceValue is MonoScript monoScript) ? UnityObjectTypeUtility.GetMenuPath(monoScript) : UnityObjectTypeUtility.GetMenuPath(m_NativeTypeIDProperty.intValue);
+                EditorGUI.BeginChangeCheck();
+                menuPath = UnityObjectTypeUtility.ComponentTypePopup(menuPath, true);
+                if (menuPath != m_OldMenuPath)
                 {
-                    using (var presetSo = new SerializedObject(preset))
-                    using (var m_NativeTypeIDProperty = presetSo.FindProperty("m_TargetType.m_NativeTypeID"))
-                    using (var m_ManagedTypePPtrProperty = presetSo.FindProperty("m_TargetType.m_ManagedTypePPtr"))
+                    if (m_CachedEditor != null)
+                        DestroyImmediate(m_CachedEditor);
+                }
+                m_OldMenuPath = menuPath;
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
                     {
-                        var menuPath = (m_ManagedTypePPtrProperty.objectReferenceValue is MonoScript monoScript) ? UnityObjectTypeUtility.GetMenuPath(monoScript) : UnityObjectTypeUtility.GetMenuPath(m_NativeTypeIDProperty.intValue);
-                        EditorGUI.BeginChangeCheck();
-                        menuPath = UnityObjectTypeUtility.ComponentTypePopup(menuPath, true);
-                        if (menuPath != m_OldMenuPath)
+                        var go = new GameObject();
+                        try
                         {
-                            if (m_CachedEditor != null)
-                                DestroyImmediate(m_CachedEditor);
+                            if (!go.TryGetComponent(type, out var comp))
+                                comp = go.AddComponent(type);
+                            var newPreset = new Preset(comp) { hideFlags = HideFlags.HideInHierarchy };
+                            var oldPreset = _PresetProperty.objectReferenceValue;
+                            if (AssetDatabase.Contains(oldPreset))
+                                AssetDatabase.AddObjectToAsset(newPreset, AssetDatabase.GetAssetPath(oldPreset));
+                            Undo.RegisterCreatedObjectUndo(newPreset, nameof(ModifyComponentNode));
+                            _PresetProperty.objectReferenceValue = newPreset;
+                            _PresetProperty.serializedObject.ApplyModifiedProperties();
+                            Undo.DestroyObjectImmediate(oldPreset);
                         }
-                        m_OldMenuPath = menuPath;
-                        if (EditorGUI.EndChangeCheck())
+                        finally
                         {
-                            if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(menuPath, out var type))
-                            {
-                                var go = new GameObject();
-                                try
-                                {
-                                    if (!go.TryGetComponent(type, out var comp))
-                                        comp = go.AddComponent(type);
-                                    var tempPreset = new Preset(comp) { hideFlags = HideFlags.HideInHierarchy };
-                                    try
-                                    {
-                                        using (var tempSo = new SerializedObject(tempPreset))
-                                        using (var iterator = tempSo.GetIterator())
-                                        {
-                                            iterator.Next(true);
-                                            while (true)
-                                            {
-                                                presetSo.CopyFromSerializedProperty(iterator);
-                                                if (!iterator.Next(false))
-                                                    break;
-                                            }
-                                            presetSo.ApplyModifiedProperties();
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        DestroyImmediate(tempPreset);
-                                    }
-                                }
-                                finally
-                                {
-                                    DestroyImmediate(go);
-                                }
-                            }
+                            DestroyImmediate(go);
                         }
                     }
-                    Editor.CreateCachedEditor(preset, null, ref m_CachedEditor);
-                    m_CachedEditor.OnInspectorGUI();
                 }
+                Editor.CreateCachedEditor(_PresetProperty.objectReferenceValue, null, ref m_CachedEditor);
+                m_CachedEditor.OnInspectorGUI();
             }
         }
 
