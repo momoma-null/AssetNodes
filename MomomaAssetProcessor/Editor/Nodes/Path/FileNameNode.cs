@@ -1,0 +1,29 @@
+using System;
+using System.IO;
+
+#nullable enable
+
+namespace MomomaAssets.GraphView.AssetProcessor
+{
+    [Serializable]
+    [CreateElement(typeof(AssetProcessorGUI), "Path/File Name")]
+    sealed class FileNameNode : INodeProcessor
+    {
+        FileNameNode() { }
+
+        public void Initialize(IPortDataContainer portDataContainer)
+        {
+            portDataContainer.AddOutputPort<string>(isMulti: true);
+        }
+
+        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        {
+            container.Set(portDataContainer.OutputPorts[0], new PathData(asset => Path.GetFileName(asset.AssetPath)));
+        }
+
+        public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
+        {
+            return function.DoFunction(this);
+        }
+    }
+}

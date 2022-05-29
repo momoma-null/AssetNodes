@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using static UnityEngine.Object;
 
 #nullable enable
@@ -15,14 +14,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         GeneratePrefabVariantNode() { }
 
-        [SerializeField]
-        string m_OriginalPrefabPath = "Assets/(.+).prefab";
-        [SerializeField]
-        string m_VariantPrefabPath = "Assets/$1_Variant.prefab";
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort<GameObject>(isMulti: true);
+            portDataContainer.AddInputPort<string>("Dst Path");
             portDataContainer.AddOutputPort<GameObject>(isMulti: true);
             portDataContainer.AddOutputPort<GameObject>("Variant", true);
         }
@@ -30,14 +25,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var pathData = container.Get(portDataContainer.InputPorts[1], PathData.combine);
             var variants = new AssetGroup();
-            var regex = new Regex(m_OriginalPrefabPath);
             foreach (var assets in assetGroup)
             {
                 if (assets.MainAsset is GameObject prefab)
                 {
-                    var srcPath = assets.AssetPath;
-                    var dstPath = regex.Replace(srcPath, m_VariantPrefabPath);
+                    var dstPath = pathData.GetPath(assets);
                     var directoryPath = Path.GetDirectoryName(dstPath);
                     if (!Directory.Exists(directoryPath))
                     {
