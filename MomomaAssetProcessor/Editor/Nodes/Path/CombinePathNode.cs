@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 #nullable enable
 
@@ -15,15 +16,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             portDataContainer.AddInputPort<string>();
             portDataContainer.AddInputPort<string>();
+            portDataContainer.AddInputPort<string>();
+            portDataContainer.AddInputPort<string>();
             portDataContainer.AddOutputPort<string>(isMulti: true);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var pathData0 = container.Get(portDataContainer.InputPorts[0], PathData.combine);
-            var pathData1 = container.Get(portDataContainer.InputPorts[1], PathData.combine);
+            var pathDatas = portDataContainer.InputPorts.Select(port => container.Get(port, PathData.combine)).ToArray();
             container.Set(portDataContainer.OutputPorts[0],
-                new PathData(asset => Path.Combine(pathData0.GetPath(asset), pathData1.GetPath(asset))));
+                new PathData(asset => Path.Combine(pathDatas.Select(path => path.GetPath(asset)).ToArray())));
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
