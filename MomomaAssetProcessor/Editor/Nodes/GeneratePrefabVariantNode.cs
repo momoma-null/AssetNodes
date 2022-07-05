@@ -18,7 +18,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             portDataContainer.AddInputPort<GameObject>(isMulti: true);
             portDataContainer.AddInputPort<string>("Dst Path");
-            portDataContainer.AddOutputPort<GameObject>(isMulti: true);
+            portDataContainer.AddOutputPort<GameObject>("Original", true);
             portDataContainer.AddOutputPort<GameObject>("Variant", true);
         }
 
