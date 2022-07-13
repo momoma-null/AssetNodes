@@ -93,8 +93,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 foreach (var assets in assetGroup)
                 {
-                    var path = assets.AssetPath;
-                    if (AssetImporter.GetAtPath(path) is TextureImporter importer)
+                    if (assets.Importer is TextureImporter importer)
                     {
                         using (var srcSO = new SerializedObject(m_Importer))
                         using (var iterotor = srcSO.GetIterator())
@@ -112,7 +111,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             if (dstSO.hasModifiedProperties)
                             {
                                 dstSO.ApplyModifiedPropertiesWithoutUndo();
-                                AssetDatabase.WriteImportSettingsIfDirty(path);
+                                AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
                                 importer.SaveAndReimport();
                             }
                         }
