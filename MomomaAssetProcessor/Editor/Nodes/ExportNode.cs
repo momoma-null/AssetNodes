@@ -26,7 +26,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             if (assetGroup.Count > 0)
             {
                 AssetDatabase.ExportPackage(assetGroup.Select(asset => asset.AssetPath).ToArray(), m_UnityPackageName, m_Options);

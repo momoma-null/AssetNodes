@@ -31,7 +31,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
             var group = string.IsNullOrEmpty(m_GroupName) ? aaSettings.DefaultGroup : aaSettings.FindGroup(m_GroupName);
             foreach (var assets in assetGroup)

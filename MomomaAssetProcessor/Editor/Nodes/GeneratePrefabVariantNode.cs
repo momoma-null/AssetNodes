@@ -24,8 +24,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
-            var pathData = container.Get(portDataContainer.InputPorts[1], PathData.combine);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var pathData = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
             var variants = new AssetGroup();
             foreach (var assets in assetGroup)
             {

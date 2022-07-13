@@ -30,6 +30,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public bool IsMultiInput => true;
         public bool IsMultiOutput => true;
         public Type DisplayType => typeof(UnityObject);
+
+        public AssetGroup CombineInputData(IEnumerable<AssetGroup> inputs)
+        {
+            var combined = new AssetGroup();
+            foreach (var i in inputs)
+                combined.UnionWith(i);
+            return combined;
+        }
     }
 
     public sealed class AssetData

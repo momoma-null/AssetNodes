@@ -122,7 +122,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             var outputs = new Output[portDataContainer.OutputPorts.Count];
             for (var i = 0; i < outputs.Length; ++i)
                 outputs[i] = new Output(m_Regexes[i] ?? string.Empty, portDataContainer.OutputPorts[i].PortTypeName);

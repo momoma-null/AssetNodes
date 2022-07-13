@@ -28,10 +28,19 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         public static PathDataPortDefinition Default { get; } = new PathDataPortDefinition();
 
+        static readonly Func<AssetData, string> emptyFunc = asset => string.Empty;
+
         PathDataPortDefinition() { }
 
         public bool IsMultiInput => false;
         public bool IsMultiOutput => true;
         public Type DisplayType => typeof(string);
+
+        public PathData CombineInputData(IEnumerable<PathData> inputs)
+        {
+            foreach (var i in inputs)
+                return new PathData(i.GetPath);
+            return new PathData(emptyFunc);
+        }
     }
 }

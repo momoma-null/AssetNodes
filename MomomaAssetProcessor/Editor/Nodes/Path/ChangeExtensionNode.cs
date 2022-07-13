@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var pathData = container.Get(portDataContainer.InputPorts[0], PathData.combine);
+            var pathData = container.Get(portDataContainer.InputPorts[0], PathDataPortDefinition.Default);
             container.Set(portDataContainer.OutputPorts[0],
                 new PathData(asset => Path.ChangeExtension(pathData.GetPath(asset), m_Extension)));
         }
