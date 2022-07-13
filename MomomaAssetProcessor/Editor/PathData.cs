@@ -16,9 +16,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         Func<AssetData, string> getPath;
 
-        public PathData(Func<AssetData, string> getpath)
+        public PathData(Func<AssetData, string> getPath)
         {
-            this.getPath = getpath;
+            this.getPath = getPath;
         }
 
         public string GetPath(AssetData assetData) => getPath(assetData);
