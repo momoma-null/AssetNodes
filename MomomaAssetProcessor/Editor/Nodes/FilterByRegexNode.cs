@@ -1,7 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
