@@ -29,7 +29,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public bool IsMultiInput => true;
         public bool IsMultiOutput => true;
-        public Type DisplayType => typeof(string);
+        public Type DisplayType => typeof(UnityObject);
     }
 
     public sealed class AssetData
