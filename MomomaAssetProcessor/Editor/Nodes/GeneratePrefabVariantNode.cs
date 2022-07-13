@@ -16,10 +16,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<GameObject>(isMulti: true);
-            portDataContainer.AddInputPort<string>("Dst Path");
-            portDataContainer.AddOutputPort<GameObject>("Original", true);
-            portDataContainer.AddOutputPort<GameObject>("Variant", true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Original");
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Variant");
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)

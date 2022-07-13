@@ -8,7 +8,7 @@ namespace MomomaAssets.GraphView
     {
         IReadOnlyList<PortData> InputPorts { get; }
         IReadOnlyList<PortData> OutputPorts { get; }
-        void AddInputPort<T>(string name = "", bool isMulti = false);
-        void AddOutputPort<T>(string name = "", bool isMulti = false);
+        void AddInputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData;
+        void AddOutputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData;
     }
 }

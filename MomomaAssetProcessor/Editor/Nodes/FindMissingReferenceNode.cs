@@ -1,6 +1,6 @@
 using System;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
 #nullable enable
@@ -15,8 +15,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<UnityObject>(isMulti: true);
-            portDataContainer.AddOutputPort<UnityObject>("Found Assets", true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Found Assets");
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)

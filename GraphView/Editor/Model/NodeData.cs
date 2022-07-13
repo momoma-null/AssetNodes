@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
-using UnityEditor.Experimental.GraphView;
 using UnityObject = UnityEngine.Object;
 
 #nullable enable
@@ -40,9 +40,15 @@ namespace MomomaAssets.GraphView
             m_Processor.Initialize(this);
         }
 
-        public void AddInputPort<T>(string name = "", bool isMulti = false) => m_InputPorts.Add(new PortData(typeof(T), name, isMulti));
+        public void AddInputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
+        {
+            m_InputPorts.Add(new PortData(portDefinition.DisplayType, name, portDefinition.IsMultiInput));
+        }
 
-        public void AddOutputPort<T>(string name = "", bool isMulti = false) => m_OutputPorts.Add(new PortData(typeof(T), name, isMulti));
+        public void AddOutputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
+        {
+            m_OutputPorts.Add(new PortData(portDefinition.DisplayType, name, portDefinition.IsMultiOutput));
+        }
 
         public GraphElement Deserialize() => new BindableNode(this);
 

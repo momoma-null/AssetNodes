@@ -23,4 +23,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public string GetPath(AssetData assetData) => getPath(assetData);
     }
+
+    public sealed class PathDataPortDefinition : IPortDefinition<PathData>
+    {
+        public static PathDataPortDefinition Default { get; } = new PathDataPortDefinition();
+
+        PathDataPortDefinition() { }
+
+        public bool IsMultiInput => false;
+        public bool IsMultiOutput => true;
+        public Type DisplayType => typeof(string);
+    }
 }
