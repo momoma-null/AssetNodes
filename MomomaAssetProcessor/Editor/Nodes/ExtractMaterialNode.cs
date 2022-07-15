@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 #nullable enable
 
@@ -13,24 +13,23 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         ExtractMaterialNode() { }
 
-        [SerializeField]
-        string m_DirectoryPath = "../Materials";
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var pathData = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
             foreach (var assets in assetGroup)
             {
-                var path = assets.AssetPath;
-                if (AssetImporter.GetAtPath(path) is ModelImporter)
+                if (assets.Importer is ModelImporter)
                 {
-                    var directoryPath = Path.Combine(Path.GetDirectoryName(path), m_DirectoryPath);
+                    var path = assets.AssetPath;
+                    var directoryPath = pathData.GetPath(assets);
                     var isDirty = false;
                     foreach (var i in AssetDatabase.LoadAllAssetsAtPath(path))
                     {
