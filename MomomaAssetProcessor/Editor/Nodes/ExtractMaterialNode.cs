@@ -28,13 +28,10 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 if (assets.Importer is ModelImporter)
                 {
-                    var path = assets.AssetPath;
                     var directoryPath = pathData.GetPath(assets);
                     var isDirty = false;
-                    foreach (var i in AssetDatabase.LoadAllAssetsAtPath(path))
+                    foreach (var i in assets.GetAssetsFromType<Material>())
                     {
-                        if (!(i is Material))
-                            continue;
                         if (!Directory.Exists(directoryPath))
                         {
                             Directory.CreateDirectory(directoryPath);
@@ -46,8 +43,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                     if (isDirty)
                     {
-                        AssetDatabase.WriteImportSettingsIfDirty(path);
-                        AssetDatabase.ImportAsset(path);
+                        AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
+                        assets.Importer.SaveAndReimport();
                     }
                 }
             }
