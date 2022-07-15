@@ -28,7 +28,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         public static PathDataPortDefinition Default { get; } = new PathDataPortDefinition();
 
-        static readonly Func<AssetData, string> emptyFunc = asset => string.Empty;
+        static readonly Func<AssetData, string> emptyFunc = asset => "Assets";
 
         PathDataPortDefinition() { }
 
