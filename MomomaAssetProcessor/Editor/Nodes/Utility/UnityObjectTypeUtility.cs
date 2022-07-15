@@ -41,7 +41,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
                 DisplayNames = dstMenus.ToArray();
-                dstMenus.Insert(0, "Transfrom");
+                dstMenus.Insert(0, "Transform");
                 menuPaths.Add(dstMenus[0], -1);
                 DisplayNamesWithTransform = dstMenus.ToArray();
                 MenuPaths = menuPaths;
