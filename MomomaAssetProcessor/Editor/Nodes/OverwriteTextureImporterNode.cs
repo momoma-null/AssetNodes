@@ -96,16 +96,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     if (assets.Importer is TextureImporter importer)
                     {
                         using (var srcSO = new SerializedObject(m_Importer))
-                        using (var iterotor = srcSO.GetIterator())
+                        using (var iterator = srcSO.GetIterator())
                         using (var dstSO = new SerializedObject(importer))
                         {
-                            iterotor.Next(true);
+                            iterator.Next(true);
                             var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_ExternalObjects", "m_Output" };
                             while (true)
                             {
-                                if (!excludePaths.Contains(iterotor.propertyPath))
-                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
-                                if (!iterotor.Next(false))
+                                if (!excludePaths.Contains(iterator.propertyPath))
+                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterator);
+                                if (!iterator.Next(false))
                                     break;
                             }
                             if (dstSO.hasModifiedProperties)
