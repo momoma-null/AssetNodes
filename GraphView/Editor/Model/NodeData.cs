@@ -205,7 +205,7 @@ namespace MomomaAssets.GraphView
                 var processorProperty = property.FindPropertyRelative(nameof(m_Processor));
                 var inputPortsProperty = property.FindPropertyRelative(nameof(m_InputPorts));
                 var outputPortsProperty = property.FindPropertyRelative(nameof(m_OutputPorts));
-                _ProcessorEditor = NodeProcessorEditorFactory.CreateEditor(nodeData.Processor, new SerializedNodeProcessor(processorProperty, inputPortsProperty, outputPortsProperty));
+                _ProcessorEditor = NodeProcessorEditorFactory.CreateEditor(nodeData.Processor, new SerializedNodeProcessor(processorProperty));
             }
 
             public override void Dispose() => _ProcessorEditor.Dispose();
