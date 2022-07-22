@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using static UnityEngine.Object;
 
 //#nullable enable
@@ -15,29 +14,24 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         GeneratePrefabVariantNode() { }
 
-        [SerializeField]
-        string m_OriginalPrefabPath = "Assets/(.+).prefab";
-        [SerializeField]
-        string m_VariantPrefabPath = "Assets/$1_Variant.prefab";
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<GameObject>(isMulti: true);
-            portDataContainer.AddOutputPort<GameObject>(isMulti: true);
-            portDataContainer.AddOutputPort<GameObject>("Variant", true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Original");
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Variant");
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var pathData = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
             var variants = new AssetGroup();
-            var regex = new Regex(m_OriginalPrefabPath);
             foreach (var assets in assetGroup)
             {
                 if (assets.MainAsset is GameObject prefab)
                 {
-                    var srcPath = assets.AssetPath;
-                    var dstPath = regex.Replace(srcPath, m_VariantPrefabPath);
+                    var dstPath = pathData.GetPath(assets);
                     var directoryPath = Path.GetDirectoryName(dstPath);
                     if (!Directory.Exists(directoryPath))
                     {

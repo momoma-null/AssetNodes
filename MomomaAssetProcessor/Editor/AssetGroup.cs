@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityObject = UnityEngine.Object;
 
@@ -19,6 +19,25 @@ namespace MomomaAssets.GraphView.AssetProcessor
         };
 
         public AssetGroup() { }
+    }
+
+    public sealed class AssetGroupPortDefinition : IPortDefinition<AssetGroup>
+    {
+        public static AssetGroupPortDefinition Default { get; } = new AssetGroupPortDefinition();
+
+        AssetGroupPortDefinition() { }
+
+        public bool IsMultiInput => true;
+        public bool IsMultiOutput => true;
+        public Type DisplayType => typeof(UnityObject);
+
+        public AssetGroup CombineInputData(IEnumerable<AssetGroup> inputs)
+        {
+            var combined = new AssetGroup();
+            foreach (var i in inputs)
+                combined.UnionWith(i);
+            return combined;
+        }
     }
 
     public sealed class AssetData

@@ -76,7 +76,7 @@ namespace MomomaAssets.GraphView
             m_ProcessingDatas[portData.Id] = data;
         }
 
-        public T Get<T>(PortData portData, Func<IEnumerable<T>, T> combine) where T : IProcessingData
+        public T Get<T>(PortData portData, IPortDefinition<T> portDefinition) where T : IProcessingData
         {
             var id = portData.Id;
             if (m_ProcessingDatas.TryGetValue(id, out var data) && data is T t1)
@@ -104,7 +104,7 @@ namespace MomomaAssets.GraphView
                     }
                 }
             }
-            var t4 = combine(oDatas);
+            var t4 = portDefinition.CombineInputData(oDatas);
             m_ProcessingDatas[id] = t4;
             return t4;
         }

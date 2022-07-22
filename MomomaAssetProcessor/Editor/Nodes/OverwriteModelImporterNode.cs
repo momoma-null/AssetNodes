@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 using static UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 //#nullable enable
 
@@ -98,19 +98,18 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<GameObject>(isMulti: true);
-            portDataContainer.AddOutputPort<GameObject>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             if (m_Importer != null)
             {
                 foreach (var assets in assetGroup)
                 {
-                    var path = assets.AssetPath;
-                    if (AssetImporter.GetAtPath(path) is ModelImporter importer)
+                    if (assets.Importer is ModelImporter importer)
                     {
                         using (var srcSO = new SerializedObject(m_Importer))
                         using (var iterator = srcSO.GetIterator())
@@ -128,7 +127,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             if (dstSO.hasModifiedProperties)
                             {
                                 dstSO.ApplyModifiedPropertiesWithoutUndo();
-                                AssetDatabase.WriteImportSettingsIfDirty(path);
+                                AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
                                 importer.SaveAndReimport();
                             }
                         }

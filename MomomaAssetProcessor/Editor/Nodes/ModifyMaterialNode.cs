@@ -1,6 +1,6 @@
 using System;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using static UnityEngine.Object;
 
 //#nullable enable
@@ -278,13 +278,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<Material>(isMulti: true);
-            portDataContainer.AddOutputPort<Material>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             if (m_Shader != null)
             {
                 foreach (var assets in assetGroup)

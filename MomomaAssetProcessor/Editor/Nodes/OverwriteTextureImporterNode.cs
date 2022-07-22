@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 using static UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 //#nullable enable
 
@@ -30,7 +30,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             OverwriteTextureImporterNodeEditor(SerializedProperty processorProperty)
             {
                 _ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer));
-                 m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
+                m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
             }
 
             public void Dispose()
@@ -82,37 +82,36 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<Texture>(isMulti: true);
-            portDataContainer.AddOutputPort<Texture>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             if (m_Importer != null)
             {
                 foreach (var assets in assetGroup)
                 {
-                    var path = assets.AssetPath;
-                    if (AssetImporter.GetAtPath(path) is TextureImporter importer)
+                    if (assets.Importer is TextureImporter importer)
                     {
                         using (var srcSO = new SerializedObject(m_Importer))
-                        using (var iterotor = srcSO.GetIterator())
+                        using (var iterator = srcSO.GetIterator())
                         using (var dstSO = new SerializedObject(importer))
                         {
-                            iterotor.Next(true);
+                            iterator.Next(true);
                             var excludePaths = new HashSet<string>() { "m_Name", "m_UsedFileIDs", "m_ExternalObjects", "m_Output" };
                             while (true)
                             {
-                                if (!excludePaths.Contains(iterotor.propertyPath))
-                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterotor);
-                                if (!iterotor.Next(false))
+                                if (!excludePaths.Contains(iterator.propertyPath))
+                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterator);
+                                if (!iterator.Next(false))
                                     break;
                             }
                             if (dstSO.hasModifiedProperties)
                             {
                                 dstSO.ApplyModifiedPropertiesWithoutUndo();
-                                AssetDatabase.WriteImportSettingsIfDirty(path);
+                                AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
                                 importer.SaveAndReimport();
                             }
                         }

@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 //#nullable enable
 
@@ -59,13 +59,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<GameObject>(isMulti: true);
-            portDataContainer.AddOutputPort<GameObject>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(m_MenuPath, out var componentType))
             {
                 var regex = new Regex(m_Regex);

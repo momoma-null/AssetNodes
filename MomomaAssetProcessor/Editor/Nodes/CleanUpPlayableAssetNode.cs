@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine.Playables;
 using UnityEditor;
+using UnityEngine.Playables;
 using UnityObject = UnityEngine.Object;
 
 //#nullable enable
@@ -16,12 +16,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<UnityObject>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             foreach (var asset in assetGroup)
             {
                 if (asset.MainAssetType == typeof(PlayableAsset))

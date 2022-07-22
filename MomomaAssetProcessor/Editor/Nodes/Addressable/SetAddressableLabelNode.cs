@@ -1,10 +1,9 @@
 
 #if ADDRESSABLES
 using System;
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 
 //#nullable enable
 
@@ -23,13 +22,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<UnityObject>(isMulti: true);
-            portDataContainer.AddOutputPort<UnityObject>(isMulti: true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
             foreach (var assets in assetGroup)
             {

@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEditor;
 
 //#nullable enable
@@ -14,15 +13,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort<GameObject>(isMulti: true);
-            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Regular), true);
-            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Model), true);
-            portDataContainer.AddOutputPort<GameObject>(nameof(PrefabAssetType.Variant), true);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, nameof(PrefabAssetType.Regular));
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, nameof(PrefabAssetType.Model));
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, nameof(PrefabAssetType.Variant));
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroup.combineAssetGroup);
+            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();
