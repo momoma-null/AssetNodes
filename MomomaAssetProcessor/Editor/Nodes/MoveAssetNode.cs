@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using UnityEditor;
-using UnityEngine;
 
 #nullable enable
 
@@ -14,25 +12,21 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         MoveAssetNode() { }
 
-        [SerializeField]
-        string m_SourcePath = "Assets/(.+)";
-        [SerializeField]
-        string m_DestinationPath = "Assets/$1";
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
         public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
         {
             var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
-            var regex = new Regex(m_SourcePath);
+            var path = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
             foreach (var assets in assetGroup)
             {
                 var srcPath = assets.AssetPath;
-                var dstPath = regex.Replace(srcPath, m_DestinationPath);
+                var dstPath = path.GetPath(assets);
                 var directoryPath = Path.GetDirectoryName(dstPath);
                 if (!Directory.Exists(directoryPath))
                 {
