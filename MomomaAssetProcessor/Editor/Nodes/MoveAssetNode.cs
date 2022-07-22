@@ -1,9 +1,8 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEditor;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 
 #nullable enable
 

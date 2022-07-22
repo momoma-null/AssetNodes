@@ -4,7 +4,6 @@ using System;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEngine;
-using UnityObject = UnityEngine.Object;
 
 #nullable enable
 

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
-using UnityObject = UnityEngine.Object;
+using UnityEngine;
 using static UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
@@ -30,7 +30,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             OverwriteTextureImporterNodeEditor(SerializedProperty processorProperty)
             {
                 _ImporterProperty = processorProperty.FindPropertyRelative(nameof(m_Importer));
-                 m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
+                m_CachedEditor = Editor.CreateEditor(_ImporterProperty.objectReferenceValue);
             }
 
             public void Dispose()

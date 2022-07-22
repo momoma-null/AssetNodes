@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UnityObject = UnityEngine.Object;
 
 #nullable enable
 
