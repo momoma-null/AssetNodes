@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
@@ -14,7 +14,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         ConstAssetPathNode() { }
 
         [SerializeField]
-        UnityObject? m_Asset = null;
+        UnityObject m_Asset = null;
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

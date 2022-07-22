@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {

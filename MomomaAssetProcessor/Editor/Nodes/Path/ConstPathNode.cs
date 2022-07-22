@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetProcessor
 {
