@@ -32,7 +32,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
             var assetGroup = new AssetGroup();
             if (!(CoreAssetProcessor.IsProcessing && m_AutoReload == ReloadMode.None))
@@ -60,7 +60,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     }
                 }
             }
-            container.Set(portDataContainer.OutputPorts[0], assetGroup);
+            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

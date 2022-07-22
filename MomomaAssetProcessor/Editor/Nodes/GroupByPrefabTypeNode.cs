@@ -19,9 +19,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, nameof(PrefabAssetType.Variant));
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var regulars = new AssetGroup();
             var models = new AssetGroup();
             var variants = new AssetGroup();
@@ -34,9 +34,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
                     case PrefabAssetType.Variant: variants.Add(assets); break;
                 }
             }
-            container.Set(portDataContainer.OutputPorts[0], regulars);
-            container.Set(portDataContainer.OutputPorts[1], models);
-            container.Set(portDataContainer.OutputPorts[2], variants);
+            container.SetOutput(0, regulars);
+            container.SetOutput(1, models);
+            container.SetOutput(2, variants);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

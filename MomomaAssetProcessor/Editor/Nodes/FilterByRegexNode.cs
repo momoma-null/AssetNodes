@@ -22,13 +22,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assets = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
-            var input = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
+            var assets = container.GetInput(0, AssetGroupPortDefinition.Default);
+            var input = container.GetInput(1, PathDataPortDefinition.Default);
             var regex = new Regex(m_Pattern);
             assets.RemoveWhere(asset => !regex.IsMatch(input.GetPath(asset)));
-            container.Set(portDataContainer.OutputPorts[0], assets);
+            container.SetOutput(0, assets);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

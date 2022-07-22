@@ -18,16 +18,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Found Assets");
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var foundAssets = new AssetGroup();
             foreach (var assets in assetGroup)
             {
                 if (FindMissingReference(assets))
                     foundAssets.Add(assets);
             }
-            container.Set(portDataContainer.OutputPorts[0], foundAssets);
+            container.SetOutput(0, foundAssets);
         }
 
         static bool FindMissingReference(AssetData assetData)

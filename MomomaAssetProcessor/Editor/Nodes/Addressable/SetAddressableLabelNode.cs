@@ -26,9 +26,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
             foreach (var assets in assetGroup)
             {
@@ -36,7 +36,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 var entry = aaSettings.FindAssetEntry(guid);
                 entry?.SetLabel(m_Label, m_Enable);
             }
-            container.Set(portDataContainer.OutputPorts[0], assetGroup);
+            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

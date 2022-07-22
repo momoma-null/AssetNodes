@@ -108,5 +108,55 @@ namespace MomomaAssets.GraphView
             m_ProcessingDatas[id] = t4;
             return t4;
         }
+
+        internal class Parts : IProcessingDataContainer
+        {
+            readonly ProcessingDataContainer processingDataContainer;
+            readonly IPortDataContainer portDataContainer;
+
+            internal Parts(ProcessingDataContainer processingDataContainer, IPortDataContainer portDataContainer)
+            {
+                this.processingDataContainer = processingDataContainer;
+                this.portDataContainer = portDataContainer;
+            }
+
+            public T GetInput<T>(int index, IPortDefinition<T> portDefinition) where T : IProcessingData
+            {
+                var id = portDataContainer.InputPorts[index].Id;
+                if (processingDataContainer.m_ProcessingDatas.TryGetValue(id, out var data) && data is T t1)
+                    return t1;
+                var oDatas = new List<T>();
+                if (processingDataContainer.m_InputPortToOutputPorts.TryGetValue(id, out var outputPorts))
+                {
+                    oDatas.Capacity = outputPorts.Count;
+                    foreach (var o in outputPorts)
+                    {
+                        if (processingDataContainer.m_ProcessingDatas.TryGetValue(o, out var oData) && oData is T t2)
+                        {
+                            oDatas.Add(t2);
+                        }
+                        else
+                        {
+                            if (processingDataContainer.m_OutputPortToNodeData.TryGetValue(o, out var nodeData))
+                            {
+                                processingDataContainer.getData(nodeData, processingDataContainer);
+                                if (processingDataContainer.m_ProcessingDatas.TryGetValue(o, out oData) && oData is T t3)
+                                {
+                                    oDatas.Add(t3);
+                                }
+                            }
+                        }
+                    }
+                }
+                var t4 = portDefinition.CombineInputData(oDatas);
+                processingDataContainer.m_ProcessingDatas[id] = t4;
+                return t4;
+            }
+
+            public  void SetOutput<T>(int index, T data) where T : IProcessingData
+            {
+                processingDataContainer.m_ProcessingDatas[portDataContainer.OutputPorts[index].Id] = data;
+            }
+        }
     }
 }
