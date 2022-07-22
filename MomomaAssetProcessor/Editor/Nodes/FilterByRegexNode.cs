@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -24,11 +25,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public void Process(IProcessingDataContainer container)
         {
-            var assets = container.GetInput(0, AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var input = container.GetInput(1, PathDataPortDefinition.Default);
             var regex = new Regex(m_Pattern);
-            assets.RemoveWhere(asset => !regex.IsMatch(input.GetPath(asset)));
-            container.SetOutput(0, assets);
+            var filtered = new AssetGroup();
+            filtered.UnionWith(assetGroup.Where(asset => regex.IsMatch(input.GetPath(asset))));
+            container.SetOutput(0, filtered);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

@@ -33,7 +33,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var animations = new AssetGroup();
             var meshes = new AssetGroup();
             var scenes = new AssetGroup();
-            assetGroup.RemoveWhere(assets =>
+            var others = new AssetGroup();
+            foreach(var assets in assetGroup)
             {
                 if (assets.MainAssetType == typeof(Texture))
                     textures.Add(assets);
@@ -48,16 +49,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 else if (assets.MainAssetType == typeof(Scene))
                     scenes.Add(assets);
                 else
-                    return false;
-                return true;
-            });
+                    others.Add(assets);
+            }
             container.SetOutput(0, textures);
             container.SetOutput(1, materials);
             container.SetOutput(2, gameObjects);
             container.SetOutput(3, animations);
             container.SetOutput(4, meshes);
             container.SetOutput(5, scenes);
-            container.SetOutput(6, assetGroup);
+            container.SetOutput(6, others);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
