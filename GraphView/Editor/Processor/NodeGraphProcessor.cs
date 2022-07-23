@@ -34,7 +34,8 @@ namespace MomomaAssets.GraphView
             try
             {
                 PreProcess?.Invoke();
-                nodeData.Processor.Process(container, nodeData);
+                var containerParts = new ProcessingDataContainer.Parts(container, nodeData);
+                nodeData.Processor.Process(containerParts);
             }
             finally
             {

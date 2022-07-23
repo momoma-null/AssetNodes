@@ -109,9 +109,9 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             Action<GameObject> process = null;
             foreach (var setting in m_Properties)
             {
@@ -177,7 +177,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         process(root);
                 }
             }
-            container.Set(portDataContainer.OutputPorts[0], assetGroup);
+            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

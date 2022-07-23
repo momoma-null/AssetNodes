@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -22,13 +23,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assets = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
-            var input = container.Get(portDataContainer.InputPorts[1], PathDataPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            var input = container.GetInput(1, PathDataPortDefinition.Default);
             var regex = new Regex(m_Pattern);
-            assets.RemoveWhere(asset => !regex.IsMatch(input.GetPath(asset)));
-            container.Set(portDataContainer.OutputPorts[0], assets);
+            var filtered = new AssetGroup();
+            filtered.UnionWith(assetGroup.Where(asset => regex.IsMatch(input.GetPath(asset))));
+            container.SetOutput(0, filtered);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

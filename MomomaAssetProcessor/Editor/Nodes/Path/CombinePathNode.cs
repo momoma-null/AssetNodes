@@ -21,11 +21,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(PathDataPortDefinition.Default);
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var pathDatas = portDataContainer.InputPorts.Select(port => container.Get(port, PathDataPortDefinition.Default)).ToArray();
-            container.Set(portDataContainer.OutputPorts[0],
-                new PathData(asset => Path.Combine(pathDatas.Select(path => path.GetPath(asset)).ToArray())));
+            var pathDatas = new[] {
+                container.GetInput(0, PathDataPortDefinition.Default),
+                container.GetInput(1, PathDataPortDefinition.Default),
+                container.GetInput(2, PathDataPortDefinition.Default),
+                container.GetInput(3, PathDataPortDefinition.Default)
+                };
+            container.SetOutput(0, new PathData(asset => Path.Combine(pathDatas.Select(path => path.GetPath(asset)).ToArray())));
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

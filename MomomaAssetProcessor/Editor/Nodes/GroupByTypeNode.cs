@@ -24,16 +24,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Other");
         }
 
-        public void Process(ProcessingDataContainer container, IPortDataContainer portDataContainer)
+        public void Process(IProcessingDataContainer container)
         {
-            var assetGroup = container.Get(portDataContainer.InputPorts[0], AssetGroupPortDefinition.Default);
+            var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var textures = new AssetGroup();
             var materials = new AssetGroup();
             var gameObjects = new AssetGroup();
             var animations = new AssetGroup();
             var meshes = new AssetGroup();
             var scenes = new AssetGroup();
-            assetGroup.RemoveWhere(assets =>
+            var others = new AssetGroup();
+            foreach(var assets in assetGroup)
             {
                 if (assets.MainAssetType == typeof(Texture))
                     textures.Add(assets);
@@ -48,16 +49,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
                 else if (assets.MainAssetType == typeof(Scene))
                     scenes.Add(assets);
                 else
-                    return false;
-                return true;
-            });
-            container.Set(portDataContainer.OutputPorts[0], textures);
-            container.Set(portDataContainer.OutputPorts[1], materials);
-            container.Set(portDataContainer.OutputPorts[2], gameObjects);
-            container.Set(portDataContainer.OutputPorts[3], animations);
-            container.Set(portDataContainer.OutputPorts[4], meshes);
-            container.Set(portDataContainer.OutputPorts[5], scenes);
-            container.Set(portDataContainer.OutputPorts[6], assetGroup);
+                    others.Add(assets);
+            }
+            container.SetOutput(0, textures);
+            container.SetOutput(1, materials);
+            container.SetOutput(2, gameObjects);
+            container.SetOutput(3, animations);
+            container.SetOutput(4, meshes);
+            container.SetOutput(5, scenes);
+            container.SetOutput(6, others);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
