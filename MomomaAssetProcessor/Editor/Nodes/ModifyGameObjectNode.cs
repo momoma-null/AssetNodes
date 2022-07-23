@@ -143,14 +143,17 @@ namespace MomomaAssets.GraphView.AssetProcessor
                                 {
                                     process += go =>
                                     {
-                                        var flags = GameObjectUtility.GetStaticEditorFlags(go);
-                                        if ((flags & targetFlag) > 0 != boolValue)
+                                        if (go.GetComponent<Renderer>() != null)
                                         {
-                                            if (boolValue)
-                                                flags |= targetFlag;
-                                            else
-                                                flags &= ~targetFlag;
-                                            GameObjectUtility.SetStaticEditorFlags(go, flags);
+                                            var flags = GameObjectUtility.GetStaticEditorFlags(go);
+                                            if ((flags & targetFlag) > 0 != boolValue)
+                                            {
+                                                if (boolValue)
+                                                    flags |= targetFlag;
+                                                else
+                                                    flags &= ~targetFlag;
+                                                GameObjectUtility.SetStaticEditorFlags(go, flags);
+                                            }
                                         }
                                     };
                                 }
