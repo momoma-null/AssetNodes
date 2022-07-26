@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 #nullable enable
 
@@ -26,6 +27,10 @@ namespace MomomaAssets.GraphView
                 evt.menu.AppendAction("Group selection", GroupSelection, GetStatusAddToGroup);
                 evt.menu.AppendAction("Remove from group", RemoveFromGroup, GetStatusRemoveFromGroup);
             }
+            else
+            {
+                evt.menu.AppendAction("Add Stack Node", AddStackNode);
+            }
         }
 
         void GroupSelection(DropdownMenuAction action)
@@ -45,6 +50,11 @@ namespace MomomaAssets.GraphView
                 if (i is Node node)
                     node.GetContainingScope()?.RemoveElement(node);
             }
+        }
+
+        void AddStackNode(DropdownMenuAction action)
+        {
+            m_GraphViewCallbackReceiver.AddElement(new StackNodeData(), GUIUtility.GUIToScreenPoint(action.eventInfo.mousePosition));
         }
 
         DropdownMenuAction.Status GetStatusAddToGroup(DropdownMenuAction action)

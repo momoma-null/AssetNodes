@@ -41,6 +41,8 @@ namespace MomomaAssets.GraphView
             m_GraphView.graphViewChanged = GraphViewChanged;
             m_GraphView.elementsAddedToGroup = OnElementsAddedToGroup;
             m_GraphView.elementsRemovedFromGroup = OnElementsRemovedFromGroup;
+            m_GraphView.elementsInsertedToStackNode = OnElementsInsertedToStackNode;
+            m_GraphView.elementsRemovedFromStackNode = OnElementsRemovedFromStackNode;
             m_GraphView.styleSheets.Add(Resources.Load<StyleSheet>("GraphViewStyles"));
             m_GraphView.Insert(0, new GridBackground() { style = { alignItems = Align.Center, justifyContent = Justify.Center } });
             var miniMap = new MiniMap();
@@ -246,6 +248,30 @@ namespace MomomaAssets.GraphView
                 groupData.RemoveElements(elements.Select(i => i.viewDataKey));
                 if (groupData.ElementCount == 0)
                     m_GraphView.RemoveElement(group);
+            }
+        }
+
+        void OnElementsInsertedToStackNode(StackNode stackNode, int index, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(stackNode.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IStackNodeData stackNodeData)
+            {
+                Undo.RecordObject(graphElementObject, "Insert elements to stack node");
+                stackNodeData.InsertElements(index, elements.Select(i => i.viewDataKey));
+            }
+        }
+
+        void OnElementsRemovedFromStackNode(StackNode stackNode, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(stackNode.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IStackNodeData stackNodeData)
+            {
+                Undo.RecordObject(graphElementObject, "Remove elements from stack node");
+                stackNodeData.RemoveElements(elements.Select(i => i.viewDataKey));
             }
         }
 
