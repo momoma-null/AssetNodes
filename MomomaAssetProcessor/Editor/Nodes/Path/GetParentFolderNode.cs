@@ -7,10 +7,10 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Parent Directory")]
-    sealed class ParentDirectoryNode : INodeProcessor
+    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Parent Folder")]
+    sealed class GetParentFolderNode : INodeProcessor
     {
-        ParentDirectoryNode() { }
+        GetParentFolderNode() { }
 
         [SerializeField]
         uint m_Count = 1u;
@@ -24,14 +24,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(IProcessingDataContainer container)
         {
             var pathData = container.GetInput(0, PathDataPortDefinition.Default);
-            var outpathData = new PathData(asset =>
+            var outPathData = new PathData(asset =>
             {
                 var path = pathData.GetPath(asset);
                 for (var i = 0; i < m_Count; ++i)
                     path = Path.GetDirectoryName(path);
                 return path;
             });
-            container.SetOutput(0, outpathData);
+            container.SetOutput(0, outPathData);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
