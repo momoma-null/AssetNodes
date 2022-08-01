@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 #nullable enable
 
@@ -34,6 +35,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public bool IsMultiInput => false;
         public bool IsMultiOutput => true;
+        public Color PortColor { get; } = new Color(0.375f, 0.75f, 0.375f, 1f);
 
         public PathData CombineInputData(IEnumerable<PathData> inputs)
         {

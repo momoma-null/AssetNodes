@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
 #nullable enable
@@ -29,6 +30,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public bool IsMultiInput => true;
         public bool IsMultiOutput => true;
+        public Color PortColor { get; } = new Color(0.85f, 0.85f, 0.85f, 1f);
 
         public AssetGroup CombineInputData(IEnumerable<AssetGroup> inputs)
         {

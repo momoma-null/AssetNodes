@@ -42,12 +42,12 @@ namespace MomomaAssets.GraphView
 
         public void AddInputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
         {
-            m_InputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiInput));
+            m_InputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiInput, portDefinition.PortColor));
         }
 
         public void AddOutputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
         {
-            m_OutputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiOutput));
+            m_OutputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiOutput, portDefinition.PortColor));
         }
 
         public GraphElement Deserialize() => new BindableNode(this);
@@ -84,6 +84,7 @@ namespace MomomaAssets.GraphView
                 else
                 {
                     port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port.portColor = data.Color;
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
@@ -115,6 +116,7 @@ namespace MomomaAssets.GraphView
                 else
                 {
                     port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port.portColor = data.Color;
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
                 }
