@@ -6,10 +6,10 @@ using System.IO;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Path/Asset Folder")]
-    sealed class AssetFolderNode : INodeProcessor
+    [CreateElement(typeof(AssetProcessorGUI), "Path/Folder Name")]
+    sealed class FolderNameNode : INodeProcessor
     {
-        AssetFolderNode() { }
+        FolderNameNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
