@@ -17,7 +17,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
-            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default, "Folder Path");
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default, "File Name");
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Original");
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Variant");
         }
@@ -25,13 +26,14 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
-            var pathData = container.GetInput(1, PathDataPortDefinition.Default);
+            var folderPathData = container.GetInput(1, PathDataPortDefinition.Default);
+            var filePathData = container.GetInput(2, PathDataPortDefinition.Default);
             var variants = new AssetGroup();
             foreach (var assets in assetGroup)
             {
                 if (assets.MainAsset is GameObject prefab)
                 {
-                    var dstPath = pathData.GetPath(assets);
+                    var dstPath = Path.ChangeExtension(Path.Combine(folderPathData.GetPath(assets), filePathData.GetPath(assets)), ".prefab");
                     var directoryPath = Path.GetDirectoryName(dstPath);
                     if (!Directory.Exists(directoryPath))
                     {
