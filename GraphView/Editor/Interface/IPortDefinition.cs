@@ -9,7 +9,6 @@ namespace MomomaAssets.GraphView
     {
         bool IsMultiInput { get; }
         bool IsMultiOutput { get; }
-        Type DisplayType { get; }
         T CombineInputData(IEnumerable<T> inputs);
     }
 }

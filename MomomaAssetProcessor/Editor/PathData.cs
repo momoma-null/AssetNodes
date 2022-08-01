@@ -34,7 +34,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         public bool IsMultiInput => false;
         public bool IsMultiOutput => true;
-        public Type DisplayType => typeof(string);
 
         public PathData CombineInputData(IEnumerable<PathData> inputs)
         {

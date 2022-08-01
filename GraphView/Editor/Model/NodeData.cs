@@ -42,12 +42,12 @@ namespace MomomaAssets.GraphView
 
         public void AddInputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
         {
-            m_InputPorts.Add(new PortData(portDefinition.DisplayType, name, portDefinition.IsMultiInput));
+            m_InputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiInput));
         }
 
         public void AddOutputPort<T>(IPortDefinition<T> portDefinition, string name = "") where T : IProcessingData
         {
-            m_OutputPorts.Add(new PortData(portDefinition.DisplayType, name, portDefinition.IsMultiOutput));
+            m_OutputPorts.Add(new PortData(typeof(T), name, portDefinition.IsMultiOutput));
         }
 
         public GraphElement Deserialize() => new BindableNode(this);
