@@ -20,6 +20,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         };
 
         public AssetGroup() { }
+        public AssetGroup(IEnumerable<AssetData> collection) : base(collection) { }
     }
 
     public sealed class AssetGroupPortDefinition : IPortDefinition<AssetGroup>

@@ -28,8 +28,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var input = container.GetInput(1, PathDataPortDefinition.Default);
             var regex = new Regex(m_Pattern);
-            var filtered = new AssetGroup();
-            filtered.UnionWith(assetGroup.Where(asset => regex.IsMatch(input.GetPath(asset))));
+            var filtered = new AssetGroup(assetGroup.Where(asset => regex.IsMatch(input.GetPath(asset))));
             container.SetOutput(0, filtered);
         }
 
