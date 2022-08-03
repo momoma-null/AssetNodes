@@ -15,7 +15,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
-            portDataContainer.AddInputPort(PathDataPortDefinition.Default);
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default, "Destination Folder");
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 
@@ -26,13 +26,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
             foreach (var assets in assetGroup)
             {
                 var srcPath = assets.AssetPath;
-                var dstPath = path.GetPath(assets);
-                var directoryPath = Path.GetDirectoryName(dstPath);
+                var directoryPath = path.GetPath(assets);
                 if (!Directory.Exists(directoryPath))
                 {
                     Directory.CreateDirectory(directoryPath);
                     AssetDatabase.ImportAsset(directoryPath);
                 }
+                var dstPath = Path.Combine(directoryPath, Path.GetFileName(srcPath));
                 AssetDatabase.MoveAsset(srcPath, dstPath);
             }
             container.SetOutput(0, assetGroup);
