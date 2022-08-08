@@ -84,7 +84,12 @@ namespace MomomaAssets.GraphView
         {
             var linkedPorts = new HashSet<Port>();
             CollectLinkedPorts(startPort, linkedPorts);
-            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && (startPort.direction == Direction.Input ? startPort.portType.IsAssignableFrom(p.portType) : p.portType.IsAssignableFrom(startPort.portType)));
+            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && CanConnectPortType(startPort, p));
+        }
+
+        public bool CanConnectPortType(Port src, Port dst)
+        {
+            return (src.direction == Direction.Input ? src.portType.IsAssignableFrom(dst.portType) : dst.portType.IsAssignableFrom(src.portType));
         }
 
         static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)

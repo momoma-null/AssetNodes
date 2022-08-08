@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 using static UnityEngine.Object;
 
 #nullable enable
@@ -24,6 +24,7 @@ namespace MomomaAssets.GraphView
 
         GraphViewObjectHandler? m_GraphViewObjectHandler = null;
         bool isDisposed = false;
+        VisualElement? insertTarget;
 
         List<ISelectable> ISelection.selection => m_GraphView.selection;
 
@@ -180,6 +181,7 @@ namespace MomomaAssets.GraphView
 
         void CreateNode(NodeCreationContext context)
         {
+            insertTarget = context.target;
             SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_SearchWindowProvider);
         }
 
@@ -434,6 +436,21 @@ namespace MomomaAssets.GraphView
             {
                 setScope.AddGraphElementObject(graphElementObject);
             }
+            if (insertTarget is Port port && graphElement is Node node)
+            {
+                var ports = port.direction == Direction.Input ? node.outputContainer.Query<Port>().ToList() : node.inputContainer.Query<Port>().ToList();
+                foreach (var dst in ports)
+                {
+                    if (m_GraphView.CanConnectPortType(port, dst))
+                    {
+                        var edge = port.ConnectTo<BindableEdge>(dst);
+                        m_GraphView.AddElement(edge);
+                        m_GraphView.graphViewChanged(new GraphViewChange() { edgesToCreate = new List<Edge>() { edge } });
+                        break;
+                    }
+                }
+            }
+            insertTarget = null;
         }
 
         GraphElementObject CreateGraphElementObject(GraphElement graphElement)

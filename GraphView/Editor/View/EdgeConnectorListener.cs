@@ -20,7 +20,7 @@ namespace MomomaAssets.GraphView
             {
                 var context = new NodeCreationContext();
                 context.screenMousePosition = GUIUtility.GUIToScreenPoint(position);
-                context.target = edge;
+                context.target = edge.input ?? edge.output;
                 graphView.nodeCreationRequest(context);
             }
         }
