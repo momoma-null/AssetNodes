@@ -15,7 +15,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
-            portDataContainer.AddInputPort(PathDataPortDefinition.Default, "Destination Folder");
+            portDataContainer.AddInputPort(PathDataPortDefinition.Default, "Destination Directory");
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
         }
 

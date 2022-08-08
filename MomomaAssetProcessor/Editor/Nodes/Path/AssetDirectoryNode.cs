@@ -6,19 +6,19 @@ using System.IO;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Path/File Name")]
-    sealed class FileNameNode : INodeProcessor
+    [CreateElement(typeof(AssetProcessorGUI), "Path/Asset Directory")]
+    sealed class AssetDirectoryNode : INodeProcessor
     {
-        FileNameNode() { }
+        AssetDirectoryNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddOutputPort(PathDataPortDefinition.Default);
+            portDataContainer.AddOutputPort(PathDataPortDefinition.Default, "Directory");
         }
 
         public void Process(IProcessingDataContainer container)
         {
-            container.SetOutput(0, new PathData(asset => Path.GetFileName(asset.AssetPath)));
+            container.SetOutput(0, new PathData(asset => Path.GetDirectoryName(asset.AssetPath)));
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

@@ -7,13 +7,13 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Child Folder")]
-    sealed class GetChildFolderNode : INodeProcessor
+    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Child Directory")]
+    sealed class GetChildDirectoryNode : INodeProcessor
     {
         [SerializeField]
-        string m_FolderName = string.Empty;
+        string m_DirectoryName = string.Empty;
 
-        GetChildFolderNode() { }
+        GetChildDirectoryNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
@@ -27,7 +27,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var outPathData = new PathData(asset =>
             {
                 var path = pathData.GetPath(asset);
-                return Path.Combine(path, m_FolderName);
+                return Path.Combine(path, m_DirectoryName);
             });
             container.SetOutput(0, outPathData);
         }

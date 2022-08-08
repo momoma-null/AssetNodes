@@ -7,10 +7,10 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Parent Folder")]
-    sealed class GetParentFolderNode : INodeProcessor
+    [CreateElement(typeof(AssetProcessorGUI), "Path/Get Parent Directory")]
+    sealed class GetParentDirectoryNode : INodeProcessor
     {
-        GetParentFolderNode() { }
+        GetParentDirectoryNode() { }
 
         [SerializeField]
         uint m_Count = 1u;
