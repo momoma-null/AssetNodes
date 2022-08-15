@@ -32,8 +32,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             try
             {
                 IsProcessing = true;
-                var paths = new HashSet<string>(importedAssets);
-                ImportedAssetsPaths = paths;
+                ImportedAssetsPaths = importedAssets;
                 foreach (var i in GraphViewObject.GetGraphViewObjects<AssetProcessorGUI>())
                 {
                     s_NodeGraphProcessor.StartProcess(i);
