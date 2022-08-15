@@ -27,15 +27,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            if (importedAssets.Length == 0 && deletedAssets.Length == 0 && movedAssets.Length == 0)
-                return;
-            if (IsProcessing)
+            if (importedAssets.Length == 0 || IsProcessing)
                 return;
             try
             {
                 IsProcessing = true;
                 var paths = new HashSet<string>(importedAssets);
-                paths.UnionWith(movedAssets);
                 ImportedAssetsPaths = paths;
                 foreach (var i in GraphViewObject.GetGraphViewObjects<AssetProcessorGUI>())
                 {
