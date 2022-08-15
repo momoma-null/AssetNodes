@@ -54,8 +54,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                           || (CoreAssetProcessor.IsProcessing && m_AutoReload == ReloadMode.AutoReloadAll && CoreAssetProcessor.ImportedAssetsPaths.Any(path => path.StartsWith(folderPath))))
                         {
                             var guids = AssetDatabase.FindAssets("", new[] { folderPath });
-                            var assets = Array.ConvertAll(guids, i => new AssetData(AssetDatabase.GUIDToAssetPath(i)));
-                            assetGroup.UnionWith(assets);
+                            assetGroup.UnionWith(guids.Select(i => new AssetData(AssetDatabase.GUIDToAssetPath(i))));
                         }
                     }
                 }
