@@ -170,14 +170,27 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 foreach (var assets in assetGroup)
                 {
-                    if (m_IncludeChildren)
-                        foreach (var go in assets.GetAssetsFromType<GameObject>())
-                            process(go);
-                    else if (assets.MainAsset is GameObject root)
-                        process(root);
+                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
+                        continue;
+                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    {
+                        var root = scope.prefabContentsRoot;
+                        if (m_IncludeChildren)
+                            ProcessRecursively(root.transform, process);
+                        else
+                            process(root);
+                    }
+                    AssetDatabase.ImportAsset(assets.AssetPath);
                 }
             }
             container.SetOutput(0, assetGroup);
+        }
+
+        static void ProcessRecursively(Transform transform, Action<GameObject> process)
+        {
+            process(transform.gameObject);
+            foreach (Transform child in transform)
+                ProcessRecursively(child, process);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

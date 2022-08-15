@@ -86,6 +86,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             }
                         }
                     }
+                    AssetDatabase.ImportAsset(assets.AssetPath);
                 }
             }
             container.SetOutput(0, assetGroup);

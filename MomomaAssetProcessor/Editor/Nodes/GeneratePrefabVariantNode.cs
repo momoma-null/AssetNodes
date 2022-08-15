@@ -52,8 +52,11 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         {
                             DestroyImmediate(instance);
                         }
+                        // for the problem that Prefab generated during asset import becomes null
+                        AssetDatabase.ImportAsset(assets.AssetPath);
                     }
-                    variants.Add(new AssetData(dstPath));
+                    if (currentDstPrefab != null)
+                        variants.Add(new AssetData(dstPath));
                 }
             }
             container.SetOutput(0, assetGroup);

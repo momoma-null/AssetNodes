@@ -137,11 +137,16 @@ namespace MomomaAssets.GraphView.AssetProcessor
             {
                 foreach (var assets in assetGroup)
                 {
-                    if ((assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0 || !(assets.MainAsset is GameObject root))
+                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
-                    foreach (var component in m_IncludeChildren ? assets.GetAssetsFromType<Component>() : root.GetComponents<Component>())
-                        if (m_Preset.CanBeAppliedTo(component))
-                            m_Preset.ApplyTo(component);
+                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    {
+                        var root = scope.prefabContentsRoot;
+                        foreach (var component in m_IncludeChildren ? root.GetComponentsInChildren<Component>(true) : root.GetComponents<Component>())
+                            if (m_Preset.CanBeAppliedTo(component))
+                                m_Preset.ApplyTo(component);
+                    }
+                    AssetDatabase.ImportAsset(assets.AssetPath);
                 }
             }
             container.SetOutput(0, assetGroup);
