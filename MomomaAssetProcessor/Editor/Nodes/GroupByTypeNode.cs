@@ -36,15 +36,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var others = new AssetGroup();
             foreach(var assets in assetGroup)
             {
-                if (assets.MainAssetType == typeof(Texture))
+                if (typeof(Texture).IsAssignableFrom(assets.MainAssetType))
                     textures.Add(assets);
-                else if (assets.MainAssetType == typeof(Material))
+                else if (typeof(Material).IsAssignableFrom(assets.MainAssetType))
                     materials.Add(assets);
-                else if (assets.MainAssetType == typeof(GameObject))
+                else if (typeof(GameObject).IsAssignableFrom(assets.MainAssetType))
                     gameObjects.Add(assets);
-                else if (assets.MainAssetType == typeof(AnimationClip))
+                else if (typeof(AnimationClip).IsAssignableFrom(assets.MainAssetType))
                     animations.Add(assets);
-                else if (assets.MainAssetType == typeof(Mesh))
+                else if (typeof(Mesh).IsAssignableFrom(assets.MainAssetType))
                     meshes.Add(assets);
                 else if (assets.MainAssetType == typeof(Scene))
                     scenes.Add(assets);
