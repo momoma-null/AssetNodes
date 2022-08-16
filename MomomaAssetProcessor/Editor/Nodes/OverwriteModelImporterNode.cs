@@ -107,6 +107,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             if (m_Importer != null)
             {
+                var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_ImportedTakeInfos", "m_ImportedRoots", "m_HasExtraRoot" };
                 foreach (var assets in assetGroup)
                 {
                     if (assets.Importer is ModelImporter importer)
@@ -116,7 +117,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         using (var dstSO = new SerializedObject(importer))
                         {
                             iterator.NextVisible(true);
-                            var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_ImportedTakeInfos", "m_ImportedRoots", "m_HasExtraRoot" };
                             while (true)
                             {
                                 if (iterator.editable && !excludePaths.Contains(iterator.propertyPath))
