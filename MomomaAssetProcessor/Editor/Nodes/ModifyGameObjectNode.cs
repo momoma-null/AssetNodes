@@ -8,7 +8,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
     [CreateElement(typeof(AssetProcessorGUI), "Modify/GameObject")]
-    sealed class ModifyGameObjectNode : INodeProcessor
+    sealed class ModifyGameObjectNode : INodeProcessor, IPrefabModifier
     {
         ModifyGameObjectNode() { }
 
@@ -98,8 +98,13 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
+        public bool IncludeChildren => m_IncludeChildren;
+        public string RegexPattern => m_RegexPattern;
+
         [SerializeField]
         bool m_IncludeChildren = false;
+        [SerializeField]
+        string m_RegexPattern = string.Empty;
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
@@ -112,7 +117,12 @@ namespace MomomaAssets.GraphView.AssetProcessor
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
-            Action<GameObject>? process = null;
+            this.ModifyPrefab(assetGroup);
+            container.SetOutput(0, assetGroup);
+        }
+
+        public void Modify(GameObject go)
+        {
             foreach (var setting in m_Properties)
             {
                 switch (setting.PropertyType)
@@ -121,11 +131,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
                         {
                             if (bool.TryParse(setting.RawValue, out var boolValue))
                             {
-                                process += go =>
-                                {
-                                    if (go.activeSelf != boolValue)
-                                        go.SetActive(boolValue);
-                                };
+                                if (go.activeSelf != boolValue)
+                                    go.SetActive(boolValue);
                             }
                             break;
                         }
@@ -141,56 +148,28 @@ namespace MomomaAssets.GraphView.AssetProcessor
                             {
                                 if (Enum.TryParse<StaticEditorFlags>(setting.PropertyType.ToString(), out var targetFlag))
                                 {
-                                    process += go =>
+                                    var flags = GameObjectUtility.GetStaticEditorFlags(go);
+                                    if ((flags & targetFlag) > 0 != boolValue)
                                     {
-                                        var flags = GameObjectUtility.GetStaticEditorFlags(go);
-                                        if ((flags & targetFlag) > 0 != boolValue)
-                                        {
-                                            if (boolValue)
-                                                flags |= targetFlag;
-                                            else
-                                                flags &= ~targetFlag;
-                                            GameObjectUtility.SetStaticEditorFlags(go, flags);
-                                        }
-                                    };
+                                        if (boolValue)
+                                            flags |= targetFlag;
+                                        else
+                                            flags &= ~targetFlag;
+                                        GameObjectUtility.SetStaticEditorFlags(go, flags);
+                                    }
                                 }
                             }
                             break;
                         }
                     case PropertyType.Tag:
-                        process += go => go.tag = setting.RawValue;
+                        go.tag = setting.RawValue;
                         break;
                     case PropertyType.Layer:
                         if (int.TryParse(setting.RawValue, out var intValue))
-                            process += go => go.layer = intValue;
+                            go.layer = intValue;
                         break;
                 }
             }
-            if (process != null)
-            {
-                foreach (var assets in assetGroup)
-                {
-                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
-                        continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
-                    {
-                        var root = scope.prefabContentsRoot;
-                        if (m_IncludeChildren)
-                            ProcessRecursively(root.transform, process);
-                        else
-                            process(root);
-                    }
-                    AssetDatabase.ImportAsset(assets.AssetPath);
-                }
-            }
-            container.SetOutput(0, assetGroup);
-        }
-
-        static void ProcessRecursively(Transform transform, Action<GameObject> process)
-        {
-            process(transform.gameObject);
-            foreach (Transform child in transform)
-                ProcessRecursively(child, process);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

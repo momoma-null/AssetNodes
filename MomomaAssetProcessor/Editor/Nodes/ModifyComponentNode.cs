@@ -12,7 +12,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
     [CreateElement(typeof(AssetProcessorGUI), "Modify/Component")]
-    sealed class ModifyComponentNode : INodeProcessor, IAdditionalAssetHolder
+    sealed class ModifyComponentNode : INodeProcessor, IAdditionalAssetHolder, IPrefabModifier
     {
         sealed class ModifyComponentNodeEditor : INodeProcessorEditor
         {
@@ -90,10 +90,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
+        public bool IncludeChildren => m_IncludeChildren;
+        public string RegexPattern => m_RegexPattern;
+
         ModifyComponentNode() { }
 
         [SerializeField]
         bool m_IncludeChildren = false;
+        [SerializeField]
+        string m_RegexPattern = string.Empty;
         [SerializeField]
         Preset? m_Preset = null;
 
@@ -134,22 +139,15 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             if (m_Preset != null)
-            {
-                foreach (var assets in assetGroup)
-                {
-                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
-                        continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
-                    {
-                        var root = scope.prefabContentsRoot;
-                        foreach (var component in m_IncludeChildren ? root.GetComponentsInChildren<Component>(true) : root.GetComponents<Component>())
-                            if (m_Preset.CanBeAppliedTo(component))
-                                m_Preset.ApplyTo(component);
-                    }
-                    AssetDatabase.ImportAsset(assets.AssetPath);
-                }
-            }
+                this.ModifyPrefab(assetGroup);
             container.SetOutput(0, assetGroup);
+        }
+
+        public void Modify(GameObject go)
+        {
+            foreach (var component in go.GetComponents<Component>())
+                if (m_Preset!.CanBeAppliedTo(component))
+                    m_Preset.ApplyTo(component);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,7 +27,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
             AddComponentNodeEditor(SerializedProperty processorProperty)
             {
                 _IncludeChildrenProperty = processorProperty.FindPropertyRelative(nameof(m_IncludeChildren));
-                _RegexProperty = processorProperty.FindPropertyRelative(nameof(m_Regex));
+                _RegexProperty = processorProperty.FindPropertyRelative(nameof(m_RegexPattern));
                 _MenuPathProperty = processorProperty.FindPropertyRelative(nameof(m_MenuPath));
             }
 
@@ -48,12 +46,33 @@ namespace MomomaAssets.GraphView.AssetProcessor
             }
         }
 
+        sealed class Modifier : IPrefabModifier
+        {
+            readonly AddComponentNode node;
+            readonly Type componentType;
+
+            public bool IncludeChildren => node.m_IncludeChildren;
+            public string RegexPattern => node.m_RegexPattern;
+
+            public Modifier(AddComponentNode node, Type componentType)
+            {
+                this.node = node;
+                this.componentType = componentType;
+            }
+
+            public void Modify(GameObject go)
+            {
+                if (go.GetComponent(componentType) == null)
+                    go.AddComponent(componentType);
+            }
+        }
+
         AddComponentNode() { }
 
         [SerializeField]
         bool m_IncludeChildren = false;
         [SerializeField]
-        string m_Regex = "";
+        string m_RegexPattern = string.Empty;
         [SerializeField]
         string m_MenuPath = "";
 
@@ -67,27 +86,7 @@ namespace MomomaAssets.GraphView.AssetProcessor
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             if (UnityObjectTypeUtility.TryGetComponentTypeFromMenuPath(m_MenuPath, out var componentType))
-            {
-                var regex = new Regex(m_Regex);
-                foreach (var assets in assetGroup)
-                {
-                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
-                        continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
-                    {
-                        var root = scope.prefabContentsRoot;
-                        foreach (var go in m_IncludeChildren ? root.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject) : new[] { root })
-                        {
-                            if (regex.Match(go.name).Success)
-                            {
-                                if (go.GetComponent(componentType) == null)
-                                    go.AddComponent(componentType);
-                            }
-                        }
-                    }
-                    AssetDatabase.ImportAsset(assets.AssetPath);
-                }
-            }
+                new Modifier(this, componentType).ModifyPrefab(assetGroup);
             container.SetOutput(0, assetGroup);
         }
 
