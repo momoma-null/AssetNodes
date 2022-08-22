@@ -13,6 +13,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_DirectoryName = string.Empty;
 
+        public Color HeaderColor => ColorDefinition.PathNode;
+
         GetChildDirectoryNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)

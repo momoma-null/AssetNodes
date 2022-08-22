@@ -17,6 +17,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Shader? m_DestinationShader;
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

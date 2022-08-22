@@ -15,6 +15,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         uint m_Count = 1u;
 
+        public Color HeaderColor => ColorDefinition.PathNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(PathDataPortDefinition.Default);

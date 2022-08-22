@@ -16,6 +16,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         UnityObject? m_Asset = null;
 
+        public Color HeaderColor => ColorDefinition.PathNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddOutputPort(PathDataPortDefinition.Default);

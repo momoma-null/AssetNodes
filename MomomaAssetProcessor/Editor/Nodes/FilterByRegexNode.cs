@@ -14,6 +14,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_Pattern = string.Empty;
 
+        public Color HeaderColor => ColorDefinition.FilterNode;
+
         FilterByRegexNode() { }
 
         public void Initialize(IPortDataContainer portDataContainer)

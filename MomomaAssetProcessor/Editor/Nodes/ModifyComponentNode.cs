@@ -102,6 +102,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         Preset? m_Preset = null;
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public IEnumerable<UnityObject> Assets
         {
             get

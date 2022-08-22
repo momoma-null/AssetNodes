@@ -274,6 +274,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeReference]
         IPropertyValue[] m_PropertyValues = Array.Empty<IPropertyValue>();
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

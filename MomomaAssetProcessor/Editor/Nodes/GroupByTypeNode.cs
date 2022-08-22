@@ -12,6 +12,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         GroupByTypeNode() { }
 
+        public Color HeaderColor => ColorDefinition.FilterNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

@@ -14,6 +14,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         GeneratePrefabVariantNode() { }
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

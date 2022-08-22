@@ -14,6 +14,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         string m_Path = string.Empty;
 
+        public Color HeaderColor => ColorDefinition.PathNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddOutputPort(PathDataPortDefinition.Default);

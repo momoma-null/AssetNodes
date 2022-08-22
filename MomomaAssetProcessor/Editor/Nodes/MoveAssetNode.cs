@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 
 #nullable enable
 
@@ -11,6 +12,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     sealed class MoveAssetNode : INodeProcessor
     {
         MoveAssetNode() { }
+
+        public Color HeaderColor => ColorDefinition.IONode;
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

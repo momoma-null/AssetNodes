@@ -27,6 +27,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         DefaultAsset? m_Folder;
 
+        public Color HeaderColor => ColorDefinition.IONode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);

@@ -108,6 +108,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         PropertySetting[] m_Properties = new PropertySetting[0];
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

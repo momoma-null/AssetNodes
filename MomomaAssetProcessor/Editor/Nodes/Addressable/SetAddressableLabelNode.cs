@@ -20,6 +20,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         bool m_Enable = true;
 
+        public Color HeaderColor => ColorDefinition.AddressableNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

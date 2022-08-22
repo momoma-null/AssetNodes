@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.Playables;
 using UnityObject = UnityEngine.Object;
 
@@ -13,6 +14,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     sealed class CleanUpPlayableAssetNode : INodeProcessor
     {
         CleanUpPlayableAssetNode() { }
+
+        public Color HeaderColor => ColorDefinition.CleanupNode;
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

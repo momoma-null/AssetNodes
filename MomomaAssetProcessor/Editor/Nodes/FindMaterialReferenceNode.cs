@@ -162,6 +162,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         TextureReference[] m_TextureReferences = Array.Empty<TextureReference>();
 
+        public Color HeaderColor => ColorDefinition.ValidateNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 
 #nullable enable
 
@@ -10,6 +11,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     sealed class GroupByPrefabTypeNode : INodeProcessor
     {
         GroupByPrefabTypeNode() { }
+
+        public Color HeaderColor => ColorDefinition.FilterNode;
 
         public void Initialize(IPortDataContainer portDataContainer)
         {

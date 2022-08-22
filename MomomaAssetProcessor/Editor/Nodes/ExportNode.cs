@@ -18,6 +18,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         ExportPackageOptions m_Options;
 
+        public Color HeaderColor => ColorDefinition.IONode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

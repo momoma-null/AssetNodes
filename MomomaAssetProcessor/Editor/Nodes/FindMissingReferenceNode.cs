@@ -12,6 +12,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         FindMissingReferenceNode() { }
 
+        public Color HeaderColor => ColorDefinition.ValidateNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

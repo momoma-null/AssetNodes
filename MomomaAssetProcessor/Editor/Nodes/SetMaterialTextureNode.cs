@@ -149,6 +149,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         TextureProperty[] m_TextureProperties = Array.Empty<TextureProperty>();
 
+        public Color HeaderColor => ColorDefinition.ModifyNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default, "Materials");

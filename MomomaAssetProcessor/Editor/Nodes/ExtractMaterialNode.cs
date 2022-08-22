@@ -13,6 +13,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
     {
         ExtractMaterialNode() { }
 
+        public Color HeaderColor => ColorDefinition.ImporterNode;
+
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);

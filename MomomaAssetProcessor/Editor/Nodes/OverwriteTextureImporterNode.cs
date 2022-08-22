@@ -60,6 +60,8 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeField]
         TextureImporter? m_Importer = null;
 
+        public Color HeaderColor => ColorDefinition.ImporterNode;
+
         public IEnumerable<UnityObject> Assets
         {
             get
