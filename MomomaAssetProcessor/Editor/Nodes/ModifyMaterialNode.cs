@@ -274,8 +274,6 @@ namespace MomomaAssets.GraphView.AssetProcessor
         [SerializeReference]
         IPropertyValue[] m_PropertyValues = Array.Empty<IPropertyValue>();
 
-        ModifyMaterialNodeEditor? m_Editor;
-
         public void Initialize(IPortDataContainer portDataContainer)
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
