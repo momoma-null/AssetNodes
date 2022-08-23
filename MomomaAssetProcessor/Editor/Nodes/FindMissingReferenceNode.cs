@@ -7,7 +7,7 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Find/Missing Reference")]
+    [CreateElement(typeof(AssetProcessorGUI), "Validate/Missing Reference")]
     sealed class FindMissingReferenceNode : INodeProcessor
     {
         FindMissingReferenceNode() { }

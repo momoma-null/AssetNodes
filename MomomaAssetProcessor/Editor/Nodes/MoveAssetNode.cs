@@ -8,7 +8,7 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "File/Move Asset")]
+    [CreateElement(typeof(AssetProcessorGUI), "IO/Move Asset")]
     sealed class MoveAssetNode : INodeProcessor
     {
         MoveAssetNode() { }

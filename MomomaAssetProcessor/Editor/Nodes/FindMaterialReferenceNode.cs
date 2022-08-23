@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Find/Material Reference")]
+    [CreateElement(typeof(AssetProcessorGUI), "Validate/Material Reference")]
     sealed class FindMaterialReferenceNode : INodeProcessor
     {
         enum ComparisonMode

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Log/Assert")]
+    [CreateElement(typeof(AssetProcessorGUI), "Validate/Assert")]
     sealed class AssertNode : INodeProcessor
     {
         AssertNode() { }

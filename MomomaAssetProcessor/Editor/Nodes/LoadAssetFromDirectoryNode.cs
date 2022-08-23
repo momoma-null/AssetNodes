@@ -8,7 +8,7 @@ using UnityEngine;
 namespace MomomaAssets.GraphView.AssetProcessor
 {
     [Serializable]
-    [CreateElement(typeof(AssetProcessorGUI), "Load/From Directory")]
+    [CreateElement(typeof(AssetProcessorGUI), "IO/From Directory")]
     sealed class LoadAssetFromDirectoryNode : INodeProcessor
     {
         enum ReloadMode
