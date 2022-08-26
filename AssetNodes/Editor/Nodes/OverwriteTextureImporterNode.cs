@@ -52,7 +52,7 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         sealed class AssetData
         {
-            public static readonly TextureImporter s_DefaultImporter = Resources.Load<TextureImporter>("MomomaAssetNodes/TextureImporter");
+            public static readonly TextureImporter s_DefaultImporter = Resources.Load<TextureImporter>("AssetNodes/TextureImporter");
         }
 
         OverwriteTextureImporterNode() { }

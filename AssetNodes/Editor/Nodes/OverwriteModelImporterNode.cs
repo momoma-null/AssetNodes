@@ -68,7 +68,7 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         sealed class AssetData
         {
-            public static readonly ModelImporter s_DefaultImporter = Resources.Load<ModelImporter>("MomomaAssetNodes/ModelImporter");
+            public static readonly ModelImporter s_DefaultImporter = Resources.Load<ModelImporter>("AssetNodes/ModelImporter");
         }
 
         OverwriteModelImporterNode() { }

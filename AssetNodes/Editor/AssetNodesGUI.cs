@@ -10,7 +10,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         [MenuItem("MomomaTools/Asset Processor", false, 500)]
         static void ShowWindow()
         {
-            EditorWindow.GetWindow<AssetNodesGUI>("MomomaAssetNodes");
+            EditorWindow.GetWindow<AssetNodesGUI>("AssetNodes");
         }
 
         [SerializeField]
