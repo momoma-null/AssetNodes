@@ -14,6 +14,8 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         [SerializeField]
         string m_RegexPattern = string.Empty;
+        [SerializeField]
+        bool m_UseFirstGroup;
 
         public Color HeaderColor => ColorDefinition.PathNode;
 
@@ -27,7 +29,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         {
             var path = container.GetInput(0, PathDataPortDefinition.Default);
             var regex = new Regex(m_RegexPattern);
-            container.SetOutput(0, new PathData(asset => regex.Match(path.GetPath(asset)).Value));
+            container.SetOutput(0, new PathData(asset => regex.Match(path.GetPath(asset)).Groups[m_UseFirstGroup ? 1 : 0].Value));
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
