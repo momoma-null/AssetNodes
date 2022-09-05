@@ -17,15 +17,17 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         public void Initialize(IPortDataContainer portDataContainer)
         {
-            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddInputPort(AssetGroupPortDefinition.Default, "Model");
             portDataContainer.AddInputPort(PathDataPortDefinition.Default, "Export Directory");
-            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Model");
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Materials");
         }
 
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var pathData = container.GetInput(1, PathDataPortDefinition.Default);
+            var materials = new AssetGroup();
             foreach (var assets in assetGroup)
             {
                 if (assets.Importer is ModelImporter)
@@ -41,6 +43,7 @@ namespace MomomaAssets.GraphView.AssetNodes
                         }
                         var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
                         AssetDatabase.ExtractAsset(i, dstPath);
+                        materials.Add(new AssetData(dstPath));
                         isDirty = true;
                     }
                     if (isDirty)
@@ -51,6 +54,7 @@ namespace MomomaAssets.GraphView.AssetNodes
                 }
             }
             container.SetOutput(0, assetGroup);
+            container.SetOutput(1, materials);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
