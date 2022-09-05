@@ -25,6 +25,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            var dstAssets = new AssetGroup();
             var path = container.GetInput(1, PathDataPortDefinition.Default);
             foreach (var assets in assetGroup)
             {
@@ -37,8 +38,9 @@ namespace MomomaAssets.GraphView.AssetNodes
                 }
                 var dstPath = Path.Combine(directoryPath, Path.GetFileName(srcPath));
                 AssetDatabase.MoveAsset(srcPath, dstPath);
+                dstAssets.Add(new AssetData(dstPath));
             }
-            container.SetOutput(0, assetGroup);
+            container.SetOutput(0, dstAssets);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
