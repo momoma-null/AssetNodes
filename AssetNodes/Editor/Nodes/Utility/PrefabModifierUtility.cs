@@ -25,7 +25,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                         else if (regex.IsMatch(root.name))
                             modifier.Modify(root);
                     }
-                    AssetDatabase.ImportAsset(assets.AssetPath);
                 }
             }
         }
