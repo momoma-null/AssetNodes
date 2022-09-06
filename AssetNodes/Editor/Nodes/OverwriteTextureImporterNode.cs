@@ -95,12 +95,15 @@ namespace MomomaAssets.GraphView.AssetNodes
             {
                 var textureSettings = new TextureImporterSettings();
                 m_Importer.ReadTextureSettings(textureSettings);
-                foreach (var assets in assetGroup)
+                using (new AssetModificationScope())
                 {
-                    if (assets.Importer is TextureImporter importer)
+                    foreach (var assets in assetGroup)
                     {
-                        importer.SetTextureSettings(textureSettings);
-                        AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
+                        if (assets.Importer is TextureImporter importer)
+                        {
+                            importer.SetTextureSettings(textureSettings);
+                            AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
+                        }
                     }
                 }
             }

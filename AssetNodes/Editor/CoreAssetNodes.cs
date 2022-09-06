@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 #nullable enable
 
@@ -13,17 +13,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         public static bool IsTesting { get; internal set; }
         public static IEnumerable<string> ImportedAssetsPaths { get; private set; } = Array.Empty<string>();
 
-        public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(AssetDatabase.StartAssetEditing,
-            () =>
-            {
-                AssetDatabase.SaveAssets();
-                AssetDatabase.StopAssetEditing();
-                AssetDatabase.Refresh();
-            },
-            () =>
-            {
-                Resources.UnloadUnusedAssets();
-            });
+        public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(() => Resources.UnloadUnusedAssets());
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {

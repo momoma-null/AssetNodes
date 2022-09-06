@@ -287,19 +287,22 @@ namespace MomomaAssets.GraphView.AssetNodes
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             if (m_Shader != null)
             {
-                foreach (var assets in assetGroup)
+                using (new AssetModificationScope())
                 {
-                    foreach (var material in assets.GetAssetsFromType<Material>())
+                    foreach (var assets in assetGroup)
                     {
-                        if (material.shader != m_Shader)
-                            continue;
-                        foreach (var i in m_PropertyValues)
+                        foreach (var material in assets.GetAssetsFromType<Material>())
                         {
-                            if (i.Enabled)
-                                i.SetPropertyValue(material);
+                            if (material.shader != m_Shader)
+                                continue;
+                            foreach (var i in m_PropertyValues)
+                            {
+                                if (i.Enabled)
+                                    i.SetPropertyValue(material);
+                            }
+                            if (EditorUtility.IsDirty(material))
+                                EditorUtility.SetDirty(material);
                         }
-                        if (EditorUtility.IsDirty(material))
-                            EditorUtility.SetDirty(material);
                     }
                 }
             }

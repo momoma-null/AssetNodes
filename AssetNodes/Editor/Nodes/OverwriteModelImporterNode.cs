@@ -110,27 +110,30 @@ namespace MomomaAssets.GraphView.AssetNodes
             if (m_Importer != null)
             {
                 var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_ImportedTakeInfos", "m_ImportedRoots", "m_HasExtraRoot" };
-                foreach (var assets in assetGroup)
+                using (new AssetModificationScope())
                 {
-                    if (assets.Importer is ModelImporter importer)
+                    foreach (var assets in assetGroup)
                     {
-                        using (var srcSO = new SerializedObject(m_Importer))
-                        using (var iterator = srcSO.GetIterator())
-                        using (var dstSO = new SerializedObject(importer))
+                        if (assets.Importer is ModelImporter importer)
                         {
-                            iterator.NextVisible(true);
-                            while (true)
+                            using (var srcSO = new SerializedObject(m_Importer))
+                            using (var iterator = srcSO.GetIterator())
+                            using (var dstSO = new SerializedObject(importer))
                             {
-                                if (iterator.editable && !excludePaths.Contains(iterator.propertyPath))
-                                    dstSO.CopyFromSerializedPropertyIfDifferent(iterator);
-                                if (!iterator.NextVisible(false))
-                                    break;
-                            }
-                            if (dstSO.hasModifiedProperties)
-                            {
-                                dstSO.ApplyModifiedPropertiesWithoutUndo();
-                                AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
-                                importer.SaveAndReimport();
+                                iterator.NextVisible(true);
+                                while (true)
+                                {
+                                    if (iterator.editable && !excludePaths.Contains(iterator.propertyPath))
+                                        dstSO.CopyFromSerializedPropertyIfDifferent(iterator);
+                                    if (!iterator.NextVisible(false))
+                                        break;
+                                }
+                                if (dstSO.hasModifiedProperties)
+                                {
+                                    dstSO.ApplyModifiedPropertiesWithoutUndo();
+                                    AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
+                                    importer.SaveAndReimport();
+                                }
                             }
                         }
                     }

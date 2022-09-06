@@ -11,19 +11,22 @@ namespace MomomaAssets.GraphView.AssetNodes
         public static void ModifyPrefab(this IPrefabModifier modifier, AssetGroup assetGroup)
         {
             var regex = new Regex(modifier.RegexPattern);
-            foreach (var assets in assetGroup)
+            using (new AssetModificationScope())
             {
-                if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
-                    continue;
-                using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                foreach (var assets in assetGroup)
                 {
-                    var root = scope.prefabContentsRoot;
-                    if (modifier.IncludeChildren)
-                        modifier.ModifyRecursively(root.transform, regex);
-                    else if (regex.IsMatch(root.name))
-                        modifier.Modify(root);
+                    if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
+                        continue;
+                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    {
+                        var root = scope.prefabContentsRoot;
+                        if (modifier.IncludeChildren)
+                            modifier.ModifyRecursively(root.transform, regex);
+                        else if (regex.IsMatch(root.name))
+                            modifier.Modify(root);
+                    }
+                    AssetDatabase.ImportAsset(assets.AssetPath);
                 }
-                AssetDatabase.ImportAsset(assets.AssetPath);
             }
         }
 

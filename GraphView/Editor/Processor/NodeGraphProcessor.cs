@@ -6,14 +6,10 @@ namespace MomomaAssets.GraphView
 {
     public sealed class NodeGraphProcessor
     {
-        readonly Action? PreProcess;
-        readonly Action? PostProcess;
         readonly Action? Completed;
 
-        public NodeGraphProcessor(Action? preProcess = null, Action? postProcess = null, Action? completed = null)
+        public NodeGraphProcessor(Action? completed = null)
         {
-            PreProcess = preProcess;
-            PostProcess = postProcess;
             Completed = completed;
         }
 
@@ -31,16 +27,8 @@ namespace MomomaAssets.GraphView
 
         void GetData(INodeData nodeData, ProcessingDataContainer container)
         {
-            try
-            {
-                PreProcess?.Invoke();
-                var containerParts = new ProcessingDataContainer.Parts(container, nodeData);
-                nodeData.Processor.Process(containerParts);
-            }
-            finally
-            {
-                PostProcess?.Invoke();
-            }
+            var containerParts = new ProcessingDataContainer.Parts(container, nodeData);
+            nodeData.Processor.Process(containerParts);
         }
     }
 }

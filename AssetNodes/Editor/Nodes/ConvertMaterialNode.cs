@@ -30,15 +30,18 @@ namespace MomomaAssets.GraphView.AssetNodes
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             if (m_DestinationShader != null)
             {
-                foreach (var assets in assetGroup)
+                using (new AssetModificationScope())
                 {
-                    foreach (var material in assets.GetAssetsFromType<Material>())
+                    foreach (var assets in assetGroup)
                     {
-                        if (m_SourceShader != null && material.shader != m_SourceShader || material.shader == m_DestinationShader)
-                            continue;
-                        material.shader = m_DestinationShader;
-                        if (EditorUtility.IsDirty(material))
-                            EditorUtility.SetDirty(material);
+                        foreach (var material in assets.GetAssetsFromType<Material>())
+                        {
+                            if (m_SourceShader != null && material.shader != m_SourceShader || material.shader == m_DestinationShader)
+                                continue;
+                            material.shader = m_DestinationShader;
+                            if (EditorUtility.IsDirty(material))
+                                EditorUtility.SetDirty(material);
+                        }
                     }
                 }
             }

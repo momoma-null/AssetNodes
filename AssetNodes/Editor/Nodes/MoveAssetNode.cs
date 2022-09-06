@@ -27,18 +27,21 @@ namespace MomomaAssets.GraphView.AssetNodes
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var dstAssets = new AssetGroup();
             var path = container.GetInput(1, PathDataPortDefinition.Default);
-            foreach (var assets in assetGroup)
+            using (new AssetModificationScope())
             {
-                var srcPath = assets.AssetPath;
-                var directoryPath = path.GetPath(assets);
-                if (!Directory.Exists(directoryPath))
+                foreach (var assets in assetGroup)
                 {
-                    Directory.CreateDirectory(directoryPath);
-                    AssetDatabase.ImportAsset(directoryPath);
+                    var srcPath = assets.AssetPath;
+                    var directoryPath = path.GetPath(assets);
+                    if (!Directory.Exists(directoryPath))
+                    {
+                        Directory.CreateDirectory(directoryPath);
+                        AssetDatabase.ImportAsset(directoryPath);
+                    }
+                    var dstPath = Path.Combine(directoryPath, Path.GetFileName(srcPath));
+                    AssetDatabase.MoveAsset(srcPath, dstPath);
+                    dstAssets.Add(new AssetData(dstPath));
                 }
-                var dstPath = Path.Combine(directoryPath, Path.GetFileName(srcPath));
-                AssetDatabase.MoveAsset(srcPath, dstPath);
-                dstAssets.Add(new AssetData(dstPath));
             }
             container.SetOutput(0, dstAssets);
         }

@@ -31,34 +31,37 @@ namespace MomomaAssets.GraphView.AssetNodes
             var directoryPathData = container.GetInput(1, PathDataPortDefinition.Default);
             var filePathData = container.GetInput(2, PathDataPortDefinition.Default);
             var variants = new AssetGroup();
-            foreach (var assets in assetGroup)
+            using (new AssetModificationScope())
             {
-                if (assets.MainAsset is GameObject prefab)
+                foreach (var assets in assetGroup)
                 {
-                    var dstPath = Path.ChangeExtension(Path.Combine(directoryPathData.GetPath(assets), filePathData.GetPath(assets)), ".prefab");
-                    var directoryPath = Path.GetDirectoryName(dstPath);
-                    if (!Directory.Exists(directoryPath))
+                    if (assets.MainAsset is GameObject prefab)
                     {
-                        Directory.CreateDirectory(directoryPath);
-                        AssetDatabase.ImportAsset(directoryPath);
-                    }
-                    var currentDstPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(dstPath);
-                    if (currentDstPrefab == null || PrefabUtility.GetPrefabAssetType(currentDstPrefab) != PrefabAssetType.Variant || PrefabUtility.GetCorrespondingObjectFromOriginalSource(currentDstPrefab) != prefab)
-                    {
-                        var instance = PrefabUtility.InstantiatePrefab(prefab);
-                        try
+                        var dstPath = Path.ChangeExtension(Path.Combine(directoryPathData.GetPath(assets), filePathData.GetPath(assets)), ".prefab");
+                        var directoryPath = Path.GetDirectoryName(dstPath);
+                        if (!Directory.Exists(directoryPath))
                         {
-                            currentDstPrefab = PrefabUtility.SaveAsPrefabAsset(instance as GameObject, dstPath);
+                            Directory.CreateDirectory(directoryPath);
+                            AssetDatabase.ImportAsset(directoryPath);
                         }
-                        finally
+                        var currentDstPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(dstPath);
+                        if (currentDstPrefab == null || PrefabUtility.GetPrefabAssetType(currentDstPrefab) != PrefabAssetType.Variant || PrefabUtility.GetCorrespondingObjectFromOriginalSource(currentDstPrefab) != prefab)
                         {
-                            DestroyImmediate(instance);
+                            var instance = PrefabUtility.InstantiatePrefab(prefab);
+                            try
+                            {
+                                currentDstPrefab = PrefabUtility.SaveAsPrefabAsset(instance as GameObject, dstPath);
+                            }
+                            finally
+                            {
+                                DestroyImmediate(instance);
+                            }
+                            // for the problem that Prefab generated during asset import becomes null
+                            AssetDatabase.ImportAsset(assets.AssetPath);
                         }
-                        // for the problem that Prefab generated during asset import becomes null
-                        AssetDatabase.ImportAsset(assets.AssetPath);
+                        if (currentDstPrefab != null)
+                            variants.Add(new AssetData(dstPath));
                     }
-                    if (currentDstPrefab != null)
-                        variants.Add(new AssetData(dstPath));
                 }
             }
             container.SetOutput(0, assetGroup);

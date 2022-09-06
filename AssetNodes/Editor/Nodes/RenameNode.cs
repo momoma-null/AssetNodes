@@ -31,14 +31,17 @@ namespace MomomaAssets.GraphView.AssetNodes
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var regex = new Regex(m_RegexPattern);
-            foreach (var assets in assetGroup)
+            using (new AssetModificationScope())
             {
-                var srcPath = assets.AssetPath;
-                var directoryPath = Path.GetDirectoryName(srcPath);
-                var fileName = Path.GetFileName(srcPath);
-                var dstFileName = regex.Replace(fileName, m_Replacement);
-                var dstPath = Path.Combine(directoryPath, dstFileName);
-                AssetDatabase.MoveAsset(srcPath, dstPath);
+                foreach (var assets in assetGroup)
+                {
+                    var srcPath = assets.AssetPath;
+                    var directoryPath = Path.GetDirectoryName(srcPath);
+                    var fileName = Path.GetFileName(srcPath);
+                    var dstFileName = regex.Replace(fileName, m_Replacement);
+                    var dstPath = Path.Combine(directoryPath, dstFileName);
+                    AssetDatabase.MoveAsset(srcPath, dstPath);
+                }
             }
             container.SetOutput(0, assetGroup);
         }

@@ -22,17 +22,20 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
-            foreach (var asset in assetGroup)
+            using (new AssetModificationScope())
             {
-                if (asset.MainAsset is Material mat)
+                foreach (var asset in assetGroup)
                 {
-                    using (var so = new SerializedObject(mat))
-                    using (var savedProp = so.FindProperty("m_SavedProperties"))
+                    if (asset.MainAsset is Material mat)
                     {
-                        RemoveProperties(savedProp.FindPropertyRelative("m_TexEnvs"), mat);
-                        RemoveProperties(savedProp.FindPropertyRelative("m_Floats"), mat);
-                        RemoveProperties(savedProp.FindPropertyRelative("m_Colors"), mat);
-                        so.ApplyModifiedPropertiesWithoutUndo();
+                        using (var so = new SerializedObject(mat))
+                        using (var savedProp = so.FindProperty("m_SavedProperties"))
+                        {
+                            RemoveProperties(savedProp.FindPropertyRelative("m_TexEnvs"), mat);
+                            RemoveProperties(savedProp.FindPropertyRelative("m_Floats"), mat);
+                            RemoveProperties(savedProp.FindPropertyRelative("m_Colors"), mat);
+                            so.ApplyModifiedPropertiesWithoutUndo();
+                        }
                     }
                 }
             }

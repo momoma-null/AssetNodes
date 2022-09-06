@@ -24,62 +24,65 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
-            foreach (var asset in assetGroup)
+            using (new AssetModificationScope())
             {
-                var prefabHash = new HashSet<GameObject>();
-                foreach (var go in asset.GetAssetsFromType<GameObject>())
+                foreach (var asset in assetGroup)
                 {
-                    var root = PrefabUtility.GetNearestPrefabInstanceRoot(go);
-                    if (prefabHash.Add(root))
+                    var prefabHash = new HashSet<GameObject>();
+                    foreach (var go in asset.GetAssetsFromType<GameObject>())
                     {
-                        var oldModifications = PrefabUtility.GetPropertyModifications(root);
-                        if (oldModifications != null)
+                        var root = PrefabUtility.GetNearestPrefabInstanceRoot(go);
+                        if (prefabHash.Add(root))
                         {
-                            var modifications = new List<PropertyModification>(oldModifications);
-                            for (var i = modifications.Count - 1; i >= 0; --i)
+                            var oldModifications = PrefabUtility.GetPropertyModifications(root);
+                            if (oldModifications != null)
                             {
-                                if (modifications[i].target == null)
+                                var modifications = new List<PropertyModification>(oldModifications);
+                                for (var i = modifications.Count - 1; i >= 0; --i)
                                 {
-                                    modifications.RemoveAt(i);
-                                }
-                            }
-                            if (oldModifications.Length != modifications.Count)
-                                PrefabUtility.SetPropertyModifications(root, modifications.ToArray());
-                        }
-                    }
-                }
-                foreach (var director in asset.GetAssetsFromType<PlayableDirector>())
-                {
-                    if (director != null)
-                    {
-                        using (var so = new SerializedObject(director))
-                        using (var m_SceneBindings = so.FindProperty("m_SceneBindings"))
-                        {
-                            var bindings = new List<SerializedProperty>();
-                            if (director.playableAsset == null)
-                                break;
-                            for (var i = 0; i < m_SceneBindings.arraySize; ++i)
-                                bindings.Add(m_SceneBindings.GetArrayElementAtIndex(i));
-                            var notToDeleteProps = new HashSet<SerializedProperty>();
-                            foreach (var binding in director.playableAsset.outputs)
-                            {
-                                if (binding.sourceObject == null)
-                                    continue;
-                                foreach (var prop in bindings)
-                                {
-                                    if (prop.FindPropertyRelative("key").objectReferenceValue == binding.sourceObject)
+                                    if (modifications[i].target == null)
                                     {
-                                        notToDeleteProps.Add(prop);
-                                        break;
+                                        modifications.RemoveAt(i);
                                     }
                                 }
+                                if (oldModifications.Length != modifications.Count)
+                                    PrefabUtility.SetPropertyModifications(root, modifications.ToArray());
                             }
-                            for (var i = bindings.Count - 1; i >= 0; --i)
+                        }
+                    }
+                    foreach (var director in asset.GetAssetsFromType<PlayableDirector>())
+                    {
+                        if (director != null)
+                        {
+                            using (var so = new SerializedObject(director))
+                            using (var m_SceneBindings = so.FindProperty("m_SceneBindings"))
                             {
-                                if (!notToDeleteProps.Contains(bindings[i]))
-                                    bindings[i].DeleteCommand();
+                                var bindings = new List<SerializedProperty>();
+                                if (director.playableAsset == null)
+                                    break;
+                                for (var i = 0; i < m_SceneBindings.arraySize; ++i)
+                                    bindings.Add(m_SceneBindings.GetArrayElementAtIndex(i));
+                                var notToDeleteProps = new HashSet<SerializedProperty>();
+                                foreach (var binding in director.playableAsset.outputs)
+                                {
+                                    if (binding.sourceObject == null)
+                                        continue;
+                                    foreach (var prop in bindings)
+                                    {
+                                        if (prop.FindPropertyRelative("key").objectReferenceValue == binding.sourceObject)
+                                        {
+                                            notToDeleteProps.Add(prop);
+                                            break;
+                                        }
+                                    }
+                                }
+                                for (var i = bindings.Count - 1; i >= 0; --i)
+                                {
+                                    if (!notToDeleteProps.Contains(bindings[i]))
+                                        bindings[i].DeleteCommand();
+                                }
+                                so.ApplyModifiedPropertiesWithoutUndo();
                             }
-                            so.ApplyModifiedPropertiesWithoutUndo();
                         }
                     }
                 }

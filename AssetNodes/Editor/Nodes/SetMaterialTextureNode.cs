@@ -165,22 +165,25 @@ namespace MomomaAssets.GraphView.AssetNodes
             if (m_Shader != null)
             {
                 var textures = textureGroup.SelectMany(i => i.GetAssetsFromType<Texture>()).ToDictionary(i => i.name);
-                foreach (var assets in assetGroup)
+                using (new AssetModificationScope())
                 {
-                    foreach (var material in assets.GetAssetsFromType<Material>())
+                    foreach (var assets in assetGroup)
                     {
-                        if (material.shader != m_Shader)
-                            continue;
-                        foreach (var i in m_TextureProperties)
+                        foreach (var material in assets.GetAssetsFromType<Material>())
                         {
-                            if (!material.HasProperty(i.PropertyName))
+                            if (material.shader != m_Shader)
                                 continue;
-                            var texName = Regex.Replace(material.name, i.RegexPattern, i.Replacement);
-                            if (textures.TryGetValue(texName, out var tex))
-                                material.SetTexture(i.PropertyName, tex);
+                            foreach (var i in m_TextureProperties)
+                            {
+                                if (!material.HasProperty(i.PropertyName))
+                                    continue;
+                                var texName = Regex.Replace(material.name, i.RegexPattern, i.Replacement);
+                                if (textures.TryGetValue(texName, out var tex))
+                                    material.SetTexture(i.PropertyName, tex);
+                            }
+                            if (EditorUtility.IsDirty(material))
+                                EditorUtility.SetDirty(material);
                         }
-                        if (EditorUtility.IsDirty(material))
-                            EditorUtility.SetDirty(material);
                     }
                 }
             }

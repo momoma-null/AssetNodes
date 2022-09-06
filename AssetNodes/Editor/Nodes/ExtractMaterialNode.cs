@@ -28,28 +28,31 @@ namespace MomomaAssets.GraphView.AssetNodes
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var pathData = container.GetInput(1, PathDataPortDefinition.Default);
             var materials = new AssetGroup();
-            foreach (var assets in assetGroup)
+            using (new AssetModificationScope())
             {
-                if (assets.Importer is ModelImporter)
+                foreach (var assets in assetGroup)
                 {
-                    var directoryPath = pathData.GetPath(assets);
-                    var isDirty = false;
-                    foreach (var i in assets.GetAssetsFromType<Material>())
+                    if (assets.Importer is ModelImporter)
                     {
-                        if (!Directory.Exists(directoryPath))
+                        var directoryPath = pathData.GetPath(assets);
+                        var isDirty = false;
+                        foreach (var i in assets.GetAssetsFromType<Material>())
                         {
-                            Directory.CreateDirectory(directoryPath);
-                            AssetDatabase.ImportAsset(directoryPath);
+                            if (!Directory.Exists(directoryPath))
+                            {
+                                Directory.CreateDirectory(directoryPath);
+                                AssetDatabase.ImportAsset(directoryPath);
+                            }
+                            var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
+                            AssetDatabase.ExtractAsset(i, dstPath);
+                            materials.Add(new AssetData(dstPath));
+                            isDirty = true;
                         }
-                        var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
-                        AssetDatabase.ExtractAsset(i, dstPath);
-                        materials.Add(new AssetData(dstPath));
-                        isDirty = true;
-                    }
-                    if (isDirty)
-                    {
-                        AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
-                        assets.Importer.SaveAndReimport();
+                        if (isDirty)
+                        {
+                            AssetDatabase.WriteImportSettingsIfDirty(assets.AssetPath);
+                            assets.Importer.SaveAndReimport();
+                        }
                     }
                 }
             }

@@ -23,32 +23,35 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
-            foreach (var asset in assetGroup)
+            using (new AssetModificationScope())
             {
-                if (asset.Importer is ModelImporter)
+                foreach (var asset in assetGroup)
                 {
-                    using (var so = new SerializedObject(asset.Importer))
-                    using (var m_ExternalObjects = so.FindProperty("m_ExternalObjects"))
-                    using (var m_Materials = so.FindProperty("m_Materials"))
+                    if (asset.Importer is ModelImporter)
                     {
-                        var externalObjects = new Dictionary<(string, string), int>();
-                        for (var i = 0; i < m_ExternalObjects.arraySize; ++i)
+                        using (var so = new SerializedObject(asset.Importer))
+                        using (var m_ExternalObjects = so.FindProperty("m_ExternalObjects"))
+                        using (var m_Materials = so.FindProperty("m_Materials"))
                         {
-                            using (var element = m_ExternalObjects.GetArrayElementAtIndex(i))
-                                externalObjects.Add((element.FindPropertyRelative("first.name").stringValue, element.FindPropertyRelative("first.type").stringValue), i);
+                            var externalObjects = new Dictionary<(string, string), int>();
+                            for (var i = 0; i < m_ExternalObjects.arraySize; ++i)
+                            {
+                                using (var element = m_ExternalObjects.GetArrayElementAtIndex(i))
+                                    externalObjects.Add((element.FindPropertyRelative("first.name").stringValue, element.FindPropertyRelative("first.type").stringValue), i);
+                            }
+                            for (var i = 0; i < m_Materials.arraySize; ++i)
+                            {
+                                using (var element = m_Materials.GetArrayElementAtIndex(i))
+                                    externalObjects.Remove((element.FindPropertyRelative("name").stringValue, element.FindPropertyRelative("type").stringValue));
+                            }
+                            var sortedIndices = new SortedSet<int>(externalObjects.Values);
+                            foreach (var i in sortedIndices.Reverse())
+                            {
+                                m_ExternalObjects.DeleteArrayElementAtIndex(i);
+                            }
+                            if (so.ApplyModifiedPropertiesWithoutUndo())
+                                asset.Importer.SaveAndReimport();
                         }
-                        for (var i = 0; i < m_Materials.arraySize; ++i)
-                        {
-                            using (var element = m_Materials.GetArrayElementAtIndex(i))
-                                externalObjects.Remove((element.FindPropertyRelative("name").stringValue, element.FindPropertyRelative("type").stringValue));
-                        }
-                        var sortedIndices = new SortedSet<int>(externalObjects.Values);
-                        foreach (var i in sortedIndices.Reverse())
-                        {
-                            m_ExternalObjects.DeleteArrayElementAtIndex(i);
-                        }
-                        if (so.ApplyModifiedPropertiesWithoutUndo())
-                            asset.Importer.SaveAndReimport();
                     }
                 }
             }
