@@ -31,13 +31,20 @@ namespace MomomaAssets.GraphView.AssetNodes
             {
                 foreach (var assets in assetGroup)
                 {
-                    var srcPath = assets.AssetPath;
                     var directoryPath = path.GetPath(assets);
                     if (!Directory.Exists(directoryPath))
                     {
                         Directory.CreateDirectory(directoryPath);
                         AssetDatabase.ImportAsset(directoryPath);
                     }
+                }
+            }
+            using (new AssetModificationScope())
+            {
+                foreach (var assets in assetGroup)
+                {
+                    var srcPath = assets.AssetPath;
+                    var directoryPath = path.GetPath(assets);
                     var dstPath = Path.Combine(directoryPath, Path.GetFileName(srcPath));
                     AssetDatabase.MoveAsset(srcPath, dstPath);
                     dstAssets.Add(new AssetData(dstPath));

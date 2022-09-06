@@ -17,22 +17,25 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            if (importedAssets.Length == 0 || IsProcessing)
-                return;
-            try
+            EditorApplication.delayCall += () =>
             {
-                IsProcessing = true;
-                ImportedAssetsPaths = importedAssets;
-                foreach (var i in GraphViewObject.GetGraphViewObjects<AssetNodesGUI>())
+                if (importedAssets.Length == 0 || IsProcessing)
+                    return;
+                try
                 {
-                    s_NodeGraphProcessor.StartProcess(i);
+                    IsProcessing = true;
+                    ImportedAssetsPaths = importedAssets;
+                    foreach (var i in GraphViewObject.GetGraphViewObjects<AssetNodesGUI>())
+                    {
+                        s_NodeGraphProcessor.StartProcess(i);
+                    }
                 }
-            }
-            finally
-            {
-                IsProcessing = false;
-                ImportedAssetsPaths = Array.Empty<string>();
-            }
+                finally
+                {
+                    IsProcessing = false;
+                    ImportedAssetsPaths = Array.Empty<string>();
+                }
+            };
         }
     }
 }
