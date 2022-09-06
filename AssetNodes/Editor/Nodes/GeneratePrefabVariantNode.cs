@@ -50,17 +50,14 @@ namespace MomomaAssets.GraphView.AssetNodes
                             var instance = PrefabUtility.InstantiatePrefab(prefab);
                             try
                             {
-                                currentDstPrefab = PrefabUtility.SaveAsPrefabAsset(instance as GameObject, dstPath);
+                                PrefabUtility.SaveAsPrefabAsset(instance as GameObject, dstPath);
                             }
                             finally
                             {
                                 DestroyImmediate(instance);
                             }
-                            // for the problem that Prefab generated during asset import becomes null
-                            AssetDatabase.ImportAsset(assets.AssetPath);
                         }
-                        if (currentDstPrefab != null)
-                            variants.Add(new AssetData(dstPath));
+                        variants.Add(new AssetData(dstPath));
                     }
                 }
             }
