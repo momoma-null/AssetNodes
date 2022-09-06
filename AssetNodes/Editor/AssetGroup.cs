@@ -30,7 +30,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         AssetGroupPortDefinition() { }
 
         public bool IsMultiInput => true;
-        public bool IsMultiOutput => true;
+        public bool IsMultiOutput => false;
         public Color PortColor { get; } = new Color(0.85f, 0.85f, 0.85f, 1f);
 
         public AssetGroup CombineInputData(IEnumerable<AssetGroup> inputs)
