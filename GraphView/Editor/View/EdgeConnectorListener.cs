@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 #nullable enable
 
@@ -11,6 +11,8 @@ namespace MomomaAssets.GraphView
 
     sealed class EdgeConnectorListener : IEdgeConnectorListener
     {
+        public static EdgeConnectorListener Default { get; } = new EdgeConnectorListener();
+
         GraphViewChange m_GraphViewChange;
 
         public void OnDropOutsidePort(Edge edge, Vector2 position)

@@ -444,9 +444,8 @@ namespace MomomaAssets.GraphView
                     if (m_GraphView.CanConnectPortType(port, dst))
                     {
                         var edge = port.ConnectTo<BindableEdge>(dst);
-                        m_GraphView.AddElement(edge);
                         edge.SetPosition(Rect.zero);
-                        m_GraphView.graphViewChanged(new GraphViewChange() { edgesToCreate = new List<Edge>() { edge } });
+                        EdgeConnectorListener.Default.OnDrop(m_GraphView, edge);
                         break;
                     }
                 }

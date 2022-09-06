@@ -83,7 +83,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Input, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, EdgeConnectorListener.Default);
                     port.portColor = data.Color;
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
@@ -115,7 +115,7 @@ namespace MomomaAssets.GraphView
                 }
                 else
                 {
-                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, new EdgeConnectorListener());
+                    port = new Port<BindableEdge>(Orientation.Horizontal, Direction.Output, data.IsMulti ? Port.Capacity.Multi : Port.Capacity.Single, data.PortType, EdgeConnectorListener.Default);
                     port.portColor = data.Color;
                     if (!string.IsNullOrEmpty(data.Id))
                         port.viewDataKey = data.Id;
