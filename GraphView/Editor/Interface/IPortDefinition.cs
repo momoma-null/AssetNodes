@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 //#nullable enable
 
@@ -9,7 +9,7 @@ namespace MomomaAssets.GraphView
     {
         bool IsMultiInput { get; }
         bool IsMultiOutput { get; }
-        Type DisplayType { get; }
+        Color PortColor { get; }
         T CombineInputData(IEnumerable<T> inputs);
     }
 }

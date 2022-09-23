@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 //#nullable enable
 
@@ -26,6 +27,10 @@ namespace MomomaAssets.GraphView
                 evt.menu.AppendAction("Group selection", GroupSelection, GetStatusAddToGroup);
                 evt.menu.AppendAction("Remove from group", RemoveFromGroup, GetStatusRemoveFromGroup);
             }
+            else
+            {
+                evt.menu.AppendAction("Add Stack Node", AddStackNode);
+            }
         }
 
         void GroupSelection(DropdownMenuAction action)
@@ -45,6 +50,11 @@ namespace MomomaAssets.GraphView
                 if (i is Node node)
                     node.GetContainingScope()?.RemoveElement(node);
             }
+        }
+
+        void AddStackNode(DropdownMenuAction action)
+        {
+            m_GraphViewCallbackReceiver.AddElement(new StackNodeData(), GUIUtility.GUIToScreenPoint(action.eventInfo.mousePosition));
         }
 
         DropdownMenuAction.Status GetStatusAddToGroup(DropdownMenuAction action)
@@ -74,7 +84,12 @@ namespace MomomaAssets.GraphView
         {
             var linkedPorts = new HashSet<Port>();
             CollectLinkedPorts(startPort, linkedPorts);
-            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && (startPort.direction == Direction.Input ? startPort.portType.IsAssignableFrom(p.portType) : p.portType.IsAssignableFrom(startPort.portType)));
+            return ports.ToList().FindAll(p => p.direction != startPort.direction && !linkedPorts.Contains(p) && CanConnectPortType(startPort, p));
+        }
+
+        public bool CanConnectPortType(Port src, Port dst)
+        {
+            return (src.direction == Direction.Input ? src.portType.IsAssignableFrom(dst.portType) : dst.portType.IsAssignableFrom(src.portType));
         }
 
         static void CollectLinkedPorts(Port startPort, HashSet<Port> linkedPorts)

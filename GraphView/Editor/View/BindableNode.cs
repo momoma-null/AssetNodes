@@ -48,10 +48,10 @@ namespace MomomaAssets.GraphView
             style.maxWidth = 400f;
             var nodeTypeName = m_Node.Processor.GetType().Name;
             title = ObjectNames.NicifyVariableName(nodeTypeName).Replace("Node", "");
-            Random.InitState(nodeTypeName.GetHashCode());
-            var backgroundColor = Random.ColorHSV();
+            var backgroundColor = nodeData.Processor.HeaderColor;
             backgroundColor.a = 0.8039216f;
             titleContainer.style.backgroundColor = backgroundColor;
+            titleContainer.style.unityFontStyleAndWeight = FontStyle.Bold;
             extensionContainer.style.backgroundColor = new Color(0.1803922f, 0.1803922f, 0.1803922f, 0.8039216f);
             m_CollapseButton.schedule.Execute(FixCollapseButtonEnable).Every(0);
         }

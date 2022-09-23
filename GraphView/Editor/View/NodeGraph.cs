@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 using static UnityEngine.Object;
 
 //#nullable enable
@@ -24,6 +24,7 @@ namespace MomomaAssets.GraphView
 
         GraphViewObjectHandler m_GraphViewObjectHandler = null;
         bool isDisposed = false;
+        VisualElement? insertTarget;
 
         List<ISelectable> ISelection.selection => m_GraphView.selection;
 
@@ -41,6 +42,8 @@ namespace MomomaAssets.GraphView
             m_GraphView.graphViewChanged = GraphViewChanged;
             m_GraphView.elementsAddedToGroup = OnElementsAddedToGroup;
             m_GraphView.elementsRemovedFromGroup = OnElementsRemovedFromGroup;
+            m_GraphView.elementsInsertedToStackNode = OnElementsInsertedToStackNode;
+            m_GraphView.elementsRemovedFromStackNode = OnElementsRemovedFromStackNode;
             m_GraphView.styleSheets.Add(Resources.Load<StyleSheet>("GraphViewStyles"));
             m_GraphView.Insert(0, new GridBackground() { style = { alignItems = Align.Center, justifyContent = Justify.Center } });
             var miniMap = new MiniMap();
@@ -178,6 +181,7 @@ namespace MomomaAssets.GraphView
 
         void CreateNode(NodeCreationContext context)
         {
+            insertTarget = context.target;
             SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_SearchWindowProvider);
         }
 
@@ -246,6 +250,30 @@ namespace MomomaAssets.GraphView
                 groupData.RemoveElements(elements.Select(i => i.viewDataKey));
                 if (groupData.ElementCount == 0)
                     m_GraphView.RemoveElement(group);
+            }
+        }
+
+        void OnElementsInsertedToStackNode(StackNode stackNode, int index, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(stackNode.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IStackNodeData stackNodeData)
+            {
+                Undo.RecordObject(graphElementObject, "Insert elements to stack node");
+                stackNodeData.InsertElements(index, elements.Select(i => i.viewDataKey));
+            }
+        }
+
+        void OnElementsRemovedFromStackNode(StackNode stackNode, IEnumerable<GraphElement> elements)
+        {
+            if (m_GraphViewObjectHandler == null)
+                return;
+            var graphElementObject = m_GraphViewObjectHandler.TryGetGraphElementObjectByGuid(stackNode.viewDataKey);
+            if (graphElementObject != null && graphElementObject.GraphElementData is IStackNodeData stackNodeData)
+            {
+                Undo.RecordObject(graphElementObject, "Remove elements from stack node");
+                stackNodeData.RemoveElements(elements.Select(i => i.viewDataKey));
             }
         }
 
@@ -408,6 +436,21 @@ namespace MomomaAssets.GraphView
             {
                 setScope.AddGraphElementObject(graphElementObject);
             }
+            if (insertTarget is Port port && graphElement is Node node)
+            {
+                var ports = port.direction == Direction.Input ? node.outputContainer.Query<Port>().ToList() : node.inputContainer.Query<Port>().ToList();
+                foreach (var dst in ports)
+                {
+                    if (m_GraphView.CanConnectPortType(port, dst))
+                    {
+                        var edge = port.ConnectTo<BindableEdge>(dst);
+                        edge.SetPosition(Rect.zero);
+                        EdgeConnectorListener.Default.OnDrop(m_GraphView, edge);
+                        break;
+                    }
+                }
+            }
+            insertTarget = null;
         }
 
         GraphElementObject CreateGraphElementObject(GraphElement graphElement)
