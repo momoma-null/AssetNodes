@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {

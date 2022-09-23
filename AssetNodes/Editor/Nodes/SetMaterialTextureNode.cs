@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {
@@ -145,7 +145,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         SetMaterialTextureNode() { }
 
         [SerializeField]
-        Shader? m_Shader;
+        Shader m_Shader;
         [SerializeField]
         TextureProperty[] m_TextureProperties = Array.Empty<TextureProperty>();
 

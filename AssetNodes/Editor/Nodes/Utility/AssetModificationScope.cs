@@ -1,7 +1,7 @@
 using System;
 using UnityEditor;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {

@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {

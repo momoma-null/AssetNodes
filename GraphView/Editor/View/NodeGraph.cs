@@ -24,7 +24,7 @@ namespace MomomaAssets.GraphView
 
         GraphViewObjectHandler m_GraphViewObjectHandler = null;
         bool isDisposed = false;
-        VisualElement? insertTarget;
+        VisualElement insertTarget;
 
         List<ISelectable> ISelection.selection => m_GraphView.selection;
 

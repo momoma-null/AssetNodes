@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {
@@ -17,13 +17,18 @@ namespace MomomaAssets.GraphView.AssetNodes
                 {
                     if (!(assets.MainAssetType == typeof(GameObject)) || (assets.MainAsset.hideFlags & HideFlags.NotEditable) != 0)
                         continue;
-                    using (var scope = new PrefabUtility.EditPrefabContentsScope(assets.AssetPath))
+                    var root = PrefabUtility.LoadPrefabContents(assets.AssetPath);
+                    try
                     {
-                        var root = scope.prefabContentsRoot;
                         if (modifier.IncludeChildren)
                             modifier.ModifyRecursively(root.transform, regex);
                         else if (regex.IsMatch(root.name))
                             modifier.Modify(root);
+                    }
+                    finally
+                    {
+                        PrefabUtility.SaveAsPrefabAsset(root, assets.AssetPath);
+                        PrefabUtility.UnloadPrefabContents(root);
                     }
                 }
             }

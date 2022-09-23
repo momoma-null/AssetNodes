@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView
 {

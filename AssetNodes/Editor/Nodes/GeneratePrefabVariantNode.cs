@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Object;
 
-#nullable enable
+//#nullable enable
 
 namespace MomomaAssets.GraphView.AssetNodes
 {

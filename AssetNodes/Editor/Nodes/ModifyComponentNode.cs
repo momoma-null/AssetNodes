@@ -148,7 +148,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Modify(GameObject go)
         {
             foreach (var component in go.GetComponents<Component>())
-                if (m_Preset!.CanBeAppliedTo(component))
+                if (m_Preset.CanBeAppliedTo(component))
                     m_Preset.ApplyTo(component);
         }
 
