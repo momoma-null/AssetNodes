@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView.AssetNodes
             if (m_Data == null)
                 m_Data = new NodeGraphEditorData();
             if (m_NodeGraph == null)
-                m_NodeGraph = new NodeGraph(this, CoreAssetNodes.s_NodeGraphProcessor, m_Data);
+                m_NodeGraph = new NodeGraph(this, CoreAssetNodes.Processor, m_Data);
         }
 
         void OnDisable()

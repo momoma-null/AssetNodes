@@ -16,7 +16,7 @@ namespace MomomaAssets.GraphView.AssetNodes.Tests
         public void ProcessAll()
         {
             foreach (var i in GraphViewObject.GetGraphViewObjects<AssetNodesGUI>())
-                CoreAssetNodes.s_NodeGraphProcessor.StartProcess(i);
+                CoreAssetNodes.Processor.StartProcess(i);
         }
 
         [TearDown]
