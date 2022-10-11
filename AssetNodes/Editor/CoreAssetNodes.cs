@@ -19,12 +19,13 @@ namespace MomomaAssets.GraphView.AssetNodes
         {
             EditorApplication.delayCall += () =>
             {
-                if (importedAssets.Length == 0 || IsProcessing)
+                var validAssets = Array.FindAll(importedAssets, path => path.StartsWith("Assets/"));
+                if (validAssets.Length == 0 || IsProcessing)
                     return;
                 try
                 {
                     IsProcessing = true;
-                    ImportedAssetsPaths = importedAssets;
+                    ImportedAssetsPaths = validAssets;
                     foreach (var i in GraphViewObject.GetGraphViewObjects<AssetNodesGUI>())
                     {
                         s_NodeGraphProcessor.StartProcess(i);
