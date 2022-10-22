@@ -12,22 +12,22 @@ namespace MomomaAssets.GraphView.AssetNodes
         public static bool IsProcessing { get; private set; }
         public static bool IsTesting { get; internal set; }
         public static IEnumerable<string> ImportedAssetsPaths { get; private set; } = Array.Empty<string>();
-
-        public static NodeGraphProcessor s_NodeGraphProcessor = new NodeGraphProcessor(() => Resources.UnloadUnusedAssets());
+        public static NodeGraphProcessor Processor { get; } = new NodeGraphProcessor(OnCompleteProcess);
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
             EditorApplication.delayCall += () =>
             {
-                if (importedAssets.Length == 0 || IsProcessing)
+                var validAssets = Array.FindAll(importedAssets, path => path.StartsWith("Assets/"));
+                if (validAssets.Length == 0 || IsProcessing)
                     return;
                 try
                 {
                     IsProcessing = true;
-                    ImportedAssetsPaths = importedAssets;
+                    ImportedAssetsPaths = validAssets;
                     foreach (var i in GraphViewObject.GetGraphViewObjects<AssetNodesGUI>())
                     {
-                        s_NodeGraphProcessor.StartProcess(i);
+                        Processor.StartProcess(i);
                     }
                 }
                 finally
@@ -36,6 +36,12 @@ namespace MomomaAssets.GraphView.AssetNodes
                     ImportedAssetsPaths = Array.Empty<string>();
                 }
             };
+        }
+
+        static void OnCompleteProcess()
+        {
+            AssetDatabase.SaveAssets();
+            Resources.UnloadUnusedAssets();
         }
     }
 }

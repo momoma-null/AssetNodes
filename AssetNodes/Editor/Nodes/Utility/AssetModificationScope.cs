@@ -14,7 +14,6 @@ namespace MomomaAssets.GraphView.AssetNodes
 
         void IDisposable.Dispose()
         {
-            AssetDatabase.SaveAssets();
             AssetDatabase.StopAssetEditing();
             AssetDatabase.Refresh();
         }
