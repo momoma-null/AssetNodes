@@ -11,16 +11,7 @@ namespace MomomaAssets.GraphView.AssetNodes
 {
     public sealed class AssetGroup : HashSet<AssetData>, IProcessingData
     {
-        public static Func<IEnumerable<AssetGroup>, AssetGroup> combineAssetGroup = assetGroups =>
-        {
-            var combined = new AssetGroup();
-            foreach (var i in assetGroups)
-                combined.UnionWith(i);
-            return combined;
-        };
-
         public AssetGroup() { }
-        public AssetGroup(IEnumerable<AssetData> collection) : base(collection) { }
     }
 
     public sealed class AssetGroupPortDefinition : IPortDefinition<AssetGroup>
