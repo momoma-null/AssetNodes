@@ -33,7 +33,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         }
     }
 
-    public sealed class AssetData
+    public sealed class AssetData : IEquatable<AssetData>
     {
         Type? m_MainAssetType;
         UnityObject? m_MainAsset;
@@ -57,5 +57,11 @@ namespace MomomaAssets.GraphView.AssetNodes
                 if (i is T tObj)
                     yield return tObj;
         }
+
+        public bool Equals(AssetData? other) => AssetPath.Equals(other?.AssetPath);
+
+        public override bool Equals(object obj) => Equals(obj as AssetData);
+
+        public override int GetHashCode() => AssetPath.GetHashCode();
     }
 }
