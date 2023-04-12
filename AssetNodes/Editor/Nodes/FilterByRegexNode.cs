@@ -22,7 +22,8 @@ namespace MomomaAssets.GraphView.AssetNodes
         {
             portDataContainer.AddInputPort(AssetGroupPortDefinition.Default);
             portDataContainer.AddInputPort(PathDataPortDefinition.Default);
-            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default);
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Matched");
+            portDataContainer.AddOutputPort(AssetGroupPortDefinition.Default, "Unmatched");
         }
 
         public void Process(IProcessingDataContainer container)
@@ -30,8 +31,17 @@ namespace MomomaAssets.GraphView.AssetNodes
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var input = container.GetInput(1, PathDataPortDefinition.Default);
             var regex = new Regex(m_Pattern);
-            var filtered = new AssetGroup(assetGroup.Where(asset => regex.IsMatch(input.GetPath(asset))));
-            container.SetOutput(0, filtered);
+            var matched = new AssetGroup();
+            var unmatched = new AssetGroup();
+            foreach (var asset in assetGroup)
+            {
+                if (regex.IsMatch(input.GetPath(asset)))
+                    matched.Add(asset);
+                else
+                    unmatched.Add(asset);
+            }
+            container.SetOutput(0, matched);
+            container.SetOutput(1, unmatched);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
