@@ -30,6 +30,9 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            container.SetOutput(0, assetGroup);
+            if (assetGroup.Count == 0)
+                return;
             var regex = new Regex(m_RegexPattern);
             using (new AssetModificationScope())
             {
@@ -43,7 +46,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                     AssetDatabase.MoveAsset(srcPath, dstPath);
                 }
             }
-            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

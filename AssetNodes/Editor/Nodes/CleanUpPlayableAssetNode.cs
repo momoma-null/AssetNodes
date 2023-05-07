@@ -25,15 +25,17 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            if (assetGroup.Count == 0)
+                return;
             using (new AssetModificationScope())
             {
                 foreach (var asset in assetGroup)
                 {
-                    if (asset.MainAssetType == typeof(PlayableAsset))
+                    if (typeof(PlayableAsset).IsAssignableFrom(asset.MainAssetType))
                     {
-                        var remaindAssets = new HashSet<UnityObject>(asset.AllAssets);
-                        remaindAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));
-                        foreach (var i in remaindAssets)
+                        var remainedAssets = new HashSet<UnityObject>(asset.AllAssets);
+                        remainedAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));
+                        foreach (var i in remainedAssets)
                         {
                             if (i != null)
                                 UnityEngine.Object.DestroyImmediate(i, true);

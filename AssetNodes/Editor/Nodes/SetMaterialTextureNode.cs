@@ -162,6 +162,9 @@ namespace MomomaAssets.GraphView.AssetNodes
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
             var textureGroup = container.GetInput(1, AssetGroupPortDefinition.Default);
+            container.SetOutput(0, assetGroup);
+            if (assetGroup.Count == 0)
+                return;
             if (m_Shader != null)
             {
                 var textures = textureGroup.SelectMany(i => i.GetAssetsFromType<Texture>()).ToDictionary(i => i.name);
@@ -187,7 +190,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                     }
                 }
             }
-            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

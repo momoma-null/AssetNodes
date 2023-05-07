@@ -107,6 +107,9 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            container.SetOutput(0, assetGroup);
+            if (assetGroup.Count == 0)
+                return;
             if (m_Importer != null)
             {
                 var excludePaths = new HashSet<string>() { "m_RigImportErrors", "m_ImportedTakeInfos", "m_ImportedRoots", "m_HasExtraRoot" };
@@ -139,7 +142,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                     }
                 }
             }
-            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

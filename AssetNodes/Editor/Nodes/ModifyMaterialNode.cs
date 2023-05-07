@@ -285,6 +285,9 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            container.SetOutput(0, assetGroup);
+            if (assetGroup.Count == 0)
+                return;
             if (m_Shader != null)
             {
                 using (new AssetModificationScope())
@@ -306,7 +309,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                     }
                 }
             }
-            container.SetOutput(0, assetGroup);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)
