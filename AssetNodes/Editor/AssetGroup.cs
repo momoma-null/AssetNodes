@@ -58,7 +58,7 @@ namespace MomomaAssets.GraphView.AssetNodes
                     yield return tObj;
         }
 
-        public bool Equals(AssetData? other) => AssetPath.Equals(other?.AssetPath);
+        public bool Equals(AssetData other) => AssetPath.Equals(other?.AssetPath);
 
         public override bool Equals(object obj) => Equals(obj as AssetData);
 
