@@ -22,6 +22,8 @@ namespace MomomaAssets.GraphView.AssetNodes
         public void Process(IProcessingDataContainer container)
         {
             var assetGroup = container.GetInput(0, AssetGroupPortDefinition.Default);
+            if (assetGroup.Count == 0)
+                return;
             using (new AssetModificationScope())
             {
                 foreach (var asset in assetGroup)

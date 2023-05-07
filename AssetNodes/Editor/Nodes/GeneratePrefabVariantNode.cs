@@ -31,6 +31,10 @@ namespace MomomaAssets.GraphView.AssetNodes
             var directoryPathData = container.GetInput(1, PathDataPortDefinition.Default);
             var filePathData = container.GetInput(2, PathDataPortDefinition.Default);
             var variants = new AssetGroup();
+            container.SetOutput(0, assetGroup);
+            container.SetOutput(1, variants);
+            if (assetGroup.Count == 0)
+                return;
             using (new AssetModificationScope())
             {
                 foreach (var assets in assetGroup)
@@ -61,8 +65,6 @@ namespace MomomaAssets.GraphView.AssetNodes
                     }
                 }
             }
-            container.SetOutput(0, assetGroup);
-            container.SetOutput(1, variants);
         }
 
         public T DoFunction<T>(IFunctionContainer<INodeProcessor, T> function)

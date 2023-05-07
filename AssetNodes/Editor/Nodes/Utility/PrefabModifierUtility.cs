@@ -10,6 +10,8 @@ namespace MomomaAssets.GraphView.AssetNodes
     {
         public static void ModifyPrefab(this IPrefabModifier modifier, AssetGroup assetGroup)
         {
+            if (assetGroup.Count == 0)
+                return;
             var regex = new Regex(modifier.RegexPattern);
             using (new AssetModificationScope())
             {
