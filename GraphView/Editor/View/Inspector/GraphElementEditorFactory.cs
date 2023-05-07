@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
-    delegate BaseGraphElementEditor CreateGraphElementEditor<T>(T graphElementData, SerializedProperty property) where T : IGraphElementData;
+    delegate IGraphElementEditor CreateGraphElementEditor<T>(T graphElementData, SerializedProperty property) where T : IGraphElementData;
 
     static class GraphElementEditorFactory
     {
@@ -14,7 +14,7 @@ namespace MomomaAssets.GraphView
             public static CreateGraphElementEditor<T>? factory;
         }
 
-        sealed class FunctionProxy : IFunctionContainer<IGraphElementData, BaseGraphElementEditor>
+        sealed class FunctionProxy : IFunctionContainer<IGraphElementData, IGraphElementEditor>
         {
             SerializedProperty _property;
 
@@ -23,7 +23,7 @@ namespace MomomaAssets.GraphView
                 _property = property;
             }
 
-            public BaseGraphElementEditor DoFunction<T>(T arg) where T : IGraphElementData
+            public IGraphElementEditor DoFunction<T>(T arg) where T : IGraphElementData
             {
                 return CachedFactory<T>.factory?.Invoke(arg, _property) ?? new DefaultGraphElementEditor(_property);
             }
@@ -41,7 +41,7 @@ namespace MomomaAssets.GraphView
             CachedFactory<T>.factory = createGraphElementEditor;
         }
 
-        public static BaseGraphElementEditor CreateEditor(IGraphElementData graphElementData, SerializedProperty property)
+        public static IGraphElementEditor CreateEditor(IGraphElementData graphElementData, SerializedProperty property)
         {
             var functionProxy = new FunctionProxy(property);
             return graphElementData.DoFunction(functionProxy);

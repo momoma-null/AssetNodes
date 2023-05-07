@@ -9,7 +9,7 @@ namespace MomomaAssets.GraphView
     [DefaultExecutionOrder(-9)]
     sealed class GraphElementObjectInspector : Editor
     {
-        BaseGraphElementEditor? m_Editor;
+        IGraphElementEditor? m_Editor;
 
         void OnEnable()
         {

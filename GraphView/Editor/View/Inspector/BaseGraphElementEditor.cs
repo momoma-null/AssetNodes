@@ -6,19 +6,17 @@ using UnityEditor;
 
 namespace MomomaAssets.GraphView
 {
-    abstract class BaseGraphElementEditor : IDisposable
+    interface IGraphElementEditor : IDisposable
     {
-        protected BaseGraphElementEditor() { }
-        public virtual bool UseDefaultVisualElement => false;
-        public virtual void Dispose() { }
-        public abstract void OnGUI();
+        bool UseDefaultVisualElement { get; }
+        void OnGUI();
     }
 
-    sealed class DefaultGraphElementEditor : BaseGraphElementEditor
+    sealed class DefaultGraphElementEditor : IGraphElementEditor
     {
         readonly IReadOnlyList<SerializedProperty> _Properties;
 
-        public override bool UseDefaultVisualElement => true;
+        public bool UseDefaultVisualElement => true;
 
         public DefaultGraphElementEditor(SerializedProperty property)
         {
@@ -40,7 +38,9 @@ namespace MomomaAssets.GraphView
             _Properties = properties;
         }
 
-        public override void OnGUI()
+        void IDisposable.Dispose() { }
+
+        public void OnGUI()
         {
             foreach (var property in _Properties)
                 EditorGUILayout.PropertyField(property, true);

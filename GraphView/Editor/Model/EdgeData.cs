@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 #nullable enable
 
@@ -78,7 +78,7 @@ namespace MomomaAssets.GraphView
             return function.DoFunction(this);
         }
 
-        sealed class EdgeDataEditor : BaseGraphElementEditor
+        sealed class EdgeDataEditor : IGraphElementEditor
         {
             [GraphElementEditorFactory]
             static void Entry()
@@ -89,13 +89,17 @@ namespace MomomaAssets.GraphView
             readonly SerializedProperty _InputPortProperty;
             readonly SerializedProperty _OutputPortProperty;
 
+            public bool UseDefaultVisualElement => false;
+
             EdgeDataEditor(SerializedProperty property)
             {
                 _InputPortProperty = property.FindPropertyRelative(nameof(m_InputPortGuid));
                 _OutputPortProperty = property.FindPropertyRelative(nameof(m_OutputPortGuid));
             }
 
-            public override void OnGUI()
+            void IDisposable.Dispose() { }
+
+            public void OnGUI()
             {
                 EditorGUILayout.LabelField("Input", _InputPortProperty?.stringValue);
                 EditorGUILayout.LabelField("Output", _OutputPortProperty?.stringValue);
