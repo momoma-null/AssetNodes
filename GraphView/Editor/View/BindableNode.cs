@@ -1,8 +1,8 @@
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
-using UnityEditor.Experimental.GraphView;
 using UnityObject = UnityEngine.Object;
 
 //#nullable enable
@@ -91,33 +91,35 @@ namespace MomomaAssets.GraphView
             extensionContainer.Clear();
             serializedObject.Update();
             this.BindProperty(serializedObject.FindProperty("m_GraphElementData.m_Expanded"));
-            var graphElementEditor = GraphElementEditorFactory.CreateEditor(m_Node, serializedObject.FindProperty("m_GraphElementData"));
-            if (graphElementEditor.UseDefaultVisualElement)
+            using (var graphElementEditor = GraphElementEditorFactory.CreateEditor(m_Node, serializedObject.FindProperty("m_GraphElementData")))
             {
-                using (var iterator = serializedObject.FindProperty("m_GraphElementData.m_Processor"))
-                using (var endProperty = iterator.GetEndProperty(false))
+                if (graphElementEditor.UseDefaultVisualElement)
                 {
-                    if (iterator.NextVisible(true))
+                    using (var iterator = serializedObject.FindProperty("m_GraphElementData.m_Processor"))
+                    using (var endProperty = iterator.GetEndProperty(false))
                     {
-                        while (true)
+                        if (iterator.NextVisible(true))
                         {
-                            if (SerializedProperty.EqualContents(iterator, endProperty))
-                                break;
-                            var prop = iterator.Copy();
-                            var field = new PropertyField(prop);
-                            extensionContainer.Add(field);
-                            field.BindProperty(prop);
-                            if (!iterator.NextVisible(false))
-                                break;
+                            while (true)
+                            {
+                                if (SerializedProperty.EqualContents(iterator, endProperty))
+                                    break;
+                                var prop = iterator.Copy();
+                                var field = new PropertyField(prop);
+                                extensionContainer.Add(field);
+                                field.BindProperty(prop);
+                                if (!iterator.NextVisible(false))
+                                    break;
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
-                var field = new IMGUIContainer(() => OnGUIHandler(serializedObject.targetObjects));
-                extensionContainer.Add(field);
+                else
+                {
+                    RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+                    var field = new IMGUIContainer(() => OnGUIHandler(serializedObject.targetObjects));
+                    extensionContainer.Add(field);
+                }
             }
             RefreshExpandedState();
         }
