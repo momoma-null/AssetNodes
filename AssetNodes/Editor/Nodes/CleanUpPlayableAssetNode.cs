@@ -31,9 +31,9 @@ namespace MomomaAssets.GraphView.AssetNodes
                 {
                     if (typeof(PlayableAsset).IsAssignableFrom(asset.MainAssetType))
                     {
-                        var remaindAssets = new HashSet<UnityObject>(asset.AllAssets);
-                        remaindAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));
-                        foreach (var i in remaindAssets)
+                        var remainedAssets = new HashSet<UnityObject>(asset.AllAssets);
+                        remainedAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));
+                        foreach (var i in remainedAssets)
                         {
                             if (i != null)
                                 UnityEngine.Object.DestroyImmediate(i, true);
