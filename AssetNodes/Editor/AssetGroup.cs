@@ -11,16 +11,7 @@ namespace MomomaAssets.GraphView.AssetNodes
 {
     public sealed class AssetGroup : HashSet<AssetData>, IProcessingData
     {
-        public static Func<IEnumerable<AssetGroup>, AssetGroup> combineAssetGroup = assetGroups =>
-        {
-            var combined = new AssetGroup();
-            foreach (var i in assetGroups)
-                combined.UnionWith(i);
-            return combined;
-        };
-
         public AssetGroup() { }
-        public AssetGroup(IEnumerable<AssetData> collection) : base(collection) { }
     }
 
     public sealed class AssetGroupPortDefinition : IPortDefinition<AssetGroup>
@@ -42,7 +33,7 @@ namespace MomomaAssets.GraphView.AssetNodes
         }
     }
 
-    public sealed class AssetData
+    public sealed class AssetData : IEquatable<AssetData>
     {
         Type m_MainAssetType;
         UnityObject m_MainAsset;
@@ -66,5 +57,11 @@ namespace MomomaAssets.GraphView.AssetNodes
                 if (i is T tObj)
                     yield return tObj;
         }
+
+        public bool Equals(AssetData? other) => AssetPath.Equals(other?.AssetPath);
+
+        public override bool Equals(object obj) => Equals(obj as AssetData);
+
+        public override int GetHashCode() => AssetPath.GetHashCode();
     }
 }
