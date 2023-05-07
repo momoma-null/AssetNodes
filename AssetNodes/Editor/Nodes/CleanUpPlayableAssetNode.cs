@@ -29,7 +29,7 @@ namespace MomomaAssets.GraphView.AssetNodes
             {
                 foreach (var asset in assetGroup)
                 {
-                    if (asset.MainAssetType == typeof(PlayableAsset))
+                    if (typeof(PlayableAsset).IsAssignableFrom(asset.MainAssetType))
                     {
                         var remaindAssets = new HashSet<UnityObject>(asset.AllAssets);
                         remaindAssets.ExceptWith(EditorUtility.CollectDependencies(new[] { asset.MainAsset }));
