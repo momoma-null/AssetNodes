@@ -48,7 +48,15 @@ namespace MomomaAssets.GraphView.AssetNodes
                                 AssetDatabase.ImportAsset(directoryPath);
                             }
                             var dstPath = Path.Combine(directoryPath, $"{i.name}.mat");
-                            AssetDatabase.ExtractAsset(i, dstPath);
+                            var existMaterial = AssetDatabase.LoadAssetAtPath<Material>(dstPath);
+                            if (existMaterial != default)
+                            {
+                                assets.Importer.AddRemap(new AssetImporter.SourceAssetIdentifier(i), existMaterial);
+                            }
+                            else
+                            {
+                                AssetDatabase.ExtractAsset(i, dstPath);
+                            }
                             materials.Add(new AssetData(dstPath));
                             isDirty = true;
                         }
